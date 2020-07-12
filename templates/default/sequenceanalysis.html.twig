@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <h1>Simple sequence analysis</h1>
+        <p>This code finds mirrors into a sequence string. It takes as parameter one start and one end.</p>
+        <br>
+        <h4>Sample code : </h4>
+        <br>
+        {{ code | raw }}
+        <br>
+        <h4>Result :</h4>
+        <div class="row">
+            <div class="col-md-5">{{ dump(mirrors) }}</div>
+        </div>
+    </div>
+{% endblock %}

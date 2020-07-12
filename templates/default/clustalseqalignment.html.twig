@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <h1>CLUSTAL Alignment (several examples)</h1>
+        <br>
+        <h4>Sample code : </h4>
+        <br>
+        {{ code | raw }}
+        <br>
+        <h4>Result :</h4>
+        <div class="row">
+            <div class="col-md-10">
+            <p>Sort sequences :</p>
+            {{ dump(sequenceAlSort) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+            <p>13th sequence </p>
+            {{ dump(offset13) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+            <p>Length of the longuest sequence</p>
+            {{ dump(maxLength) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+            <p>Number of gaps</p>
+            {{ dump(numberGaps) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Do the sequences have the same length ?</p>
+                {{ dump(isFlush) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Char at res 10 (10th sequence)</p>
+                {{ dump(sCharAtRes) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Substring between two residues in a sequence</p>
+                {{ dump(sSubstrBwRes) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Converts a column number to a residue number in a sequence</p>
+                {{ dump(colToRes) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Converts a residue number to a column number in a sequence</p>
+                {{ dump(resToCol) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Creates a new alignment set from index 5 to 10</p>
+                {{ dump(subALign) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Creates a new alignment with selected indexes</p>
+                {{ dump(selectAlign) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p> Determines the index position of both variant and invariant residues according
+                    to a given "percentage threshold" similar to that in the consensus() method.</p>
+                {{ dump(resVar) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Returns the consensus string for an alignment set</p>
+                {{ dump(consensus) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Adding a new sequence object</p>
+                {{ dump(sequenceAlignmentManagerAdd) }}</div>
+        </div>
+    </div>
+{% endblock %}

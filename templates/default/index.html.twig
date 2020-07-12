@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <h1>Amelaye's BioPHP demo</h1>
+        <p>&nbsp;</p>
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card">
+                    <h5 class="card-header">Code Samples</h5>
+                    <div class="card-body">
+                        <ul>
+                            <li><a href="{{ url('sequence_analysis') }}">Simple sequence analysis</a></li>
+                            <li><a href="{{ url('read_sequence_genbank') }}">Puts GENBANK into database and loads a array of objects</a></li>
+                            <li><a href="{{ url('read_sequence_swissprot') }}">Puts SWISSPROT into database and loads a array of objects</a></li>
+                            <li><a href="{{ url('sequence_alignment_fasta') }}">FASTA alignement</a></li>
+                            <li><a href="{{ url('sequence_alignment_clustal') }}">Clustal parsing (demo all the functions)</a></li>
+                            <li><a href="{{ url('play_with_sequencies') }}">Play with sequencies</a></li>
+                            <li><a href="{{ url('play_with_proteins') }}">Play with proteins</a></li>
+                            <li><a href="{{ url('sequence_match') }}">Sequence match</a></li>
+                            <li><a href="{{ url('restriction_enzyme') }}">Restriction enzyme</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card">
+                    <h5 class="card-header">Minitools</h5>
+                    <div class="card-body">
+                        <ul>
+                            <li>Coming soon</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

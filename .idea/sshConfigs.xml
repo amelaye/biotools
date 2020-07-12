@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="master" id="572e55e0-7d0d-4695-ae23-f47ca08ee003" port="243" nameFormat="DESCRIPTIVE" username="amelaye" />
+    </configs>
+  </component>
+</project>

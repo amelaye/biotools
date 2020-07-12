@@ -1,0 +1,30 @@
+index:
+    path: /
+    controller: App\Controller\DefaultController::index
+sequence_analysis:
+    path: /sequence-analysis
+    controller: App\Controller\DefaultController::sequenceanalysis
+read_sequence_genbank:
+    path: /read-sequence-genbank
+    controller: App\Controller\DefaultController::parseaseqdb
+read_sequence_swissprot:
+    path: /read-sequence-swissprot
+    controller: App\Controller\DefaultController::parseaswissprotdb
+sequence_alignment_fasta:
+    path: /sequence-alignment-fasta
+    controller: App\Controller\DefaultController::fastaseqalignment
+sequence_alignment_clustal:
+    path: /sequence-alignment-clustal
+    controller: App\Controller\DefaultController::clustalseqalignment
+play_with_sequencies:
+    path: /play-with-sequencies
+    controller: App\Controller\DefaultController::playwithsequencies
+play_with_proteins:
+    path: /play-with-proteins
+    controller: App\Controller\DefaultController::playwithproteins
+sequence_match:
+    path: /sequence-match
+    controller: App\Controller\DefaultController::sequencematch
+restriction_enzyme:
+    path: /restriction-enzyme
+    controller: App\Controller\DefaultController::restrictionenzyme

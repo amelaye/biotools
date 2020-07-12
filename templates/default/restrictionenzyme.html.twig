@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <h1>Restriction Enzyme</h1>
+        <br>
+        <h4>Sample code : </h4>
+        <br>
+        {{ code | raw }}
+        <br>
+        <h4>Result :</h4>
+        <div class="row">
+            <div class="col-md-10">
+            <p>Gets the enzyme "AatI" properties</p>
+            {{ dump(enzymeParsed) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Cuts a DNA sequence into fragments using the restriction enzyme object (patpos group)</p>
+                {{ dump(cutseq) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Cuts a DNA sequence into fragments using the restriction enzyme object (patposo group)</p>
+                {{ dump(cutseq2) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Searching our database of endonucleases for a particular restriction enzyme <br>
+                    Fetch pattern "AGGCCT" only
+                </p>
+                {{ dump(list) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Fetch pattern "AGGCCT" & cutpos 3 </p>
+                {{ dump(list2) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Fetch cutpos 3 only</p>
+                {{ dump(list3) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Fetch length 6 only</p>
+                {{ dump(list4) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>Fetch length 6 and cutpos 3 (no results)</p>
+                {{ dump(list5) }}</div>
+        </div>
+    </div>
+{% endblock %}

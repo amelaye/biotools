@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <h1>FASTA Alignment</h1>
+        <br>
+        <h4>Sample code : </h4>
+        <br>
+        {{ code | raw }}
+        <br>
+        <h4>Result :</h4>
+        <div class="row">
+            <div class="col-md-10">{{ dump(sequences) }}</div>
+        </div>
+    </div>
+{% endblock %}
