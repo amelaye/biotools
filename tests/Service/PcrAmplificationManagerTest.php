@@ -2,7 +2,6 @@
 
 namespace Tests\MinitoolsBundle\Service;
 
-use Amelaye\BioPHP\Api\AminoApi;
 use Amelaye\BioPHP\Api\NucleotidApi;
 use App\Service\PcrAmplificationManager;
 use PHPUnit\Framework\TestCase;
@@ -11,7 +10,7 @@ class PcrAmplificationManagerTest extends TestCase
 {
     protected $dnaComplement;
 
-    protected $apiMock;
+    protected $apiNucleoMock;
 
     public function setUp()
     {
@@ -20,9 +19,6 @@ class PcrAmplificationManagerTest extends TestCase
         /**
          * Mock API
          */
-        $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
-            ->build();
 
         require 'samples/Nucleotids.php';
 

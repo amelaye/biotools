@@ -26,10 +26,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         /**
          * Mock API
          */
-        $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
-            ->build();
-
         require 'samples/Nucleotids.php';
 
         $this->apiNucleoMock = $this->getMockBuilder(NucleotidApi::class)

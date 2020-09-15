@@ -18,10 +18,6 @@ class ProteinToDnaManagerTest extends TestCase
         /**
          * Mock API
          */
-        $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
-            ->build();
-
         $this->tripletSpeciesMock = $this->getMockBuilder(TripletSpecieApi::class)
             ->disableOriginalConstructor()
             ->setMethods(['getTriplets'])

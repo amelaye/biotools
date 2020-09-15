@@ -23,10 +23,6 @@ class DnaToProteinManagerTest extends TestCase
         /**
          * Mock API
          */
-        $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
-            ->build();
-
         require 'samples/Aminos.php';
         require 'samples/Triplets.php';
         require 'samples/TripletsSpecies.php';

@@ -16,8 +16,6 @@ class ProteinPropertiesManagerTest extends TestCase
 
     public function setUp()
     {
-        $pk = "EMBOSS";
-
         $aPK = [
             "@CONTEXT" => "/contexts/PK",
             "@ID" => "/p_ks/EMBOSS",
@@ -37,10 +35,6 @@ class ProteinPropertiesManagerTest extends TestCase
         /**
          * Mock API
          */
-        $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
-            ->build();
-
         require 'samples/Aminos.php';
 
         $this->apiAminoMock = $this->getMockBuilder(AminoApi::class)

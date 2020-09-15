@@ -3,15 +3,16 @@
  * MeltingTemperatureManager
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
 
+use Amelaye\BioPHP\Api\Interfaces\TmBaseStackingApiAdapter;
+use Amelaye\BioPHP\Domain\Sequence\Builder\SequenceBuilder;
 use Amelaye\BioPHP\Domain\Sequence\Entity\Sequence;
 use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 use Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager;
-use AppBundle\Api\Bioapi;
 
 /**
  * Class MeltingTemperatureManager
@@ -21,39 +22,45 @@ use AppBundle\Api\Bioapi;
 class MeltingTemperatureManager
 {
     /**
-     * @var Bioapi
-     */
-    private $bioapi;
-
-    /**
      * @var SequenceManager
      */
     private $sequenceManager;
 
     /**
+     * @var array
+     */
+    private $enthropyValues;
+
+    /**
+     * @var array
+     */
+    private $enthalpyValues;
+
+    /**
      * MeltingTemperatureManager constructor.
-     * @param   SequenceManager     $sequenceManager
-     * @param   Bioapi              $bioapi
+     * @param   SequenceManager             $sequenceManager
+     * @param   TmBaseStackingApiAdapter    $tmBaseStackingApi
      */
     public function __construct(
-        SequenceManager $sequenceManager,
-        Bioapi $bioapi
+        SequenceBuilder $sequenceManager,
+        TmBaseStackingApiAdapter $tmBaseStackingApi
     )
     {
         $this->sequenceManager      = $sequenceManager;
-        $this->bioapi               = $bioapi;
+        $this->enthropyValues       = $tmBaseStackingApi::GetEnthropyValues($tmBaseStackingApi->getTmBaseStackings());
+        $this->enthalpyValues       = $tmBaseStackingApi::GetEnthalpyValues($tmBaseStackingApi->getTmBaseStackings());
     }
 
     /**
      * Calculates CG
-     * @param       int     $primer
+     * @param       string     $sPrimer
      * @return      float
      * @throws      \Exception
      */
-    public function calculateCG($primer)
+    public function calculateCG($sPrimer)
     {
-        $cg = round(100 * GeneticsFunctions::CountCG($primer) / strlen($primer),1);
-        return $cg;
+        $fCg = round(100 * GeneticsFunctions::CountCG($sPrimer) / strlen($sPrimer),1);
+        return $fCg;
     }
 
     /**
@@ -118,8 +125,8 @@ class MeltingTemperatureManager
         try {
             $h = $s = 0;
 
-            $aEnthalpyValues = $this->bioapi->getEnthalpyValues();
-            $aEnthropyValues = $this->bioapi->getEnthropyValues();
+            $aEnthalpyValues = $this->enthalpyValues;
+            $aEnthropyValues = $this->enthropyValues;
 
             // effect on entropy by salt correction; von Ahsen et al 1999
             // Increase of stability due to presence of Mg;
@@ -220,6 +227,7 @@ class MeltingTemperatureManager
             $oSequence = new Sequence();
             $oSequence->setSequence($sSequence);
             $oSequence->setMoltype($sMoltype);
+            $oSequence->setSeqLength(strlen($sSequence));
             $this->sequenceManager->setSequence($oSequence);
             $fMwt = $this->sequenceManager->molwt($sLimit);
             return $fMwt;
