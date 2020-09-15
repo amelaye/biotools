@@ -2,8 +2,8 @@
 
 namespace Tests\MinitoolsBundle\Service;
 
-use AppBundle\Service\Misc\MathematicsFunctions;
-use MinitoolsBundle\Service\MicroarrayAnalysisAdaptiveManager;
+use Amelaye\BioPHP\Domain\Tools\Service\MathematicsFunctions;
+use App\Service\MicroarrayAnalysisAdaptiveManager;
 use PHPUnit\Framework\TestCase;
 
 class MicroarrayAnalysisAdaptiveManagerTest extends TestCase

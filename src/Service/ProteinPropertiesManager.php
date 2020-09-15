@@ -3,11 +3,12 @@
  * Proteins properties Functions
  * Inspired by BioPHP's project biophp.org
  * Created 24 february 2019
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  */
 namespace App\Service;
 
-use AppBundle\Api\Bioapi;
+use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\PKApiAdapter;
 
 /**
  * Class ProteinPropertiesManager
@@ -17,14 +18,19 @@ use AppBundle\Api\Bioapi;
 class ProteinPropertiesManager
 {
     /**
-     * @var Bioapi
+     * @var array
      */
-    private $bioapi;
+    private $aAminos;
 
     /**
      * @var array
      */
-    private $aminos;
+    private $aResidueWeights;
+
+    /**
+     * @var PKApiAdapter
+     */
+    private $pkAPI;
 
     /**
      * @var array
@@ -33,13 +39,15 @@ class ProteinPropertiesManager
 
     /**
      * ProteinPropertiesManager constructor.
-     * @param   Bioapi  $bioapi
+     * @param   AminoApiAdapter     $aminoApi
+     * @param   PKApiAdapter        $PKApi
      */
     public function __construct(
-        Bioapi $bioapi
+        AminoApiAdapter $aminoApi, PKApiAdapter $PKApi
     ){
-        $this->bioapi                   = $bioapi;
-        $this->aminos                   = $bioapi->getAminos();
+        $this->aResidueWeights   = $aminoApi::GetAminoResidueWeights($aminoApi->getAminos());
+        $this->aAminos           = $aminoApi::GetAminosOneToThreeLetters($aminoApi->getAminos());
+        $this->pkAPI             = $PKApi;
     }
 
     /**
@@ -48,7 +56,7 @@ class ProteinPropertiesManager
      */
     public function setPk($dataSource)
     {
-        $this->pk = $this->bioapi->getPkValueById($dataSource);
+        $this->pk = $this->pkAPI->getPkValueById($dataSource);
     }
 
     /**
@@ -62,7 +70,7 @@ class ProteinPropertiesManager
         try {
             $s3LetterCode = "";
             foreach(str_split($sSubsequence) as $sLetter) {
-                $s3LetterCode .= $this->aminos[$sLetter]["name3Letters"];
+                $s3LetterCode .= $this->aAminos[$sLetter];
             }
             return $s3LetterCode;
         } catch (\Exception $e) {
@@ -188,7 +196,7 @@ class ProteinPropertiesManager
         try {
             $results = [];
             foreach($aAminoacidContent as $aa => $count) {
-                $results[] = ["one_letter" => $aa, "three_letters" => $this->aminos[$aa]["name3Letters"], "count" => $count];
+                $results[] = ["one_letter" => $aa, "three_letters" => $this->aAminos[$aa], "count" => $count];
             }
             return $results;
         } catch (\Exception $e) {
@@ -207,9 +215,9 @@ class ProteinPropertiesManager
     {
         try {
             $aNbAminos = [];
-            foreach($this->aminos as $aAminosData) {
-                if(isset($aAminosData["name3Letters"]) && $aAminosData["name3Letters"] != "N/A") {
-                    $aNbAminos[$aAminosData["name1Letter"]] = 0;
+            foreach($this->aAminos as $sName1Letter => $sName3Letters) {
+                if(isset($sName3Letters) && $sName3Letters != "N/A") {
+                    $aNbAminos[$sName1Letter] = 0;
                 }
             }
 
@@ -256,7 +264,7 @@ class ProteinPropertiesManager
         try {
             $fMolWeight = 18.02;  // water
             foreach($aAminoacidContent as $key => $sAmino) {
-                $fMolWeight += $sAmino * $this->aminos[$key]["residueMolWeight"];
+                $fMolWeight += $sAmino * $this->aResidueWeights[$key];
             }
             return $fMolWeight;
         } catch (\Exception $e) {

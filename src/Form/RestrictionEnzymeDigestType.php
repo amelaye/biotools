@@ -7,8 +7,8 @@
  */
 namespace App\Form;
 
+use Amelaye\BioPHP\Api\Interfaces\VendorApiAdapter;
 use Amelaye\BioPHP\Api\VendorApi;
-use AppBundle\Api\Bioapi;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -31,9 +31,9 @@ class RestrictionEnzymeDigestType extends AbstractType
 
     /**
      * RestrictionEnzymeDigestType constructor.
-     * @param   VendorApi   $vendorApi
+     * @param   VendorApiAdapter   $vendorApi
      */
-    public function __construct(VendorApi $vendorApi)
+    public function __construct(VendorApiAdapter $vendorApi)
     {
         $this->vendors = $vendorApi::GetVendorsArray($vendorApi->getVendors());
     }

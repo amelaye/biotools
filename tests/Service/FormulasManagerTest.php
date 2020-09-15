@@ -2,7 +2,7 @@
 namespace Tests\MinitoolsBundle\Service;
 
 use PHPUnit\Framework\TestCase;
-use MinitoolsBundle\Service\FormulasManager;
+use App\Service\FormulasManager;
 
 class FormulasManagerTest extends TestCase
 {

@@ -7,7 +7,7 @@
  */
 namespace App\Form;
 
-use Amelaye\BioPHP\Api\TripletSpecieApi;
+use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -31,9 +31,9 @@ class ProteinToDnaType extends AbstractType
 
     /**
      * ProteinToDnaType constructor.
-     * @param TripletSpecieApi $tripletSpecieApi
+     * @param TripletSpecieApiAdapter $tripletSpecieApi
      */
-    public function __construct(TripletSpecieApi $tripletSpecieApi)
+    public function __construct(TripletSpecieApiAdapter $tripletSpecieApi)
     {
         $this->geneticData = $tripletSpecieApi::GetSpeciesNames($tripletSpecieApi->getTriplets());
     }

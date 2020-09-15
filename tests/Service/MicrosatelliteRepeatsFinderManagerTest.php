@@ -3,7 +3,7 @@
 namespace Tests\MinitoolsBundle\Service;
 
 use PHPUnit\Framework\TestCase;
-use MinitoolsBundle\Service\MicrosatelliteRepeatsFinderManager;
+use App\Service\MicrosatelliteRepeatsFinderManager;
 
 class MicrosatelliteRepeatsFinderManagerTest extends TestCase
 {

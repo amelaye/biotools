@@ -20,8 +20,6 @@ class DnaToProteinManagerTest extends TestCase
 
     protected function setUp()
     {
-        require 'samples/Aminos.php';
-
         /**
          * Mock API
          */
@@ -31,6 +29,7 @@ class DnaToProteinManagerTest extends TestCase
 
         require 'samples/Aminos.php';
         require 'samples/Triplets.php';
+        require 'samples/TripletsSpecies.php';
 
         $this->apiAminoMock = $this->getMockBuilder(AminoApi::class)
             ->disableOriginalConstructor()
@@ -44,11 +43,11 @@ class DnaToProteinManagerTest extends TestCase
             ->getMock();
         $this->tripletsMock->method("getTriplets")->will($this->returnValue($aTripletObjects));
 
-        $this->tripletsMock = $this->getMockBuilder(TripletSpecieApi::class)
+        $this->tripletSpeciesMock = $this->getMockBuilder(TripletSpecieApi::class)
             ->disableOriginalConstructor()
             ->setMethods(['getTriplets'])
             ->getMock();
-        $this->tripletsMock->method("getTriplets")->will($this->returnValue($aTripletSpeciesObjects));
+        $this->tripletSpeciesMock->method("getTriplets")->will($this->returnValue($aTripletSpeciesObjects));
     }
 
     public function testCustomTreatmentOneFrame()
@@ -65,7 +64,7 @@ class DnaToProteinManagerTest extends TestCase
             1 => "GVRGAVGPRWRPPRDRWATRE*GEQLXQDXXRRGTGGRRGSEGSSWAKMAAAEGPVXDXGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVXDAGV"
         ];
 
-        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->customTreatment($iFrames, $sSequence, $sMycode);
 
         $this->assertEquals($aFrames, $testFunction);
@@ -87,7 +86,7 @@ class DnaToProteinManagerTest extends TestCase
           3 => "SEGSSWAKMAAAEGPVXDAGVRGAVGPRWRPPRDRWATGE*GEQLXQDXXRRGTGGRRRSEGSSWAKMAAAEGPVXDGE*GEQLXQDXXRRGTGGRRGS",
         ];
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->customTreatment($iFrames, $sSequence, $sMycode);
 
         $this->assertEquals($aFrames, $testFunction);
@@ -112,7 +111,7 @@ class DnaToProteinManagerTest extends TestCase
             6 => "SLPSSTRFYRRRLPXHPLRPHSPRQPGSTAXXSLATRCPLTPLVNPVLPPAAPWPPAAASLPSSTRFYRRRLPXHPLPLTPLVNPVLPPAAPWPPAAPS",
         ];
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->customTreatment($iFrames, $sSequence, $sMycode);
 
         $this->assertEquals($aFrames, $testFunction);
@@ -128,7 +127,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $sGeneticCode = "standard";
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->definedTreatment($iFrames, $sGeneticCode, $sSequence);
 
         $aFrames = [
@@ -148,7 +147,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $sGeneticCode = "yeast_mitochondrial";
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->definedTreatment($iFrames, $sGeneticCode, $sSequence);
 
         $aFrames = [
@@ -170,7 +169,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $sGeneticCode = "euplotid_nuclear";
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->definedTreatment($iFrames, $sGeneticCode, $sSequence);
 
         $aFrames = [
@@ -207,7 +206,7 @@ class DnaToProteinManagerTest extends TestCase
           3 => "________________x_______________________*____x__xx_________________________x___*____x__xx__________",
         ];
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->findORF($aFrames, $iProtsize, $bOnlyCoding, $bTrimmed);
 
         $this->assertEquals($aExpected, $testFunction);
@@ -222,7 +221,7 @@ class DnaToProteinManagerTest extends TestCase
         $bOnlyCoding = 6;
         $bTrimmed = 8;
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $service->findORF($aFrames, $iProtsize, $bOnlyCoding, $bTrimmed);
     }
 
@@ -236,7 +235,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $sPeptide = "PHSPRQPGSTAGGSLATRCALTPLVNPVLPPAAPWPPAAPSLPSSTRFYRRRLPGHPLPPHSPRQPGSTAGGSLATRCPSLPSSTRFYRRRLPGHPLRPH";
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $testFunction = $service->translateDNAToProtein($sSequence, $sGeneticCode);
 
         $this->assertEquals($sPeptide, $testFunction);
@@ -249,7 +248,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $sGeneticCode = "pim_poum";
 
-        $service = new DnaToProteinManager($this->apiMock);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $service->translateDNAToProtein($sSequence, $sGeneticCode);
     }
 }

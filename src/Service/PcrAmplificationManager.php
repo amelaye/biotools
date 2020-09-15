@@ -3,11 +3,11 @@
  * PCR Amplification Functions
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  */
 namespace App\Service;
 
-use AppBundle\Api\Bioapi;
+use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
 
 /**
  * Class PcrAmplificationManager
@@ -17,17 +17,17 @@ use AppBundle\Api\Bioapi;
 class PcrAmplificationManager
 {
     /**
-     * @var Bioapi
+     * @var array
      */
-    private $bioapi;
+    private $dnaComplements;
 
     /**
      * PcrAmplificationManager constructor.
-     * @param Bioapi $bioapi
+     * @param NucleotidApiAdapter $nucleotidApi
      */
-    public function __construct(Bioapi $bioapi)
+    public function __construct(NucleotidApiAdapter $nucleotidApi)
     {
-        $this->bioapi = $bioapi;
+        $this->dnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
     }
 
     /**
@@ -122,7 +122,7 @@ class PcrAmplificationManager
     public function createEndPattern($sStartPattern)
     {
         $seqRevert = strrev($sStartPattern);
-        foreach ($this->bioapi->getDNAComplement() as $nucleotide => $complement) {
+        foreach ($this->dnaComplements as $nucleotide => $complement) {
             $seqRevert = str_replace($nucleotide, strtolower($complement), $seqRevert);
         }
         $sEndPattern = strtoupper($seqRevert);

@@ -1,7 +1,7 @@
 <?php
 namespace Tests\MinitoolsBundle\Service;
 
-use MinitoolsBundle\Service\FastaUploaderManager;
+use App\Service\FastaUploaderManager;
 use PHPUnit\Framework\TestCase;
 
 class FastaUploadManagerTest extends TestCase

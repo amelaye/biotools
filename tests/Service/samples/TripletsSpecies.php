@@ -438,28 +438,28 @@ use Doctrine\Common\Persistence\ObjectManager;
             '(\S\S\S )'
         ];
 
-$aTripletSpeciesObjects = [];
+        $aTripletSpeciesObjects = [];
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("standard");
         $triplet->setTripletsGroups($triplets_standard);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY","TRR",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("vertebrate mitochondrial");
         $triplet->setTripletsGroups($triplets_vertebrate_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATY","ATR","GTN","WSN","CCN","ACN","GCN","TAY","WRR",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("yeast mitochondrial");
         $triplet->setTripletsGroups($triplets_yeast_mitochondrial);
         $triplet->setTriplets(["TTY","TTR","ATY","ATR","GTN","WSN","CCN","MYN","GCN","TAY","TAR","CAY",
             "CAR","AAY","AAR","GAY","GAR","TGY","TGR","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("mold protozoan coelenterate mitochondrial");
@@ -467,14 +467,14 @@ $aTripletSpeciesObjects[] = $triplet;
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN",
             "GCN","TAY","TAR","CAY","CAR","AAY","AAR","GAY",
             "GAR","TGY","TGR","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("invertebrate mitochondrial");
         $triplet->setTripletsGroups($triplets_invertebrate_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATY","ATR","GTN","WSN","CCN","WSN","GCN","TAY","TAR",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("ciliate dasycladacean hexamita nuclear");
@@ -482,70 +482,70 @@ $aTripletSpeciesObjects[] = $triplet;
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN",
             "TAY","TGA","CAY","YAR","AAY","AAR","GAY","GAR","TGY",
             "TGG","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("echinoderm mitochondrial");
         $triplet->setTripletsGroups($triplets_echinoderm_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","WCN","GCN","TAY","TAR",
             "CAY","CAR","AAH","AAG","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("euplotid nuclear");
         $triplet->setTripletsGroups($triplets_euplotid_nuclear);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY","TAR","CAY","CAR",
             "AAY","AAR","GAY","GAR","TGH","TGG","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("bacterial plant plastid");
         $triplet->setTripletsGroups($triplets_bacterial_plant_plastid);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY","TRR",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN","GGN","NNN"]);
-$aTripletSpeciesObjects[] = $triplet;
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("alternative yeast nuclear");
         $triplet->setTripletsGroups($triplets_alternative_yeast_nuclear);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","HBN","CCN","ACN","GCN","TAY","TRR",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN","GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("ascidian mitochondria");
         $triplet->setTripletsGroups($triplets_ascidian_mitochondria);
         $triplet->setTriplets(["TTY","YTN","ATY","ATR","GTN","WSN","CCN","ACN","GCN","TAY","TAR","CAY",
             "CAR","AAY","AAR","GAY","GAR","TGY","TGR","CGN","RGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("flatworm mitochondrial");
         $triplet->setTripletsGroups($triplets_flatworm_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAH","TAG","CAY",
             "CAR","ATH","AAG","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("blepharisma macronuclear");
         $triplet->setTripletsGroups($triplets_blepharisma_macronuclear);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY","TRA","CAY",
             "YAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN","GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("chlorophycean mitochondrial");
         $triplet->setTripletsGroups($triplets_chlorophycean_mitochondrial);
         $triplet->setTriplets(["TTY","YWN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY","TRA",
             "CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN","GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("trematode mitochondrial");
         $triplet->setTripletsGroups($triplets_trematode_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATY","ATR","GTN","WSN","CCN","ACN","GCN","TAY","TAR","CAY",
             "CAR","AAH","AAG","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("scenedesmus obliquus mitochondrial");
@@ -553,7 +553,7 @@ $aTripletSpeciesObjects[] = $triplet;
         $triplet->setTriplets(["TTY","YWN","ATH","ATG","GTN","WSB","CCN","ACN","GCN","TAY",
             "TVR","CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN",
             "GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
         $triplet->setNature("thraustochytrium mitochondrial code");
@@ -561,4 +561,4 @@ $aTripletSpeciesObjects[] = $triplet;
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAY",
             "TDR","CAY","CAR","AAY","AAR","GAY","GAR","TGY","TGG","MGN",
             "GGN","NNN"]);
-        $manager->persist($triplet);
+        $aTripletSpeciesObjects[] = $triplet;

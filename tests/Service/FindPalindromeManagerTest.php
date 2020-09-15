@@ -1,7 +1,7 @@
 <?php
 namespace Tests\MinitoolsBundle\Service;
 
-use MinitoolsBundle\Service\FindPalindromeManager;
+use App\Service\FindPalindromeManager;
 use PHPUnit\Framework\TestCase;
 
 class FindPalindromeManagerTest extends TestCase

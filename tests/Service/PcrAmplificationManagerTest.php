@@ -2,7 +2,9 @@
 
 namespace Tests\MinitoolsBundle\Service;
 
-use MinitoolsBundle\Service\PcrAmplificationManager;
+use Amelaye\BioPHP\Api\AminoApi;
+use Amelaye\BioPHP\Api\NucleotidApi;
+use App\Service\PcrAmplificationManager;
 use PHPUnit\Framework\TestCase;
 
 class PcrAmplificationManagerTest extends TestCase
@@ -19,15 +21,16 @@ class PcrAmplificationManagerTest extends TestCase
          * Mock API
          */
         $clientMock = $this->getMockBuilder('GuzzleHttp\Client')->getMock();
-        $serializerMock = $this->getMockBuilder('JMS\Serializer\Serializer')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $serializerMock = \JMS\Serializer\SerializerBuilder::create()
+            ->build();
 
-        $this->apiMock = $this->getMockBuilder('AppBundle\Api\Bioapi')
-            ->setConstructorArgs([$clientMock, $serializerMock])
-            ->setMethods(['getDNAComplement','getAlphabetInfos'])
+        require 'samples/Nucleotids.php';
+
+        $this->apiNucleoMock = $this->getMockBuilder(NucleotidApi::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getNucleotids'])
             ->getMock();
-        $this->apiMock->method("getDNAComplement")->will($this->returnValue($this->dnaComplement));
+        $this->apiNucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
     }
 
     public function testAmplify()
@@ -47,7 +50,7 @@ class PcrAmplificationManagerTest extends TestCase
         $iMaxLength = "3000";
         $aExpected = [10 => 110, 200 => 90];
 
-        $service = new PcrAmplificationManager($this->apiMock);
+        $service = new PcrAmplificationManager($this->apiNucleoMock);
         $testFunction = $service->amplify($sStartPattern, $sEndPattern, $sSequence, $iMaxLength);
 
         $this->assertEquals($testFunction, $aExpected);
@@ -58,7 +61,7 @@ class PcrAmplificationManagerTest extends TestCase
         $sPattern = "GAGCAGTTGG";
         $sExpected = ".AGCAGTTGG|G.GCAGTTGG|GA.CAGTTGG|GAG.AGTTGG|GAGC.GTTGG|GAGCA.TTGG|GAGCAG.TGG|GAGCAGT.GG|GAGCAGTT.G|GAGCAGTTG.";
 
-        $service = new PcrAmplificationManager($this->apiMock);
+        $service = new PcrAmplificationManager($this->apiNucleoMock);
         $testFunction = $service->includeN($sPattern);
 
         $this->assertEquals($testFunction, $sExpected);
@@ -74,7 +77,7 @@ class PcrAmplificationManagerTest extends TestCase
         $sExpected.= "GAGCAGTT.G|GAGCAGTTG.|.CCGCTGGGG|G.CGCTGGGG|GC.GCTGGGG|GCC.CTGGGG|GCCG.TGGGG|GCCGC.GGGG|";
         $sExpected.= "GCCGCT.GGG|GCCGCTG.GG|GCCGCTGG.G|GCCGCTGGG.";
 
-        $service = new PcrAmplificationManager($this->apiMock);
+        $service = new PcrAmplificationManager($this->apiNucleoMock);
         $testFunction = $service->createStartPattern($primer1, $primer2, $bAllowMismatch);
 
         $this->assertEquals($testFunction, $sExpected);
@@ -90,7 +93,7 @@ class PcrAmplificationManagerTest extends TestCase
         $sEndPattern.= "CCCCAGCG.C|CCCCAGCGG.|.CAACTGCTC|C.AACTGCTC|CC.ACTGCTC|CCA.CTGCTC|CCAA.TGCTC|CCAAC.GCTC|";
         $sEndPattern.= "CCAACT.CTC|CCAACTG.TC|CCAACTGC.C|CCAACTGCT.";
 
-        $service = new PcrAmplificationManager($this->apiMock);
+        $service = new PcrAmplificationManager($this->apiNucleoMock);
         $testFunction = $service->createEndPattern($sStartPattern);
 
         $this->assertEquals($testFunction, $sEndPattern);

@@ -9,6 +9,7 @@
 namespace Tests\MinitoolsBundle\Service;
 
 use Amelaye\BioPHP\Api\NucleotidApi;
+use App\Service\DistanceAmongSequencesManager;
 use PHPUnit\Framework\TestCase;
 
 
