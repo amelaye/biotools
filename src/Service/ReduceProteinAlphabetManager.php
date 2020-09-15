@@ -3,7 +3,7 @@
  * Class ReduceProteinAlphabetManager
  * Inspired by BioPHP's project biophp.org
  * Created 27 february 2019 - RIP Pasha =^._.^= ∫
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  */
 namespace App\Service;
 
@@ -36,11 +36,11 @@ class ReduceProteinAlphabetManager
      * @param       array   $proteinColors
      * @param       Bioapi  $bioapi
      */
-    public function __construct($proteinColors, Bioapi $bioapi)
+    public function __construct()
     {
-        $this->proteinColors    = $proteinColors;
-        $this->aReductions      = $bioapi->getReductions();
-        $this->bioapi           = $bioapi;
+        //$this->proteinColors    = $proteinColors;
+        //$this->aReductions      = $bioapi->getReductions();
+        //$this->bioapi           = $bioapi;
     }
 
     /**

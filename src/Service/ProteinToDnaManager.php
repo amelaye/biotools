@@ -7,6 +7,7 @@
  */
 namespace App\Service;
 
+use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 use AppBundle\Api\Bioapi;
 
 /**
@@ -23,11 +24,12 @@ class ProteinToDnaManager
 
     /**
      * ProteinToDnaManager constructor.
-     * @param   Bioapi   $bioapi
+     * @param   TripletSpecieApiAdapter $tripletSpecieApi
      */
-    public function __construct(Bioapi $bioapi)
+    public function __construct(TripletSpecieApiAdapter $tripletSpecieApi)
     {
-        $this->aTripletsList = $bioapi->getTriplets();
+        //$this->aTripletsList = $bioapi->getTriplets();
+        $this->aTripletsList = $tripletSpecieApi::GetTripletsArray($tripletSpecieApi->getTriplets());
     }
 
     /**

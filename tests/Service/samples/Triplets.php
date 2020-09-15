@@ -29,16 +29,16 @@ $aTripletObjects[] = $triplet;
         $triplet->setTriplet("TCC");
 $aTripletObjects[] = $triplet;
 
-        $triplet = new TripletDTO();
-        $triplet->setTriplet("TCA");
+$triplet = new TripletDTO();
+$triplet->setTriplet("TCA");
 $aTripletObjects[] = $triplet;
 
-        $triplet = new TripletDTO();
-        $triplet->setTriplet("TCG");
+$triplet = new TripletDTO();
+$triplet->setTriplet("TCG");
 $aTripletObjects[] = $triplet;
 
-        $triplet = new TripletDTO();
-        $triplet->setTriplet("TAT");
+$triplet = new TripletDTO();
+$triplet->setTriplet("TAT");
 $aTripletObjects[] = $triplet;
 
         $triplet = new TripletDTO();

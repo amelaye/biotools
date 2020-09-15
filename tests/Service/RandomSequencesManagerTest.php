@@ -4,7 +4,7 @@
 namespace Tests\MinitoolsBundle\Service;
 
 
-use MinitoolsBundle\Service\RandomSequencesManager;
+use App\Service\RandomSequencesManager;
 use PHPUnit\Framework\TestCase;
 
 class RandomSequencesManagerTest extends TestCase

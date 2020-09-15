@@ -4,11 +4,15 @@
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
  * Modified 27 february 2019 - RIP Pasha =^._.^= ∫
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  */
 namespace App\Service;
 
-use AppBundle\Api\Bioapi;
+use Amelaye\BioPHP\Api\Interfaces\TypeIIbEndonucleaseApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\TypeIIEndonucleaseApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\TypeIIsEndonucleaseApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\VendorApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\VendorLinkApiAdapter;
 
 /**
  * Class RestrictionDigestManager
@@ -49,15 +53,24 @@ class RestrictionDigestManager
 
     /**
      * RestrictionDigestManager constructor.
-     * @param   Bioapi   $bioapi    API
+     * @param  VendorLinkApiAdapter             $vendorLinksApi
+     * @param  TypeIIEndonucleaseApiAdapter     $typeIIEndonucleaseApi
+     * @param  TypeIIbEndonucleaseApiAdapter    $typeIIbEndonucleaseApi
+     * @param  TypeIIsEndonucleaseApiAdapter    $typeIIsEndonucleaseApi
+     * @param  VendorApiAdapter                 $vendorApiAdapter
      */
-    public function __construct(Bioapi $bioapi)
-    {
-        $this->vendorLinks  = $bioapi->getVendorLinks();
-        $this->type2        = $bioapi->getTypeIIEndonucleases();
-        $this->type2s       = $bioapi->getTypeIIsEndonucleases();
-        $this->type2b       = $bioapi->getTypeIIbEndonucleases();
-        $this->vendors      = $bioapi->getVendors();
+    public function __construct(
+        VendorLinkApiAdapter $vendorLinksApi,
+        TypeIIEndonucleaseApiAdapter $typeIIEndonucleaseApi,
+        TypeIIbEndonucleaseApiAdapter $typeIIbEndonucleaseApi,
+        TypeIIsEndonucleaseApiAdapter $typeIIsEndonucleaseApi,
+        VendorApiAdapter $vendorApiAdapter
+    ) {
+        $this->vendorLinks  = $vendorLinksApi::GetVendorLinksArray($vendorLinksApi->getVendorLinks());
+        $this->type2        = $typeIIEndonucleaseApi::GetTypeIIEndonucleasesArray($typeIIEndonucleaseApi->getTypeIIEndonucleases());
+        $this->type2b       = $typeIIbEndonucleaseApi::GetTypeIIbEndonucleasesArray($typeIIbEndonucleaseApi->getTypeIIbEndonucleases());
+        $this->type2s       = $typeIIsEndonucleaseApi::GetTypeIIsEndonucleasesArray($typeIIsEndonucleaseApi->getTypeIIsEndonucleases());
+        $this->vendors      = $vendorApiAdapter::GetVendorsArray($vendorApiAdapter->getVendors());
     }
 
     /**
