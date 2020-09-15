@@ -3,33 +3,32 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 11 july 2019
- * Last modified 23 july 2019
+ * Last modified 15 september 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
-namespace MinitoolsBundle\Controller;
+namespace App\Controller;
 
 
-use AppBundle\Service\Misc\GeneticsFunctions;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use AppBundle\Traits\OligoTrait;
+//use AppBundle\Traits\OligoTrait;
 
-use MinitoolsBundle\Form\ReduceAlphabetType;
-use MinitoolsBundle\Form\ProteinPropertiesType;
-use MinitoolsBundle\Service\ProteinPropertiesManager;
-use MinitoolsBundle\Service\ReduceProteinAlphabetManager;
+use App\Form\ReduceAlphabetType;
+use App\Form\ProteinPropertiesType;
+use App\Service\ProteinPropertiesManager;
+use App\Service\ReduceProteinAlphabetManager;
 
 /**
  * Class ProteinController
  * @package MinitoolsBundle\Controller
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class ProteinController extends Controller
+class ProteinController
 {
-    use OligoTrait;
+    //use OligoTrait;
     /**
      * @Route("/minitools/protein-properties", name="protein_properties")
      * @param       Request                     $request

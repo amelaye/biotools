@@ -3,35 +3,33 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 11 july 2019
- * Last modified 23 july 2019
+ * Last modified 15 september 2020
  */
-namespace MinitoolsBundle\Controller;
+namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use AppBundle\Service\Misc\OligosManager;
-use AppBundle\Traits\OligoTrait;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
 
-use MinitoolsBundle\Form\ChaosGameRepresentationType;
-use MinitoolsBundle\Service\ChaosGameRepresentationManager;
+use App\Form\ChaosGameRepresentationType;
+use App\Service\ChaosGameRepresentationManager;
 
 
 /**
  * Class ChaosGameRepresentationController
  * @package MinitoolsBundle\Controller
- * @author Amélie DUVERNET akka Amelaye <amelieonline@gmail.com>
+ * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class ChaosGameRepresentationController extends Controller
+class ChaosGameRepresentationController
 {
     /**
      * @Route("/minitools/chaos-game-representation/{schema}", name="chaos_game_representation")
      * @param   string                          $schema
      * @param   Request                         $request
      * @param   ChaosGameRepresentationManager  $chaosGameReprentationManager
-     * @param   OligosManager                   $oligosManager
+     * @param   OligosInterface                 $oligosManager
      * @return  Response
      * @throws  \Exception
      */
@@ -39,7 +37,7 @@ class ChaosGameRepresentationController extends Controller
         $schema,
         Request $request,
         ChaosGameRepresentationManager $chaosGameReprentationManager,
-        OligosManager $oligosManager
+        OligosInterface $oligosManager
     )
     {
         $form = $this->get('form.factory')->create(ChaosGameRepresentationType::class);
@@ -85,13 +83,13 @@ class ChaosGameRepresentationController extends Controller
     /**
      * @param Request                           $request
      * @param ChaosGameRepresentationManager    $chaosGameReprentationManager
-     * @param OligosManager                     $oligosManager
+     * @param OligosInterface                   $oligosManager
      * @param $form
      * @return Response
      * @throws \Exception
      */
     public function fcgrCompute(Request $request,
-                                ChaosGameRepresentationManager $chaosGameReprentationManager, $form, OligosManager $oligosManager)
+                                ChaosGameRepresentationManager $chaosGameReprentationManager, $form, OligosInterface $oligosManager)
     {
         $aOligos = $for_map = null;
         $isMap = $isFreq = false;

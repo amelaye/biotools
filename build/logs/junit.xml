@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites>
-  <testsuite name="/home/amelaye/biophp/tests/Service" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.015997">
-    <testsuite name="Tests\MinitoolsBundle\Service\DistanceAmongSequenciesManagerTest" file="/home/amelaye/biophp/tests/Service/DistanceAmongSequenciesManagerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.015997">
-      <testcase name="testComputeOligonucleotidsFrequenciesPearson" class="Tests\MinitoolsBundle\Service\DistanceAmongSequenciesManagerTest" classname="Tests.MinitoolsBundle.Service.DistanceAmongSequenciesManagerTest" file="/home/amelaye/biophp/tests/Service/DistanceAmongSequenciesManagerTest.php" line="205" assertions="1" time="0.015997"/>
-    </testsuite>
-  </testsuite>
-</testsuites>

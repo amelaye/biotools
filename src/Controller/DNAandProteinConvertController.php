@@ -3,25 +3,25 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 11 july 2019
- * Last modified 23 july 2019
+ * Last modified 15 september 2020
  */
-namespace MinitoolsBundle\Controller;
+namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use MinitoolsBundle\Service\DnaToProteinManager;
-use MinitoolsBundle\Service\ProteinToDnaManager;
-use MinitoolsBundle\Form\DnaToProteinType;
-use MinitoolsBundle\Form\ProteinToDnaType;
+use App\Service\DnaToProteinManager;
+use App\Service\ProteinToDnaManager;
+use App\Form\DnaToProteinType;
+use App\Form\ProteinToDnaType;
 
 /**
  * Class DNAandProteinConvertController
  * @package MinitoolsBundle\Controller
+ * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class DNAandProteinConvertController extends Controller
+class DNAandProteinConvertController
 {
     /**
      * @Route("/minitools/protein-to-dna", name="protein_to_dna")

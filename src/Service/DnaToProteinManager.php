@@ -3,7 +3,7 @@
  * DNA To Protein Functions
  * Inspired by BioPHP's project biophp.org
  * Created 24 february 2019
- * Last modified 8 may 2020
+ * Last modified 12 july 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
@@ -11,6 +11,7 @@ namespace App\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\TripletApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
+use Amelaye\BioPHP\Api\TripletSpecieApi;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 
 
@@ -44,24 +45,21 @@ class DnaToProteinManager
      */
     private $sRvSequence;
 
-    private $aminoApi;
-
-    private $tripletApi;
 
     /**
      * DnaToProteinManager constructor.
-     * @param AminoApiAdapter $aminoApi
-     * @param TripletApiAdapter $tripletApi
+     * @param AminoApiAdapter       $aminoApi
+     * @param TripletApiAdapter     $tripletApi
+     * @param TripletSpecieApi      $tripletSpecieApi
      */
-    public function __construct(AminoApiAdapter $aminoApi, TripletApiAdapter $tripletApi)
+    public function __construct(AminoApiAdapter $aminoApi, TripletApiAdapter $tripletApi, TripletSpecieApi $tripletSpecieApi)
     {
         //$this->aAminos                  = $bioapi->getAminosOnlyLetters();
         //$this->aTriplets                = $bioapi->getTripletsGroups();
         //$this->aTripletsCombinations    = $bioapi->getTripletsList();
-        $this->aminoApi                   = $aminoApi;
-        $this->tripletApi                 = $tripletApi;
-        $this->aAminos                    = $aminoApi->getAminos();
-        $this->aTriplets                  = $tripletApi->getTriplets();
+        $this->aAminos                    = $aminoApi::GetAminosOnlyLetters($aminoApi->getAminos());
+        $this->aTriplets                  = $tripletSpecieApi::GetTripletsGroups($tripletSpecieApi->getTriplets());
+        $this->aTripletsCombinations      = $tripletApi::GetTripletsArray($tripletApi->getTriplets());
     }
 
     /**
@@ -72,8 +70,7 @@ class DnaToProteinManager
      */
     public function showAminosArrays(&$aAminoAcidCodes, &$aAminoAcidCodesLeft, &$aAminoAcidCodesRight)
     {
-        //$aAminoAcidCodes        = $this->aAminos;
-        $aAminoAcidCodes        = $this->aminoApi::GetAminosOnlyLetters($this->aAminos);
+        $aAminoAcidCodes        = $this->aAminos;
         $aAminoAcidCodesLeft    = array_slice($aAminoAcidCodes, 0, 13);
         $aAminoAcidCodesRight   = array_slice($aAminoAcidCodes, 13);
     }
@@ -206,7 +203,7 @@ class DnaToProteinManager
             // place a space after each triplete in the sequence
             $temp = chunk_split($sSequence,3,' ');
             // replace triplets by corresponding amnoacid
-            $sPeptide = preg_replace($this->aTriplet[$sGeneticCode], $aAminoAcids, $temp);
+            $sPeptide = preg_replace($this->aTriplets[$sGeneticCode], $aAminoAcids, $temp);
             // return peptide sequence
             return $sPeptide;
         } catch (\Exception $e) {

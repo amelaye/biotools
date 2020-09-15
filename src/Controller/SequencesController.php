@@ -3,31 +3,31 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 22 july 2019
- * Last modified 22 july 2019
+ * Last modified 15 september 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
-namespace MinitoolsBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use MinitoolsBundle\Service\FindPalindromeManager;
-use MinitoolsBundle\Service\DistanceAmongSequencesManager;
-use MinitoolsBundle\Service\RandomSequencesManager;
-use MinitoolsBundle\Service\SequenceAlignmentManager;
-use MinitoolsBundle\Form\SequenceAlignmentType;
-use MinitoolsBundle\Form\FindPalindromesType;
-use MinitoolsBundle\Form\DistanceAmongSequencesType;
-use MinitoolsBundle\Form\RandomSequencesType;
+use App\Service\FindPalindromeManager;
+use App\Service\DistanceAmongSequencesManager;
+use App\Service\RandomSequencesManager;
+use App\Service\SequenceAlignmentManager;
+use App\Form\SequenceAlignmentType;
+use App\Form\FindPalindromesType;
+use App\Form\DistanceAmongSequencesType;
+use App\Form\RandomSequencesType;
 
 /**
  * Class ProteinController
  * @package MinitoolsBundle\Controller
- * @author Amélie DUVERNET akka Amelaye <amelieonline@gmail.com>
+ * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class SequencesController extends Controller
+class SequencesController
 {
     /**
      * @Route("/minitools/find-palindromes", name="find_palindromes")

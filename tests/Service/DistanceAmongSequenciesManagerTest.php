@@ -9,9 +9,6 @@
 namespace Tests\MinitoolsBundle\Service;
 
 use Amelaye\BioPHP\Api\NucleotidApi;
-use App\Service\ChaosGameRepresentationManager;
-use App\Service\DistanceAmongSequencesManager;
-use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
 use PHPUnit\Framework\TestCase;
 
 
@@ -429,12 +426,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $aSeq = false;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $service->computeOligonucleotidsFrequencies($aSeq);
     }
 
@@ -512,12 +509,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         ];
 
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->computeDistancesAmongFrequenciesEuclidean($seqs, $oligo_array, $len);
 
         $this->assertEquals($aExpected, $testFunction);
@@ -1073,12 +1070,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
             [1 => 0.96402018103392]
         ];
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->computeDistancesAmongFrequencies($seqs, $oligo_array);
 
         $this->assertEquals($aExpected, $testFunction);
@@ -1358,14 +1355,14 @@ class DistanceAmongSequenciesManagerTest extends TestCase
           255 => -1.7632846107208
         ];
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods(['findZScore'])
             ->getMock();
         $oligoMock->method('findZScore')
             ->willReturn($aExpected);
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->computeZscoresForTetranucleotides($theseq);
 
         $this->assertEquals($aExpected, $testFunction);
@@ -1893,12 +1890,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $expected = 0.96402018103392;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->pearsonDistance($valsx, $valsy);
 
         $this->assertEquals($expected, $testFunction);
@@ -1911,12 +1908,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $valsy = 5;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $service->pearsonDistance($valsx, $valsy);
     }
 
@@ -1964,12 +1961,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $fExpected = 0.20175660877203;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->euclidDistance($a,$b,$len);
 
         $this->assertEquals($fExpected, $testFunction);
@@ -1982,12 +1979,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $b = 6;
         $len = 0;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $service->euclidDistance($a,$b,$len);
     }
 
@@ -2032,12 +2029,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
             "TT" => 0.43577235772358
         ];
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $testFunction = $service->standardFrecuencies($array, $len);
 
         $this->assertEquals($aExpected, $testFunction);
@@ -2049,12 +2046,12 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $array = 4;
         $len = 2;
 
-        $oligoMock = $this->getMockBuilder('AppBundle\Service\Misc\OligosManager')
-            ->setConstructorArgs([$this->apiMock])
+        $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
+            ->setConstructorArgs([$this->apiNucleoMock])
             ->setMethods()
             ->getMock();
 
-        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $service->standardFrecuencies($array, $len);
     }
 }

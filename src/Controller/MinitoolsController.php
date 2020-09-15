@@ -3,47 +3,45 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 23 february 2019
- * Last modified 27 august 2019
+ * Last modified 15 september
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
-namespace MinitoolsBundle\Controller;
+namespace App\Controller;
 
-use AppBundle\Service\Misc\GeneticsFunctions;
-use MinitoolsBundle\Form\SequenceManipulationType;
-use MinitoolsBundle\Form\SkewsType;
-use MinitoolsBundle\Service\SequenceManipulationAndDataManager;
-use MinitoolsBundle\Service\SkewsManager;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
+use App\Form\SequenceManipulationType;
+use App\Form\SkewsType;
+use App\Service\SequenceManipulationAndDataManager;
+use App\Service\SkewsManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use AppBundle\Service\Misc\OligosManager;
-use AppBundle\Traits\OligoTrait;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
 
-use MinitoolsBundle\Form\OligoNucleotideFrequencyType;
-use MinitoolsBundle\Form\PcrAmplificationType;
-use MinitoolsBundle\Form\RestrictionEnzymeDigestType;
-use MinitoolsBundle\Form\FastaUploaderType;
-use MinitoolsBundle\Form\MeltingTemperatureType;
-use MinitoolsBundle\Form\MicroArrayDataAnalysisType;
-use MinitoolsBundle\Form\MicrosatelliteRepeatsFinderType;
-use MinitoolsBundle\Service\PcrAmplificationManager;
-use MinitoolsBundle\Service\FastaUploaderManager;
-use MinitoolsBundle\Service\MeltingTemperatureManager;
-use MinitoolsBundle\Service\MicroarrayAnalysisAdaptiveManager;
-use MinitoolsBundle\Service\MicrosatelliteRepeatsFinderManager;
-use MinitoolsBundle\Service\RestrictionDigestManager;
+use App\Form\OligoNucleotideFrequencyType;
+use App\Form\PcrAmplificationType;
+use App\Form\RestrictionEnzymeDigestType;
+use App\Form\FastaUploaderType;
+use App\Form\MeltingTemperatureType;
+use App\Form\MicroArrayDataAnalysisType;
+use App\Form\MicrosatelliteRepeatsFinderType;
+use App\Service\PcrAmplificationManager;
+use App\Service\FastaUploaderManager;
+use App\Service\MeltingTemperatureManager;
+use App\Service\MicroarrayAnalysisAdaptiveManager;
+use App\Service\MicrosatelliteRepeatsFinderManager;
+use App\Service\RestrictionDigestManager;
 
 /**
  * Class MinitoolsController
  * @package MinitoolsBundle\Controller
- * @author Amélie DUVERNET akka Amelaye <amelieonline@gmail.com>
+ * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class MinitoolsController extends Controller
+class MinitoolsController
 {
-    use OligoTrait;
+    //use OligoTrait;
 
     /**
      * @Route("/minitools/fasta-uploader", name="gc_content_finder")
@@ -227,10 +225,10 @@ class MinitoolsController extends Controller
             // when frequencies at both strands are requested,
             // place sequence and reverse complement of sequence in one line
             if ($formData["strands"] == 2) {
-                GeneticsFunctions::createInversion($sSequence, OligosManager::GetDnaComplements());
+                GeneticsFunctions::createInversion($sSequence, OligosInterface::GetDnaComplements());
             }
 
-            $aResults = OligosManager::FindOligos($sSequence, $iLength);
+            $aResults = OligosInterface::FindOligos($sSequence, $iLength);
             ksort($aResults);
         }
 

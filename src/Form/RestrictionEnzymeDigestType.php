@@ -3,10 +3,11 @@
  * Class RestrictionEnzymeDigestType
  * Freely inspired by BioPHP's project biophp.org
  * Created 7 april 2019
- * Last modified 18 april 2019
+ * Last modified 15 september 2020
  */
 namespace App\Form;
 
+use Amelaye\BioPHP\Api\VendorApi;
 use AppBundle\Api\Bioapi;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\AbstractType;
@@ -30,11 +31,11 @@ class RestrictionEnzymeDigestType extends AbstractType
 
     /**
      * RestrictionEnzymeDigestType constructor.
-     * @param   Bioapi   $bioapi
+     * @param   VendorApi   $vendorApi
      */
-    public function __construct(Bioapi $bioapi)
+    public function __construct(VendorApi $vendorApi)
     {
-        $this->vendors = $bioapi->getVendors();
+        $this->vendors = $vendorApi::GetVendorsArray($vendorApi->getVendors());
     }
 
     /**

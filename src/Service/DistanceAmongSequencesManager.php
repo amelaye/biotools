@@ -3,14 +3,13 @@
  * DistanceAmongSequencesManager
  * Freely inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 8 may 2020
+ * Last modified 15 september 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
 use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
-use AppBundle\Api\Bioapi;
 use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 
@@ -53,9 +52,8 @@ class DistanceAmongSequencesManager
      * @param   OligosInterface        $oligosManager
      * @param   NucleotidApiAdapter    $nucleotidApi
      */
-    public function __construct(OligosManager $oligosManager, NucleotidApiAdapter $nucleotidApi)
+    public function __construct(OligosInterface $oligosManager, NucleotidApiAdapter $nucleotidApi)
     {
-        //$this->dnaComplements = $bioapi->getDNAComplement();
         $this->dnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
         $this->oligosManager = $oligosManager;
     }
