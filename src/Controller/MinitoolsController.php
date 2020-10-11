@@ -3,7 +3,7 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 23 february 2019
- * Last modified 15 september
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Controller;
@@ -13,6 +13,7 @@ use App\Form\SequenceManipulationType;
 use App\Form\SkewsType;
 use App\Service\SequenceManipulationAndDataManager;
 use App\Service\SkewsManager;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +40,7 @@ use App\Service\RestrictionDigestManager;
  * @package MinitoolsBundle\Controller
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class MinitoolsController
+class MinitoolsController extends AbstractController
 {
     //use OligoTrait;
 

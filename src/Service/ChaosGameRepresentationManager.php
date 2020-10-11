@@ -2,8 +2,8 @@
 /**
  * Chaos Game Representation Functions
  * Inspired by BioPHP's project biophp.org
- * Created 3 march  2019
- * Last modified 12 july 2020
+ * Created 3 march 2019
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
@@ -34,7 +34,8 @@ class ChaosGameRepresentationManager
      */
     public function __construct(array $nucleotidsGraphs, NucleotidApiAdapter $nucleotidApi)
     {
-        $this->dnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
+        $this->nucleotidsGraphs = $nucleotidsGraphs;
+        $this->dnaComplements   = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
     }
 
     /**
@@ -125,43 +126,50 @@ class ChaosGameRepresentationManager
      * @param   string      $sSeqName
      * @param   string      $sSequence
      * @param   int         $iSize
+     * @throws  \Exception
      */
     public function createCGRImage($sSeqName, $sSequence, $iSize)
     {
-        $im = imagecreatetruecolor($iSize, $iSize + 20);
-        $white = imagecolorallocate($im, 255, 255, 255);
-        $black = imagecolorallocate($im, 0, 0, 0);
-        imagefilledrectangle($im, 0, 0, $iSize, $iSize + 20, $white);
-        $x = round($iSize / 2);
-        $y = $x;
-        for($i = 0; $i < strlen($sSequence); $i++) {
-            $w = substr($sSequence, $i, 1);
-            if($w == "A") {
-                $x -= $x / 2;
-                $y += ($iSize - $y) / 2;
-            }
-            if($w == "C") {
-                $x -= $x / 2;
-                $y -= $y / 2;
-            }
-            if($w == "G") {
-                $x += ($iSize-$x)/2;
-                $y -= $y/2;
-            }
-            if($w == "T"){
-                $x += ($iSize-$x) / 2;
-                $y += ($iSize-$y) / 2;
-            }
-            $x2 = floor($x);
-            $y2 = floor($y);
+        try {
+            $im = imagecreatetruecolor($iSize, $iSize + 20);
+            $white = imagecolorallocate($im, 255, 255, 255);
+            $black = imagecolorallocate($im, 0, 0, 0);
+            imagefilledrectangle($im, 0, 0, $iSize, $iSize + 20, $white);
+            $x = round($iSize / 2);
+            $y = $x;
+            for ($i = 0; $i < strlen($sSequence); $i++) {
+                $w = substr($sSequence, $i, 1);
+                if ($w == "A") {
+                    $x -= $x / 2;
+                    $y += ($iSize - $y) / 2;
+                }
+                if ($w == "C") {
+                    $x -= $x / 2;
+                    $y -= $y / 2;
+                }
+                if ($w == "G") {
+                    $x += ($iSize - $x) / 2;
+                    $y -= $y / 2;
+                }
+                if ($w == "T") {
+                    $x += ($iSize - $x) / 2;
+                    $y += ($iSize - $y) / 2;
+                }
+                $x2 = floor($x);
+                $y2 = floor($y);
 
-            imagesetpixel($im, $x2, $y2, $black);
+                imagesetpixel($im, $x2, $y2, $black);
+            }
+
+            $iSeqlen = strlen($sSequence);
+            imagestring($im, 3, 5, $iSize + 5, "$sSeqName ($iSeqlen bp)", $black);
+            if (!imagepng($im, $this->nucleotidsGraphs["path_graphs"].$this->nucleotidsGraphs["cgr_file"])) {
+                throw new \Exception("Problem with creating image, please check your configuration !");
+            }
+            imagedestroy($im);
+        } catch (\Exception $e) {
+            throw new \Exception($e);
         }
-
-        $iSeqlen = strlen($sSequence);
-        imagestring($im, 3, 5, $iSize+5, "$sSeqName ($iSeqlen bp)", $black);
-        imagepng($im, $this->nucleotidsGraphs["cgr_file"]);
-        imagedestroy($im);
     }
 
     /**
@@ -270,7 +278,7 @@ class ChaosGameRepresentationManager
             imagefilledrectangle($im,227 + $cent,208,237 + $cent,218,$thecolor[15]);
             imagefilledrectangle($im,240 + $cent,208,250 + $cent,218,$thecolor[0]);
 
-            imagepng($im,$this->nucleotidsGraphs["fcgr_file"]);
+            imagepng($im,$this->nucleotidsGraphs["path_graphs"].$this->nucleotidsGraphs["fcgr_file"]);
 
             imagedestroy($im);
 

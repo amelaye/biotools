@@ -8,7 +8,7 @@
  */
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,7 +27,7 @@ use App\Form\RandomSequencesType;
  * @package MinitoolsBundle\Controller
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class SequencesController
+class SequencesController extends AbstractController
 {
     /**
      * @Route("/minitools/find-palindromes", name="find_palindromes")

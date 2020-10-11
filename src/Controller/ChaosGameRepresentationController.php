@@ -7,6 +7,7 @@
  */
 namespace App\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,7 +23,7 @@ use App\Service\ChaosGameRepresentationManager;
  * @package MinitoolsBundle\Controller
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class ChaosGameRepresentationController
+class ChaosGameRepresentationController extends AbstractController
 {
     /**
      * @Route("/minitools/chaos-game-representation/{schema}", name="chaos_game_representation")
@@ -34,13 +35,22 @@ class ChaosGameRepresentationController
      * @throws  \Exception
      */
     public function chaosGameRepresentationAction(
-        $schema,
+        string $schema,
         Request $request,
         ChaosGameRepresentationManager $chaosGameReprentationManager,
         OligosInterface $oligosManager
     )
     {
+        $testGD = get_extension_funcs("gd"); // Grab function list
+        if (!$testGD) {
+            throw new \Exception("GD not even installed.");
+        }
+
         $form = $this->get('form.factory')->create(ChaosGameRepresentationType::class);
+
+        if ($schema != "FCGR" && $schema != "CGR") {
+            throw new \Exception("Please enter a valid format !");
+        }
 
         if ($schema == "FCGR") {
             return $this->fcgrCompute($request, $chaosGameReprentationManager, $form, $oligosManager);

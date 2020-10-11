@@ -3,16 +3,16 @@
  * Form FindPalindromesType
  * Freely inspired by BioPHP's project biophp.org
  * Created 18 march 2019
- * Last modified 8 may 2020
+ * Last modified 11 october 2020
  */
 namespace App\Form;
 
-use MinitoolsBundle\Validator\SequenceRecognition;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
+use App\Validator\SequenceRecognition;
 
 /**
  * Class FindPalindromesType

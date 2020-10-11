@@ -36,7 +36,7 @@ class DnaToProteinType extends AbstractType
      */
     public function __construct(TripletSpecieApiAdapter $tripletSpecieApiAdapter)
     {
-        $this->geneticData = $tripletSpecieApiAdapter->getSpeciesNames($tripletSpecieApiAdapter::GetTripletsArray());
+        $this->geneticData = $tripletSpecieApiAdapter::GetSpeciesNames($tripletSpecieApiAdapter->getTriplets());
     }
 
     /**

@@ -3,13 +3,14 @@
  * Minitools controller
  * Freely inspired by BioPHP's project biophp.org
  * Created 11 july 2019
- * Last modified 15 september 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Controller;
 
 
 use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,7 +27,7 @@ use App\Service\ReduceProteinAlphabetManager;
  * @package MinitoolsBundle\Controller
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
-class ProteinController
+class ProteinController extends AbstractController
 {
     //use OligoTrait;
     /**
