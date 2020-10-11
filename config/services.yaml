@@ -34,3 +34,10 @@ services:
         arguments:
             - '%dna_complements%'
             - '%codons%'
+    App\Service\ReduceProteinAlphabetManager:
+        arguments:
+            - '%protein_colors%'
+    App\Twig\AppExtension:
+        arguments:
+            - '%protein_colors%'
+            - '%generic_colors%'

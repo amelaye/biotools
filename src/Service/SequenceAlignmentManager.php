@@ -2,12 +2,12 @@
 /**
  * Inspired by BioPHP's project biophp.org
  * Created 28 february 2019
- * Last modified 8 may 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
 
-use AppBundle\Api\Bioapi;
+use Amelaye\BioPHP\Api\Interfaces\Pam250MatrixDigitApiAdapter;
 
 /**
  * Class SequenceAlignmentManager : Sequence Alignment Functions
@@ -23,11 +23,11 @@ class SequenceAlignmentManager
 
     /**
      * SequenceAlignmentManager constructor.
-     * @param   Bioapi   $bioapi
+     * @param  Pam250MatrixDigitApiAdapter  $oPam250MatrixDigitApi
      */
-    public function __construct(Bioapi $bioapi)
+    public function __construct(Pam250MatrixDigitApiAdapter $oPam250MatrixDigitApi)
     {
-        $this->pam250Matrix = $bioapi->getPam250Matrix();
+        $this->pam250Matrix = $oPam250MatrixDigitApi::GetPam250MatrixArray($oPam250MatrixDigitApi->getPam250Matrix());
     }
 
     /**

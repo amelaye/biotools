@@ -3,11 +3,11 @@
  * Class ReduceProteinAlphabetManager
  * Inspired by BioPHP's project biophp.org
  * Created 27 february 2019 - RIP Pasha =^._.^= ∫
- * Last modified 15 september 2020
+ * Last modified 11 october 2020
  */
 namespace App\Service;
 
-use AppBundle\Api\Bioapi;
+use Amelaye\BioPHP\Api\Interfaces\ProteinReductionApiAdapter;
 
 /**
  * Reduce Protein Alphabet Functions
@@ -27,20 +27,20 @@ class ReduceProteinAlphabetManager
     private $aReductions;
 
     /**
-     * @var Bioapi
+     * @var ProteinReductionApiAdapter
      */
-    private $bioapi;
+    private $oProteinReduction;
 
     /**
      * ReduceProteinAlphabetManager constructor.
-     * @param       array   $proteinColors
-     * @param       Bioapi  $bioapi
+     * @param       array                      $proteinColors
+     * @param       ProteinReductionApiAdapter $oProteinReduction
      */
-    public function __construct()
+    public function __construct(array $proteinColors, ProteinReductionApiAdapter $oProteinReduction)
     {
-        //$this->proteinColors    = $proteinColors;
-        //$this->aReductions      = $bioapi->getReductions();
-        //$this->bioapi           = $bioapi;
+        $this->proteinColors     = $proteinColors;
+        $this->oProteinReduction = $oProteinReduction;
+        $this->aReductions       = $oProteinReduction::GetReductionsArray($oProteinReduction->getReductions());
     }
 
     /**
@@ -51,7 +51,7 @@ class ReduceProteinAlphabetManager
      * @return  string
      * @throws  \Exception
      */
-    public function reduceAlphabet($sSequence, $sType)
+    public function reduceAlphabet(string $sSequence, string $sType) : string
     {
         try {
             $aPattern       =  $this->aReductions[$sType]["pattern"];
@@ -72,7 +72,7 @@ class ReduceProteinAlphabetManager
      * @return      string
      * @throws      \Exception
      */
-    public function reduceAlphabetCustom($sSequence, $sCustomAlphabet)
+    public function reduceAlphabetCustom(string $sSequence, string $sCustomAlphabet) : string
     {
         try {
             $sCustomAlphabet = strtolower($sCustomAlphabet);
@@ -98,10 +98,11 @@ class ReduceProteinAlphabetManager
      * @return      array
      * @throws      \Exception
      */
-    public function createReduceCode($sType)
+    public function createReduceCode(string $sType) : array
     {
         try {
-            $aReductions = $this->bioapi->getAlphabetInfos($sType);
+            $oProteinReduction = $this->oProteinReduction;
+            $aReductions = $oProteinReduction::GetAlphabetInfos($oProteinReduction->getReductions(), $sType);
             return $aReductions;
         } catch (\Exception $e) {
             throw new \Exception($e);
