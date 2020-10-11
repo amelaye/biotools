@@ -3,17 +3,17 @@
  * Entity MeltingTemperature for Form
  * Freely inspired by BioPHP's project biophp.org
  * Created 23 february 2019
- * Last modified 8 may 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Form;
 
-use MinitoolsBundle\Validator\MeltingTemperature;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use App\Validator\MeltingTemperature;
 
 /**
  * Class MeltingTemperatureType

@@ -30,3 +30,7 @@ services:
     App\Service\ChaosGameRepresentationManager:
         arguments:
             - '%nucleotids_graphs%'
+    App\Service\RandomSequencesManager:
+        arguments:
+            - '%dna_complements%'
+            - '%codons%'

@@ -8,6 +8,8 @@
  */
 namespace App\Controller;
 
+use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
+use Amelaye\BioPHP\Api\NucleotidApi;
 use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 use App\Form\SequenceManipulationType;
 use App\Form\SkewsType;
@@ -207,12 +209,17 @@ class MinitoolsController extends AbstractController
 
     /**
      * @Route("/minitools/oligonucleotide-frequency", name="oligonucleotide_frequency")
-     * @param   Request         $request
+     * @param   Request                $request
+     * @param   NucleotidApiAdapter    $oNucleotidApi
+     * @param   OligosInterface        $oOligos
      * @return  Response
      * @throws  \Exception
      */
-    public function oligonucleotideFrequencyAction(Request $request)
-    {
+    public function oligonucleotideFrequencyAction(
+        Request $request,
+        NucleotidApiAdapter $oNucleotidApi,
+        OligosInterface $oOligos
+    ) {
         $aResults = [];
         $iLength = 0;
 
@@ -226,10 +233,11 @@ class MinitoolsController extends AbstractController
             // when frequencies at both strands are requested,
             // place sequence and reverse complement of sequence in one line
             if ($formData["strands"] == 2) {
-                GeneticsFunctions::createInversion($sSequence, OligosInterface::GetDnaComplements());
+                $aDNAComplements = $oNucleotidApi::GetDNAComplement($oNucleotidApi->getNucleotids());
+                GeneticsFunctions::createInversion($sSequence, $aDNAComplements);
             }
 
-            $aResults = OligosInterface::FindOligos($sSequence, $iLength);
+            $aResults = $oOligos->findOligos($sSequence, $iLength);
             ksort($aResults);
         }
 

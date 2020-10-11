@@ -3,16 +3,15 @@
  * MeltingTemperatureManager
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 15 september 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\TmBaseStackingApiAdapter;
-use Amelaye\BioPHP\Domain\Sequence\Builder\SequenceBuilder;
 use Amelaye\BioPHP\Domain\Sequence\Entity\Sequence;
+use Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface;
 use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
-use Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager;
 
 /**
  * Class MeltingTemperatureManager
@@ -22,7 +21,7 @@ use Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager;
 class MeltingTemperatureManager
 {
     /**
-     * @var SequenceManager
+     * @var SequenceInterface
      */
     private $sequenceManager;
 
@@ -38,11 +37,11 @@ class MeltingTemperatureManager
 
     /**
      * MeltingTemperatureManager constructor.
-     * @param   SequenceManager             $sequenceManager
+     * @param   SequenceInterface           $sequenceManager
      * @param   TmBaseStackingApiAdapter    $tmBaseStackingApi
      */
     public function __construct(
-        SequenceBuilder $sequenceManager,
+        SequenceInterface $sequenceManager,
         TmBaseStackingApiAdapter $tmBaseStackingApi
     )
     {

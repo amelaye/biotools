@@ -3,7 +3,7 @@
  * Formulas Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march 2019
- * Last modified 8 may 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
@@ -12,6 +12,7 @@ namespace App\Service;
  * Class RandomSequencesManager
  * @package MinitoolsBundle\Service
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
+ * @todo : Refactoriser avec les API
  */
 class RandomSequencesManager
 {
@@ -30,7 +31,7 @@ class RandomSequencesManager
      * @param   array   $aAminos
      * @param   array   $aProteins
      */
-    public function __construct($aAminos, $aProteins)
+    public function __construct(array $aAminos, array $aProteins)
     {
         $this->aAminos = $aAminos;
         /* we don't need X and STOP */
