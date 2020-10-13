@@ -3,12 +3,12 @@
  * Skews Functions
  * Inspired by BioPHP's project biophp.org
  * Created 1st march 2019
- * Last modified 8 may 2020
+ * Last modified 11 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
 
-use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 
 /**
@@ -22,7 +22,7 @@ class SkewsManager
 
     private $oligosManger;
 
-    public function __construct(OligosManager $oligosManger)
+    public function __construct(OligosInterface $oligosManger)
     {
         $this->oligosManger = $oligosManger;
     }
