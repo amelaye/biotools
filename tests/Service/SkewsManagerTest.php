@@ -2,8 +2,9 @@
 
 namespace Tests\MinitoolsBundle\Service;
 
-use AppBundle\Service\Misc\OligosManager;
-use MinitoolsBundle\Service\SkewsManager;
+use Amelaye\BioPHP\Api\NucleotidApi;
+use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
+use App\Service\SkewsManager;
 use PHPUnit\Framework\TestCase;
 
 class SkewsManagerTest extends TestCase
@@ -15,7 +16,7 @@ class SkewsManagerTest extends TestCase
         /**
          * Mock API
          */
-        $value = [
+        /*$value = [
           "T" => "A",
           "G" => "C",
           "C" => "G",
@@ -30,9 +31,20 @@ class SkewsManagerTest extends TestCase
             ->setConstructorArgs([$clientMock, $serializerMock])
             ->setMethods(["getDNAComplement"])
             ->getMock();
-        $this->apiMock->method("getDNAComplement")->will($this->returnValue($value));
+        $this->apiMock->method("getDNAComplement")->will($this->returnValue($value));*/
 
-        $this->oligosManager = new OligosManager($this->apiMock);
+        require_once('samples/Nucleotids.php');
+
+        /**
+         * Mock API
+         */
+        $this->nucleoMock = $this->getMockBuilder(NucleotidApi::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getNucleotids'])
+            ->getMock();
+        $this->nucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
+
+        $this->oligosManager = new OligosManager($this->nucleoMock);
 
 
     }

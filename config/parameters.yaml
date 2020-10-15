@@ -96,6 +96,7 @@ parameters:
         cgr_file: 'CGR.png'
         dendogram_file: 'dendogram.png'
         path_graphs: 'created_files/'
+    brochures_directory: 'created_files/'
     # define generic color
     # the assigment order is the one shown in the list
     # When few colors are needed, the first ones in the list are used

@@ -1,6 +1,9 @@
 index:
     path: /
     controller: App\Controller\DefaultController::index
+mytests:
+    path: /mytests
+    controller: App\Controller\DefaultController::mytests
 sequence_analysis:
     path: /sequence-analysis
     controller: App\Controller\DefaultController::sequenceanalysis

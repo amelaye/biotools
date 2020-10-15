@@ -3,16 +3,18 @@
  * Formulas Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march 2019
- * Last modified 11 october 2020
+ * Last modified 15 october 2020
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace App\Service;
+
+use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
+use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
 
 /**
  * Class RandomSequencesManager
  * @package MinitoolsBundle\Service
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
- * @todo : Refactoriser avec les API
  */
 class RandomSequencesManager
 {
@@ -28,21 +30,13 @@ class RandomSequencesManager
 
     /**
      * RandomSequencesManager constructor.
-     * @param   array   $aAminos
-     * @param   array   $aProteins
+     * @param   NucleotidApiAdapter    $nucleotidApi
+     * @param   AminoApiAdapter        $aminoApi
      */
-    public function __construct(array $aAminos, array $aProteins)
+    public function __construct(NucleotidApiAdapter $nucleotidApi, AminoApiAdapter $aminoApi)
     {
-        $this->aAminos = $aAminos;
-        /* we don't need X and STOP */
-        array_pop($aProteins);
-        array_pop($aProteins);
-
-        foreach($aProteins as $protein) {
-            if(isset($protein[3])) {
-                $this->aProteins[] = $protein[1];
-            }
-        }
+        $this->aAminos   = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
+        $this->aProteins = $aminoApi::GetAminosOneLetterBasic($aminoApi->getAminos());
     }
 
     /**
@@ -52,7 +46,7 @@ class RandomSequencesManager
      * @return  string
      * @throws  \Exception
      */
-    public function randomize($aElements)
+    public function randomize(array $aElements) : string
     {
         try {
             $sElements = "";
@@ -69,10 +63,10 @@ class RandomSequencesManager
      * Creates a random sequence
      * @param       int         $iLength        Length of the sequence
      * @param       string      $sSequence      Sequence
-     * @return string
-     * @throws \Exception
+     * @return      string
+     * @throws      \Exception
      */
-    public function createFromSeq($iLength, $sSequence)
+    public function createFromSeq(int $iLength, string $sSequence) : string
     {
         try {
             if($iLength != null) {
@@ -133,7 +127,7 @@ class RandomSequencesManager
      * @return      string
      * @throws      \Exception
      */
-    public function createFromACGT($aAminoAcids, $iLength)
+    public function createFromACGT(array $aAminoAcids, int $iLength) : string
     {
         try {
             $aDNA = [];
@@ -167,7 +161,7 @@ class RandomSequencesManager
      * @return      string
      * @throws      \Exception
      */
-    public function createFromAA($aAminoAcids, $iLength)
+    public function createFromAA(array $aAminoAcids, int $iLength) : string
     {
         try {
             $aProteins = [];

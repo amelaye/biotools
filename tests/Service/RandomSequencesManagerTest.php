@@ -4,6 +4,8 @@
 namespace Tests\MinitoolsBundle\Service;
 
 
+use Amelaye\BioPHP\Api\AminoApi;
+use Amelaye\BioPHP\Api\NucleotidApi;
 use App\Service\RandomSequencesManager;
 use PHPUnit\Framework\TestCase;
 
@@ -15,113 +17,33 @@ class RandomSequencesManagerTest extends TestCase
 
     public function setUp()
     {
-        $this->aminos = [
+        /*$this->aminos = [
           "A" => "T",
           "T" => "A",
           "G" => "C",
           "C" => "G",
-        ];
+        ];*/
 
-        $this->proteins = [
-            "Alanine" => [
-                1 => "A",
-                3 => "Ala",
-            ],
-            "Aspartate_or_asparagine" => [
-                1 => "B",
-            ],
-            "Cysteine" => [
-                1 => "C",
-                3 => "Cys",
-            ],
-            "Aspartic_acid" => [
-                1 => "D",
-                3 => "Asp",
-            ],
-            "Glutamic_acid" => [
-                1 => "E",
-                3 => "Glu",
-            ],
-            "Phenylalanine" => [
-                1 => "F",
-                3 => "Phe",
-            ],
-            "Glycine" => [
-                1 => "G",
-                3 => "Gly",
-            ],
-            "Histidine" => [
-                1 => "H",
-                3 => "His",
-            ],
-            "Isoleucine" => [
-                1 => "I",
-                3 => "Ile",
-            ],
-            "Lysine" => [
-                1 => "K",
-                3 => "Lys",
-            ],
-            "Leucine" => [
-                1 => "L",
-                3 => "Leu",
-            ],
-            "Methionine" => [
-                1 => "M",
-                3 => "Met",
-            ],
-            "Asparagine" => [
-                1 => "N",
-                3 => "Asn",
-            ],
-            "Proline" => [
-                1 => "P",
-                3 => "Pro",
-            ],
-            "Glutamine" => [
-                1 => "Q",
-                3 => "Gin",
-            ],
-            "Arginine" => [
-                1 => "R",
-                3 => "Arg",
-            ],
-            "Serine" => [
-                1 => "S",
-                3 => "Ser",
-            ],
-            "Threonine" => [
-                1 => "T",
-                3 => "Thr",
-            ],
-            "Selenocysteine" => [
-                1 => "U",
-                3 => "Sec",
-            ],
-            "Valine" => [
-                1 => "V",
-                3 => "Val",
-            ],
-            "Tryptophan" => [
-                1 => "W",
-                3 => "Trp",
-            ],
-            "Tyrosine" => [
-                1 => "Y",
-                3 => "Tyr",
-            ],
-            "Glutamate_or_glutamine" => [
-                1 => "Z",
-            ],
-            "Any" => [
-                1 => "X",
-                3 => "XXX",
-            ],
-            "STOP" => [
-                1 => "*",
-                3 => "STP",
-            ],
-        ];
+        require 'samples/Aminos.php';
+        require 'samples/Nucleotids.php';
+
+        /**
+         * Mock API
+         */
+        $this->aminosMock = $this->getMockBuilder(AminoApi::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getAminos'])
+            ->getMock();
+        $this->aminosMock->method("getAminos")->will($this->returnValue($aAminosObjects));
+
+        /**
+         * Mock API
+         */
+        $this->nucleoMock = $this->getMockBuilder(NucleotidApi::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getNucleotids'])
+            ->getMock();
+        $this->nucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
     }
 
     public function testRandomize2ndOption30Len()
@@ -133,7 +55,7 @@ class RandomSequencesManagerTest extends TestCase
           "T" => 9.0,
         ];
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->randomize($aElements);
 
         $this->assertEquals(30, strlen($testFunction));
@@ -164,7 +86,7 @@ class RandomSequencesManagerTest extends TestCase
           "Y" => 3.0
         ];
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->randomize($aElements);
 
         $this->assertEquals(100, strlen($testFunction));
@@ -180,7 +102,7 @@ class RandomSequencesManagerTest extends TestCase
         $sSequence.= 'CACCTCCCCTCAGGCCGCATTGCAGTGGGGGCTGAGAGGAGGAAGCACCATGGCCCACCTCTTCTCACCCCTTTG\r\n';
         $sSequence.= 'GCTGGCAGTCCCTTTGCAGTCTAACCACCTTGTTGCAGGCTCAATCCATTTGCCCCAGCTCTGCCCTTGCAGAG';
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromSeq($iLength, $sSequence);
 
         $this->assertEquals(100, strlen($testFunction));
@@ -193,7 +115,7 @@ class RandomSequencesManagerTest extends TestCase
         $sSequence = 'TVECRAQITESFTKRSKTVHHHLGGNNRTIKDKFVSMTGLWYYLLDPDESFGNEQLVGPHEIRQSILHIQ';
         $sSequence .= 'PMHSKIPFRNCPVLLKYGIHDPESVLGDETVECRAQITESFTKRSKTVHHHLGGNNRTIKDKFVSMTGLWYYLLDPDESFGNEQLVGPHEIRQSILHIQPMHSKIPFRNCPVLLKYGIHDPESVLGDE';
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromSeq($iLength, $sSequence);
 
         $this->assertEquals(99, strlen($testFunction));
@@ -209,7 +131,7 @@ class RandomSequencesManagerTest extends TestCase
         ];
         $iLength = 30;
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromACGT($aAminoAcids, $iLength);
 
         $this->assertEquals(30, strlen($testFunction));
@@ -242,7 +164,7 @@ class RandomSequencesManagerTest extends TestCase
 
         $iLength = 100;
 
-        $service = new RandomSequencesManager($this->aminos, $this->proteins);
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromAA($aAminoAcids, $iLength);
 
         $this->assertEquals(99, strlen($testFunction));

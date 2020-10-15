@@ -279,7 +279,7 @@ class SkewsManager
             imageline($im, 700, 20, 700, 420, $black);
 
             // output the image to a file
-            imagepng($im, "public/uploads/".$sName.".png");
+            imagepng($im, "created_files/".$sName.".png");
             imagedestroy($im);
             return $sName.".png";
         } catch (\Exception $e) {

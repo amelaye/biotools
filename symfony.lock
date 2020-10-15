@@ -1,6 +1,6 @@
 {
     "amelaye/biophp": {
-        "version": "v0.1.13"
+        "version": "*@dev"
     },
     "behat/behat": {
         "version": "v3.7.0"
@@ -25,6 +25,9 @@
     },
     "behat/transliterator": {
         "version": "v1.3.0"
+    },
+    "composer/package-versions-deprecated": {
+        "version": "1.11.99"
     },
     "csa/guzzle-bundle": {
         "version": "3.0",
@@ -403,7 +406,7 @@
         "version": "v4.4.15"
     },
     "symfony/http-client-contracts": {
-        "version": "v2.2.0"
+        "version": "v2.3.1"
     },
     "symfony/http-foundation": {
         "version": "v4.4.15"
@@ -526,30 +529,6 @@
             "config/packages/routing.yaml",
             "config/routes.yaml"
         ]
-    },
-    "symfony/security-bundle": {
-        "version": "4.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "4.4",
-            "ref": "7b4408dc203049666fe23fabed23cbadc6d8440f"
-        },
-        "files": [
-            "config/packages/security.yaml"
-        ]
-    },
-    "symfony/security-core": {
-        "version": "v4.4.15"
-    },
-    "symfony/security-csrf": {
-        "version": "v4.4.15"
-    },
-    "symfony/security-guard": {
-        "version": "v4.4.15"
-    },
-    "symfony/security-http": {
-        "version": "v4.4.15"
     },
     "symfony/serializer": {
         "version": "v4.4.15"

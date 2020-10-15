@@ -25,7 +25,9 @@
 build
 .idea
 tests/data
+tests/public
 public/created_files
 ###> symfony/web-server-bundle ###
 /.web-server-pid
 ###< symfony/web-server-bundle ###
+/public/dendogram.png

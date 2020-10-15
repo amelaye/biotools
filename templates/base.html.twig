@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <title>{% block title %}Welcome!{% endblock %}</title>
+
+    <script src="{{ asset('js/jquery-3.3.1.min.js')}}"></script>
+    <script src="{{ asset('js/popper.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js')}}"></script>
+
     {% block stylesheets %}{% endblock %}
     <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
     <style>
@@ -26,9 +31,7 @@
 <div class="container">
     {% block body %}{% endblock %}
 </div>
-<script src="js/jquery-3.3.1.min.js"></script>
-<script src="js/popper.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
+
 {% block javascripts %}
 {% endblock %}
 <script type="text/javascript">

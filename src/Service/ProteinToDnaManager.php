@@ -28,7 +28,6 @@ class ProteinToDnaManager
      */
     public function __construct(TripletSpecieApiAdapter $tripletSpecieApi)
     {
-        //$this->aTripletsList = $bioapi->getTriplets();
         $this->aTripletsList = $tripletSpecieApi::GetTripletsArray($tripletSpecieApi->getTriplets());
     }
 

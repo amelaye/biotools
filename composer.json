@@ -1,6 +1,12 @@
 {
     "type": "project",
     "license": "proprietary",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../amelaye-biophp/"
+        }
+    ],
     "require": {
         "php": "^7.1.3",
         "ext-ctype": "*",
@@ -31,7 +37,6 @@
         "symfony/monolog-bundle": "^3.1",
         "symfony/orm-pack": "*",
         "symfony/process": "4.4.*",
-        "symfony/security-bundle": "4.4.*",
         "symfony/serializer-pack": "*",
         "symfony/translation": "4.4.*",
         "symfony/twig-pack": "*",
@@ -40,12 +45,6 @@
         "symfony/yaml": "4.4.*",
         "twig/twig": "^3.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../amelaye-biophp/"
-        }
-    ],
     "require-dev": {
         "symfony/debug-pack": "*",
         "symfony/maker-bundle": "^1.0",

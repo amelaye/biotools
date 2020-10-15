@@ -1,6 +1,8 @@
 <?php
 namespace App\Controller;
 
+use Amelaye\BioPHP\Api\Interfaces\TypeIIbEndonucleaseApiAdapter;
+use Amelaye\BioPHP\Api\TypeIIbEndonucleaseApi;
 use Amelaye\BioPHP\Domain\Database\Interfaces\DatabaseInterface;
 use Amelaye\BioPHP\Domain\Sequence\Entity\Protein;
 use Amelaye\BioPHP\Domain\Sequence\Entity\SubMatrix;
@@ -20,6 +22,14 @@ class DefaultController extends AbstractController
     public function index()
     {
         return $this->render('default/index.html.twig', []);
+    }
+
+    public function mytests(TypeIIbEndonucleaseApiAdapter $aminoApiAdapter)
+    {
+        $test = $aminoApiAdapter::GetTypeIIbEndonucleasesArray($aminoApiAdapter->getTypeIIbEndonucleases());
+        dump($test);
+        return $this->render('default/test.html.twig');
+
     }
 
     /**
