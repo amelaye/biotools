@@ -24,7 +24,7 @@ class PcrAmplificationManagerTest extends TestCase
 
         $this->apiNucleoMock = $this->getMockBuilder(NucleotidApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getNucleotids'])
+            ->onlyMethods(['getNucleotids'])
             ->getMock();
         $this->apiNucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
     }

@@ -29,19 +29,19 @@ class DnaToProteinManagerTest extends TestCase
 
         $this->apiAminoMock = $this->getMockBuilder(AminoApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getAminos'])
+            ->onlyMethods(['getAminos'])
             ->getMock();
         $this->apiAminoMock->method("getAminos")->will($this->returnValue($aAminosObjects));
 
         $this->tripletsMock = $this->getMockBuilder(TripletApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTriplets'])
+            ->onlyMethods(['getTriplets'])
             ->getMock();
         $this->tripletsMock->method("getTriplets")->will($this->returnValue($aTripletObjects));
 
         $this->tripletSpeciesMock = $this->getMockBuilder(TripletSpecieApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTriplets'])
+            ->onlyMethods(['getTriplets'])
             ->getMock();
         $this->tripletSpeciesMock->method("getTriplets")->will($this->returnValue($aTripletSpeciesObjects));
     }

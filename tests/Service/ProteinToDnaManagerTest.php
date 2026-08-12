@@ -20,7 +20,7 @@ class ProteinToDnaManagerTest extends TestCase
          */
         $this->tripletSpeciesMock = $this->getMockBuilder(TripletSpecieApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTriplets'])
+            ->onlyMethods(['getTriplets'])
             ->getMock();
         $this->tripletSpeciesMock->method("getTriplets")->will($this->returnValue($aTripletSpeciesObjects));
     }

@@ -47,18 +47,18 @@ class MinitoolsController extends AbstractController
     //use OligoTrait;
 
     /**
-     * @Route("/minitools/fasta-uploader", name="gc_content_finder")
      * @param   Request                 $request
      * @param   FastaUploaderManager    $oFastaUploaderManager
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/fasta-uploader', name: 'gc_content_finder')]
     public function fastaUploaderAction(Request $request, FastaUploaderManager $oFastaUploaderManager)
     {
         $length = 0;
         $a = 0; $g = 0; $t = 0; $c = 0;
 
-        $form = $this->get('form.factory')->create(FastaUploaderType::class);
+        $form = $this->createForm(FastaUploaderType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -88,12 +88,12 @@ class MinitoolsController extends AbstractController
 
 
     /**
-     * @Route("/minitools/melting-temperature", name="melting_temperature")
      * @param   Request                     $request
      * @param   MeltingTemperatureManager   $oMeltingTemperatureManager
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/melting-temperature', name: 'melting_temperature')]
     public function meltingTemperatureAction(
         Request $request,
         MeltingTemperatureManager $oMeltingTemperatureManager
@@ -103,7 +103,7 @@ class MinitoolsController extends AbstractController
         $aTmBaseStacking = [];
         $bBasic = $bNearestNeighbor = false;
 
-        $form = $this->get('form.factory')->create(MeltingTemperatureType::class);
+        $form = $this->createForm(MeltingTemperatureType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -138,13 +138,12 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/micro-array-analysis-adaptive-quantification",
-     *     name="micro_array_analysis_adaptive_quantification")
      * @param       Request                             $request
      * @param       MicroarrayAnalysisAdaptiveManager   $oMicroarrayAnalysisAdaptiveManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/micro-array-analysis-adaptive-quantification', name: 'micro_array_analysis_adaptive_quantification')]
     public function microArrayAnalysisAdaptiveQuantificationAction(
         Request $request,
         MicroarrayAnalysisAdaptiveManager $oMicroarrayAnalysisAdaptiveManager
@@ -152,7 +151,7 @@ class MinitoolsController extends AbstractController
     {
         $results = array();
 
-        $form = $this->get('form.factory')->create(MicroArrayDataAnalysisType::class);
+        $form = $this->createForm(MicroArrayDataAnalysisType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -171,19 +170,19 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/microsatellite-repeats-finder", name="microsatellite_repeats_finder")
      * @param       Request                             $request
      * @param       MicrosatelliteRepeatsFinderManager  $oMicrosatelliteRepeatsFinderManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/microsatellite-repeats-finder', name: 'microsatellite_repeats_finder')]
     public function microsatelliteRepeatsFinderAction (
         Request $request,
         MicrosatelliteRepeatsFinderManager $oMicrosatelliteRepeatsFinderManager
     ) {
         $results = [];
 
-        $form = $this->get('form.factory')->create(MicrosatelliteRepeatsFinderType::class);
+        $form = $this->createForm(MicrosatelliteRepeatsFinderType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -208,13 +207,13 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/oligonucleotide-frequency", name="oligonucleotide_frequency")
      * @param   Request                $request
      * @param   NucleotidApiAdapter    $oNucleotidApi
      * @param   OligosInterface        $oOligos
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/oligonucleotide-frequency', name: 'oligonucleotide_frequency')]
     public function oligonucleotideFrequencyAction(
         Request $request,
         NucleotidApiAdapter $oNucleotidApi,
@@ -223,7 +222,7 @@ class MinitoolsController extends AbstractController
         $aResults = [];
         $iLength = 0;
 
-        $form = $this->get('form.factory')->create(OligoNucleotideFrequencyType::class);
+        $form = $this->createForm(OligoNucleotideFrequencyType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -252,19 +251,19 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/pcr-amplification", name="pcr_amplification")
      * @param       Request                     $request
      * @param       PcrAmplificationManager     $pcrAmplificationManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/pcr-amplification', name: 'pcr_amplification')]
     public function pcrAmplificationAction(Request $request, PcrAmplificationManager $pcrAmplificationManager)
     {
         $aResults = [];
         $primer1 = $primer2 = null;
         $sSequence = "";
 
-        $form = $this->get('form.factory')->create(PcrAmplificationType::class);
+        $form = $this->createForm(PcrAmplificationType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
@@ -302,19 +301,19 @@ class MinitoolsController extends AbstractController
 
 
     /**
-     * @Route("/minitools/restriction-digest", name="restriction_digest")
      * @param       Request                     $request
      * @param       RestrictionDigestManager    $restrictionDigestManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/restriction-digest', name: 'restriction_digest')]
     public function restrictionDigestAction(Request $request, RestrictionDigestManager $restrictionDigestManager)
     {
         $sequence  = "";
         $digestion = $enzymes_array = $enzymes_array = $digestionMulti = $digestionMulti = [];
         $bShowCode = false;
 
-        $form = $this->get('form.factory')->create(RestrictionEnzymeDigestType::class);
+        $form = $this->createForm(RestrictionEnzymeDigestType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData       = $form->getData();
@@ -369,12 +368,12 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/show-vendors/{enzyme}", name="show_vendors")
      * @param   string                      $enzyme
      * @param   RestrictionDigestManager    $restrictionDigestManager
      * @return  JsonResponse
      * @throws  \Exception
      */
+    #[Route('/minitools/show-vendors/{enzyme}', name: 'show_vendors')]
     public function showVendorsAction($enzyme, RestrictionDigestManager $restrictionDigestManager)
     {
         $message = "";
@@ -385,18 +384,18 @@ class MinitoolsController extends AbstractController
 
 
     /**
-     * @Route("/minitools/sequences-manipulation-and-data", name="sequences_manipulation_and_data")
      * @param   Request $request
      * @param   SequenceManipulationAndDataManager  $sequenceManipulationAndDataManager
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/sequences-manipulation-and-data', name: 'sequences_manipulation_and_data')]
     public function sequencesManipulationAndDataAction(
         Request $request,
         SequenceManipulationAndDataManager $sequenceManipulationAndDataManager
     ) {
         $result = "";
-        $form = $this->get('form.factory')->create(SequenceManipulationType::class);
+        $form = $this->createForm(SequenceManipulationType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData       = $form->getData();
@@ -452,17 +451,17 @@ class MinitoolsController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/skews", name="skews")
      * @param   Request         $request
      * @param   SkewsManager    $skewsManager
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/skews', name: 'skews')]
     public function skewsAction(Request $request, SkewsManager $skewsManager)
     {
         $imageResult = "";
 
-        $form = $this->get('form.factory')->create(SkewsType::class);
+        $form = $this->createForm(SkewsType::class);
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData = $form->getData();
 

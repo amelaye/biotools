@@ -30,16 +30,16 @@ use App\Form\RandomSequencesType;
 class SequencesController extends AbstractController
 {
     /**
-     * @Route("/minitools/find-palindromes", name="find_palindromes")
      * @param       Request                 $request
      * @param       FindPalindromeManager   $oFindPalindromeManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/find-palindromes', name: 'find_palindromes')]
     public function findPalindromesAction(Request $request, FindPalindromeManager $oFindPalindromeManager)
     {
         $aPalindromes = [];
-        $form = $this->get('form.factory')->create(FindPalindromesType::class);
+        $form = $this->createForm(FindPalindromesType::class);
         $min = 0;
         $max = 0;
 
@@ -62,18 +62,18 @@ class SequencesController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/distance-among-sequences", name="distance_among_sequences")
      * @param   Request                         $request
      * @param   DistanceAmongSequencesManager   $oDistanceAmongSequencesManager
      * @return  Response
      * @throws \Exception
      */
+    #[Route('/minitools/distance-among-sequences', name: 'distance_among_sequences')]
     public function distanceAmongSequencesAction(
         Request $request,
         DistanceAmongSequencesManager $oDistanceAmongSequencesManager
     )
     {
-        $form = $this->get('form.factory')->create(DistanceAmongSequencesType::class);
+        $form = $this->createForm(DistanceAmongSequencesType::class);
 
         $oligo_array = $data = [];
         $textcluster = $seq_name = $dendogramFile = "";
@@ -115,18 +115,18 @@ class SequencesController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/random-seqs", name="random_seqs")
      * @param       Request                     $request
      * @param       RandomSequencesManager      $randomSequencesManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/random-seqs', name: 'random_seqs')]
     public function randomSeqsAction(Request $request, RandomSequencesManager $randomSequencesManager)
     {
         $result             = "";
         $aAminoAcids        = [];
 
-        $form = $this->get('form.factory')->create(RandomSequencesType::class);
+        $form = $this->createForm(RandomSequencesType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData       = $form->getData();
@@ -163,15 +163,15 @@ class SequencesController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/seq-alignment", name="seq_alignment")
      * @param   Request $request
      * @param   SequenceAlignmentManager $sequenceAlignmentManager
      * @return  Response
      * @throws \Exception
      */
+    #[Route('/minitools/seq-alignment', name: 'seq_alignment')]
     public function seqAlignmentAction(Request $request, SequenceAlignmentManager $sequenceAlignmentManager)
     {
-        $form = $this->get('form.factory')->create(SequenceAlignmentType::class);
+        $form = $this->createForm(SequenceAlignmentType::class);
         $sCompare = $sAlignSeqA = $sAlignSeqB = "";
         $id1 = $id2 = "";
 

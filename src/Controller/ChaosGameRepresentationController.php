@@ -26,7 +26,6 @@ use App\Service\ChaosGameRepresentationManager;
 class ChaosGameRepresentationController extends AbstractController
 {
     /**
-     * @Route("/minitools/chaos-game-representation/{schema}", name="chaos_game_representation")
      * @param   string                          $schema
      * @param   Request                         $request
      * @param   ChaosGameRepresentationManager  $chaosGameReprentationManager
@@ -34,6 +33,7 @@ class ChaosGameRepresentationController extends AbstractController
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/chaos-game-representation/{schema}', name: 'chaos_game_representation')]
     public function chaosGameRepresentationAction(
         string $schema,
         Request $request,
@@ -46,7 +46,7 @@ class ChaosGameRepresentationController extends AbstractController
             throw new \Exception("GD not even installed.");
         }
 
-        $form = $this->get('form.factory')->create(ChaosGameRepresentationType::class);
+        $form = $this->createForm(ChaosGameRepresentationType::class);
 
         if ($schema != "FCGR" && $schema != "CGR") {
             throw new \Exception("Please enter a valid format !");

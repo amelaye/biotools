@@ -19,7 +19,7 @@ class SequenceAlignmentManagerTest extends TestCase
          */
         $this->matrixMock = $this->getMockBuilder(Pam250MatrixDigitApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getPam250Matrix'])
+            ->onlyMethods(['getPam250Matrix'])
             ->getMock();
         $this->matrixMock->method("getPam250Matrix")->will($this->returnValue($aPam250Matrix));
     }

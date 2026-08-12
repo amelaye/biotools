@@ -25,16 +25,16 @@ use App\Form\ProteinToDnaType;
 class DNAandProteinConvertController extends AbstractController
 {
     /**
-     * @Route("/minitools/protein-to-dna", name="protein_to_dna")
      * @param       Request                 $request
      * @param       ProteinToDnaManager     $proteinToDnaManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/protein-to-dna', name: 'protein_to_dna')]
     public function proteinToDnaAction(Request $request, ProteinToDnaManager $proteinToDnaManager)
     {
         $sDna = $sSequence = "";
-        $form = $this->get('form.factory')->create(ProteinToDnaType::class);
+        $form = $this->createForm(ProteinToDnaType::class);
 
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
             $formData       = $form->getData();
@@ -56,12 +56,12 @@ class DNAandProteinConvertController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/dna-to-protein", name="dna_to_protein")
      * @param   Request                 $request
      * @param   DnaToProteinManager     $dnaToProteinManager
      * @return  Response
      * @throws  \Exception
      */
+    #[Route('/minitools/dna-to-protein', name: 'dna_to_protein')]
     public function dnaToProteinAction(Request $request, DnaToProteinManager $dnaToProteinManager)
     {
         $sResults = $sResultsComplementary  = '';
@@ -72,7 +72,7 @@ class DNAandProteinConvertController extends AbstractController
 
         $aAminoAcidCodes = $aAminoAcidCodesLeft = $aAminoAcidCodesRight = [];
 
-        $form = $this->get('form.factory')->create(DnaToProteinType::class);
+        $form = $this->createForm(DnaToProteinType::class);
 
         // Form treatment
         if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {

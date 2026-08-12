@@ -3563,31 +3563,31 @@ class RestrictionDigestManagerTest extends TestCase
          */
         $this->apiVendorLinksMock = $this->getMockBuilder(VendorLinkApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getVendorLinks'])
+            ->onlyMethods(['getVendorLinks'])
             ->getMock();
         $this->apiVendorLinksMock->method("getVendorLinks")->will($this->returnValue($vendorLinks));
 
         $this->apiTypeIIMock = $this->getMockBuilder(TypeIIEndonucleaseApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTypeIIEndonucleases'])
+            ->onlyMethods(['getTypeIIEndonucleases'])
             ->getMock();
         $this->apiTypeIIMock->method("getTypeIIEndonucleases")->will($this->returnValue($aTypeIIEndonucleases));
 
         $this->apiTypeIIsMock = $this->getMockBuilder(TypeIIsEndonucleaseApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTypeIIsEndonucleases'])
+            ->onlyMethods(['getTypeIIsEndonucleases'])
             ->getMock();
         $this->apiTypeIIsMock->method("getTypeIIsEndonucleases")->will($this->returnValue($aTypeIIsEndonucleases));
 
         $this->apiTypeIIbMock = $this->getMockBuilder(TypeIIbEndonucleaseApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTypeIIbEndonucleases'])
+            ->onlyMethods(['getTypeIIbEndonucleases'])
             ->getMock();
         $this->apiTypeIIbMock->method("getTypeIIbEndonucleases")->will($this->returnValue($aTypeIIbEndonucleases));
 
         $this->apiVendorMock = $this->getMockBuilder(VendorApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getVendors'])
+            ->onlyMethods(['getVendors'])
             ->getMock();
         $this->apiVendorMock->method("getVendors")->will($this->returnValue($vendors));
     }

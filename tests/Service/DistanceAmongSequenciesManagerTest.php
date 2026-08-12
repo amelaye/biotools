@@ -30,7 +30,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $this->apiNucleoMock = $this->getMockBuilder(NucleotidApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getNucleotids'])
+            ->onlyMethods(['getNucleotids'])
             ->getMock();
         $this->apiNucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
     }
@@ -49,7 +49,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -86,7 +85,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -103,7 +101,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -187,7 +184,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -408,7 +404,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -425,7 +420,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -508,7 +502,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -1069,7 +1062,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -1354,7 +1346,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods(['findZScore'])
+            ->onlyMethods(['findZScore'])
             ->getMock();
         $oligoMock->method('findZScore')
             ->willReturn($aExpected);
@@ -1889,7 +1881,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -1907,7 +1898,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -1960,7 +1950,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -1978,7 +1967,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -2028,7 +2016,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
@@ -2045,7 +2032,6 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         $oligoMock = $this->getMockBuilder('Amelaye\BioPHP\Domain\Tools\Service\OligosManager')
             ->setConstructorArgs([$this->apiNucleoMock])
-            ->setMethods()
             ->getMock();
 
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);

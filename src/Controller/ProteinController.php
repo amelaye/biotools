@@ -31,12 +31,12 @@ class ProteinController extends AbstractController
 {
     //use OligoTrait;
     /**
-     * @Route("/minitools/protein-properties", name="protein_properties")
      * @param       Request                     $request
      * @param       ProteinPropertiesManager    $proteinPropertiesManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/protein-properties', name: 'protein_properties')]
     public function proteinPropertiesAction(
         Request $request,
         ProteinPropertiesManager $proteinPropertiesManager
@@ -46,7 +46,7 @@ class ProteinController extends AbstractController
         $aminoacids = $colored_seq = $colored_seq2          = [];
         $results                                            = false;
 
-        $form = $this->get('form.factory')->create(ProteinPropertiesType::class);
+        $form = $this->createForm(ProteinPropertiesType::class);
 
         $colors = $this->getParameter('analysis_color');
 
@@ -114,17 +114,17 @@ class ProteinController extends AbstractController
     }
 
     /**
-     * @Route("/minitools/reduce-protein-alphabet", name="reduce_protein_alphabet")
      * @param       Request                         $request
      * @param       ReduceProteinAlphabetManager    $reduceProteinAlphabetManager
      * @return      Response
      * @throws      \Exception
      */
+    #[Route('/minitools/reduce-protein-alphabet', name: 'reduce_protein_alphabet')]
     public function reduceProteinAlphabetAction(
         Request $request,
         ReduceProteinAlphabetManager $reduceProteinAlphabetManager
     ) {
-        $form = $this->get('form.factory')->create(ReduceAlphabetType::class);
+        $form = $this->createForm(ReduceAlphabetType::class);
         $reducedCode = $reducedSeq = "";
 
         $sMode = $sCustomAlphabet = $sSequence = $sType = $sAaperline = "";

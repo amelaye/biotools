@@ -78,19 +78,19 @@ class MeltingTemperatureManagerTest extends TestCase
 
         $this->apiAminoMock = $this->getMockBuilder(AminoApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getAminos'])
+            ->onlyMethods(['getAminos'])
             ->getMock();
         $this->apiAminoMock->method("getAminos")->will($this->returnValue($aAminosObjects));
 
         $this->apiNucleoMock = $this->getMockBuilder(NucleotidApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getNucleotids'])
+            ->onlyMethods(['getNucleotids'])
             ->getMock();
         $this->apiNucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
 
         $this->apiElemMock = $this->getMockBuilder(ElementApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getElements','getElement'])
+            ->onlyMethods(['getElements','getElement'])
             ->getMock();
         $this->apiElemMock->method("getElements")->will($this->returnValue($aElementsObjects));
         $this->apiElemMock->method("getElement")->will($this->returnValue($water));
@@ -102,7 +102,7 @@ class MeltingTemperatureManagerTest extends TestCase
 
         $this->apiTmMock = $this->getMockBuilder(TmBaseStackingApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getTmBaseStackings'])
+            ->onlyMethods(['getTmBaseStackings'])
             ->getMock();
         $this->apiTmMock->method("getTmBaseStackings")->will($this->returnValue($aTemperatureObjects));
     }

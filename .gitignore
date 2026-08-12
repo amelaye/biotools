@@ -18,6 +18,7 @@
 ###> phpunit/phpunit ###
 /phpunit.xml
 .phpunit.result.cache
+.phpunit.cache/
 ###< phpunit/phpunit ###
 
 .env*
@@ -31,3 +32,4 @@ public/created_files
 /.web-server-pid
 ###< symfony/web-server-bundle ###
 /public/dendogram.png
+/config/reference.php

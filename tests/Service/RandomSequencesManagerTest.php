@@ -32,7 +32,7 @@ class RandomSequencesManagerTest extends TestCase
          */
         $this->aminosMock = $this->getMockBuilder(AminoApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getAminos'])
+            ->onlyMethods(['getAminos'])
             ->getMock();
         $this->aminosMock->method("getAminos")->will($this->returnValue($aAminosObjects));
 
@@ -41,7 +41,7 @@ class RandomSequencesManagerTest extends TestCase
          */
         $this->nucleoMock = $this->getMockBuilder(NucleotidApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getNucleotids'])
+            ->onlyMethods(['getNucleotids'])
             ->getMock();
         $this->nucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
     }

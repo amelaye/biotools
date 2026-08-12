@@ -19,7 +19,7 @@ class MeltingTemperature extends Constraint
 {
     public $message = "The oligonucleotide is not valid.";
 
-    public function validatedBy()
+    public function validatedBy(): string
     {
         return \get_class($this).'Validator';
     }

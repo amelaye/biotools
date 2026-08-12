@@ -39,13 +39,13 @@ class ProteinPropertiesManagerTest extends TestCase
 
         $this->apiAminoMock = $this->getMockBuilder(AminoApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getAminos'])
+            ->onlyMethods(['getAminos'])
             ->getMock();
         $this->apiAminoMock->method("getAminos")->will($this->returnValue($aAminosObjects));
 
         $this->pkMock = $this->getMockBuilder(PKApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(["getPkValueById"])
+            ->onlyMethods(["getPkValueById"])
             ->getMock();
         $this->pkMock->method("getPkValueById")->will($this->returnValue($aPK));
     }

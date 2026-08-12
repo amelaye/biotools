@@ -29,7 +29,7 @@ class SkewsManagerTest extends TestCase
 
         $this->apiMock = $this->getMockBuilder('AppBundle\Api\Bioapi')
             ->setConstructorArgs([$clientMock, $serializerMock])
-            ->setMethods(["getDNAComplement"])
+            ->onlyMethods(["getDNAComplement"])
             ->getMock();
         $this->apiMock->method("getDNAComplement")->will($this->returnValue($value));*/
 
@@ -40,7 +40,7 @@ class SkewsManagerTest extends TestCase
          */
         $this->nucleoMock = $this->getMockBuilder(NucleotidApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getNucleotids'])
+            ->onlyMethods(['getNucleotids'])
             ->getMock();
         $this->nucleoMock->method("getNucleotids")->will($this->returnValue($aNucleoObjects));
 

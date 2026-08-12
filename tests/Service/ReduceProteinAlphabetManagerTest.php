@@ -208,7 +208,7 @@ class ReduceProteinAlphabetManagerTest extends TestCase
          */
         $this->tripletSpeciesMock = $this->getMockBuilder(ProteinReductionApi::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getReductions'])
+            ->onlyMethods(['getReductions'])
             ->getMock();
         $this->tripletSpeciesMock->method("getReductions")->will($this->returnValue($aReductions));
     }
