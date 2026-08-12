@@ -15,7 +15,7 @@ class RandomSequencesManagerTest extends TestCase
 
     protected $proteins;
 
-    public function setUp()
+    public function setUp(): void
     {
         /*$this->aminos = [
           "A" => "T",

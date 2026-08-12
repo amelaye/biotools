@@ -23,7 +23,7 @@ class MeltingTemperatureManagerTest extends TestCase
 
     protected $nucleoMock;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->enthalpyValues = [
             "AA" => -7.9,

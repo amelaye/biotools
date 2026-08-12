@@ -14,7 +14,7 @@ class ProteinPropertiesManagerTest extends TestCase
 
     protected $apiMock;
 
-    public function setUp()
+    public function setUp(): void
     {
         $aPK = [
             "@CONTEXT" => "/contexts/PK",

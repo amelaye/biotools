@@ -11,7 +11,7 @@ class ReduceProteinAlphabetManagerTest extends TestCase
 {
     protected $proteinColors;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->proteinColors = [
           20 => [

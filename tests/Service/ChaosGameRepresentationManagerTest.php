@@ -21,7 +21,7 @@ class ChaosGameRepresentationManagerTest extends TestCase
 
     protected $aNucleotidGraph;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->aNucleotidGraph = [
             "positions_2" => ["h_pos" => 24, "v_pos" => 26],

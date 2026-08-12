@@ -11,7 +11,7 @@ class SkewsManagerTest extends TestCase
 {
     protected $oligosManager;
 
-    public function setUp()
+    public function setUp(): void
     {
         /**
          * Mock API

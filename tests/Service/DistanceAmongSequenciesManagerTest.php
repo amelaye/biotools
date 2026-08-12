@@ -19,7 +19,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
     protected $apiMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->dnaComplement = ["A" => "T", "T" => "A", "G" => "C", "C" => "G"];
 

@@ -18,7 +18,7 @@ class DnaToProteinManagerTest extends TestCase
 {
     protected $apiMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         /**
          * Mock API

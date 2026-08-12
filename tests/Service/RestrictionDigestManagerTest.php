@@ -17,7 +17,7 @@ class RestrictionDigestManagerTest extends TestCase
 
     protected $type2b;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->aType2 = [
           "AasI" => [

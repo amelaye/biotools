@@ -11,7 +11,7 @@ class ProteinToDnaManagerTest extends TestCase
 {
     protected $apiMock;
 
-    public function setUp()
+    public function setUp(): void
     {
         require 'samples/TripletsSpecies.php';
 

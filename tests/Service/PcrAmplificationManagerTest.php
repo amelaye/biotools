@@ -12,7 +12,7 @@ class PcrAmplificationManagerTest extends TestCase
 
     protected $apiNucleoMock;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->dnaComplement = ["A" => "T", "T" => "A", "G" => "C", "C" => "G"];
 

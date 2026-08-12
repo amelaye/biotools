@@ -10,7 +10,7 @@ class MicroarrayAnalysisAdaptiveManagerTest extends TestCase
 {
     protected $mathematicsManager;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->mathematicsManager = new MathematicsFunctions();
     }

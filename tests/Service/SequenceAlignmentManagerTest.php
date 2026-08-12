@@ -10,7 +10,7 @@ class SequenceAlignmentManagerTest extends TestCase
 {
     protected $matrix;
 
-    public function setUp()
+    public function setUp(): void
     {
         require_once('samples/Pam250Matrix.php');
 
