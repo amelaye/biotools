@@ -13,12 +13,6 @@
     "description": "Symfony forms and services for the BioPHP minitools",
     "keywords": ["symfony", "biology", "php", "bioinformatics", "form"],
     "homepage": "https://www.amelayes-biophp.net",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../biophp/"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Amelaye\\BioTools\\": ""
@@ -34,7 +28,7 @@
     },
     "require": {
         "php": "^8.2",
-        "amelaye/biophp": "@dev",
+        "amelaye/biophp": "^1.0",
         "symfony/config": "^7.4",
         "symfony/dependency-injection": "^7.4",
         "symfony/form": "^7.4",
