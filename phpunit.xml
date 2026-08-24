@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://phpunit.de/manual/current/en/appendixes.configuration.html -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd" backupGlobals="false" colors="true" bootstrap="vendor/autoload.php" cacheDirectory=".phpunit.cache" failOnPhpunitWarning="false">
+  <coverage>
+    <report>
+      <clover outputFile="build/logs/clover.xml"/>
+      <html outputDirectory="build/coverage/" lowUpperBound="35" highLowerBound="70"/>
+    </report>
+  </coverage>
+  <php>
+    <ini name="error_reporting" value="-1"/>
+    <includePath>.</includePath>
+  </php>
+  <testsuites>
+    <testsuite name="Project Test Suite">
+      <directory>Tests</directory>
+    </testsuite>
+  </testsuites>
+  <logging>
+    <junit outputFile="build/logs/junit.xml"/>
+  </logging>
+  <source>
+    <include>
+      <directory>Form</directory>
+      <directory>Service</directory>
+      <directory>Validator</directory>
+    </include>
+    <exclude>
+      <directory>legacy</directory>
+      <directory>Tests</directory>
+      <directory>DependencyInjection</directory>
+    </exclude>
+  </source>
+</phpunit>

@@ -1,0 +1,182 @@
+<?php
+
+
+namespace Tests\MinitoolsBundle\Service;
+
+
+use Amelaye\BioPHP\Api\AminoApi;
+use Amelaye\BioPHP\Api\NucleotidApi;
+use Amelaye\BioTools\Service\RandomSequencesManager;
+use PHPUnit\Framework\TestCase;
+
+class RandomSequencesManagerTest extends TestCase
+{
+
+    /**
+     * @var mixed
+     */
+    protected $aminosMock;
+
+    /**
+     * @var mixed
+     */
+    protected $nucleoMock;
+    protected $aminos;
+
+    protected $proteins;
+
+    public function setUp(): void
+    {
+        /*$this->aminos = [
+          "A" => "T",
+          "T" => "A",
+          "G" => "C",
+          "C" => "G",
+        ];*/
+
+        require 'samples/Aminos.php';
+        require 'samples/Nucleotids.php';
+
+        /**
+         * Mock API
+         */
+        $this->aminosMock = $this->getMockBuilder(AminoApi::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getAminos'])
+            ->getMock();
+        $this->aminosMock->method("getAminos")->willReturn($aAminosObjects);
+
+        /**
+         * Mock API
+         */
+        $this->nucleoMock = $this->getMockBuilder(NucleotidApi::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getNucleotids'])
+            ->getMock();
+        $this->nucleoMock->method("getNucleotids")->willReturn($aNucleoObjects);
+    }
+
+    public function testRandomize2ndOption30Len()
+    {
+        $aElements = [
+          "A" => 9.0,
+          "C" => 6.0,
+          "G" => 6.0,
+          "T" => 9.0,
+        ];
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->randomize($aElements);
+
+        $this->assertEquals(30, strlen($testFunction));
+    }
+
+    public function testRandomize3rdOption100Len()
+    {
+        $aElements = [
+          "A" => 1.0,
+          "C" => 2.0,
+          "D" => 5.0,
+          "E" => 7.0,
+          "F" => 4.0,
+          "G" => 7.0,
+          "H" => 7.0,
+          "I" => 7.0,
+          "K" => 6.0,
+          "L" => 9.0,
+          "M" => 2.0,
+          "N" => 4.0,
+          "P" => 6.0,
+          "Q" => 4.0,
+          "R" => 5.0,
+          "S" => 7.0,
+          "T" => 6.0,
+          "V" => 6.0,
+          "W" => 2.0,
+          "Y" => 3.0
+        ];
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->randomize($aElements);
+
+        $this->assertEquals(100, strlen($testFunction));
+    }
+
+    public function testCreateFromSeqAminos()
+    {
+        $iLength = 100;
+
+        $sSequence = 'GGCAGATTCCCCCTAGACCCGCCCGCACCATGGTCAGGCATGCCCCTCCTCATCGCTGGGCACAGCCCAGAGGGT\r\n';
+        $sSequence.= 'ATAAACAGTGCTGGAGGCTGGCGGGGCAGGCCAGCTGAGTCCTGAGCAGCAGCCCAGCGCAGCCACCGAGACACC\r\n';
+        $sSequence.= 'ATGAGAGCCCTCACACTCCTCGCCCTATTGGCCCTGGCCGCACTTTGCATCGCTGGCCAGGCAGGTGAGTGCCCC\r\n';
+        $sSequence.= 'CACCTCCCCTCAGGCCGCATTGCAGTGGGGGCTGAGAGGAGGAAGCACCATGGCCCACCTCTTCTCACCCCTTTG\r\n';
+        $sSequence.= 'GCTGGCAGTCCCTTTGCAGTCTAACCACCTTGTTGCAGGCTCAATCCATTTGCCCCAGCTCTGCCCTTGCAGAG';
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromSeq($iLength, $sSequence);
+
+        $this->assertEquals(100, strlen($testFunction));
+    }
+
+    public function testCreateFromSeqProteins()
+    {
+        $iLength = 100;
+
+        $sSequence = 'TVECRAQITESFTKRSKTVHHHLGGNNRTIKDKFVSMTGLWYYLLDPDESFGNEQLVGPHEIRQSILHIQ';
+        $sSequence .= 'PMHSKIPFRNCPVLLKYGIHDPESVLGDETVECRAQITESFTKRSKTVHHHLGGNNRTIKDKFVSMTGLWYYLLDPDESFGNEQLVGPHEIRQSILHIQPMHSKIPFRNCPVLLKYGIHDPESVLGDE';
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromSeq($iLength, $sSequence);
+
+        $this->assertEquals(99, strlen($testFunction));
+    }
+
+    public function testCreateFromACGT()
+    {
+        $aAminoAcids = [
+          "A" => "29.5",
+          "C" => "20.5",
+          "G" => "20.5",
+          "T" => "29.5"
+        ];
+        $iLength = 30;
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromACGT($aAminoAcids, $iLength);
+
+        $this->assertEquals(30, strlen($testFunction));
+    }
+
+    public function testcreateFromAA()
+    {
+        $aAminoAcids = [
+          "A" => "1.174",
+          "C" => "2.395",
+          "D" => "4.872",
+          "E" => "6.662",
+          "F" => "3.624",
+          "G" => "7.532",
+          "H" => "7.532",
+          "I" => "7.532",
+          "K" => "5.635",
+          "L" => "9.412",
+          "M" => "2.196",
+          "N" => "3.789",
+          "P" => "6.294",
+          "Q" => "4.509",
+          "R" => "5.607",
+          "S" => "7.527",
+          "T" => "5.685",
+          "V" => "6.026",
+          "W" => "1.48",
+          "Y" => "2.84"
+        ];
+
+        $iLength = 100;
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromAA($aAminoAcids, $iLength);
+
+        $this->assertEquals(99, strlen($testFunction));
+    }
+}

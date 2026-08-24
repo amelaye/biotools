@@ -1,35 +1,14 @@
-
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
 /vendor/
-###< symfony/framework-bundle ###
-
-###> symfony/phpunit-bridge ###
-.phpunit
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
+/build/
+composer.lock
 .phpunit.result.cache
 .phpunit.cache/
-###< phpunit/phpunit ###
+.idea/
+*.DS_Store*
+/.claude/
 
-.env*
-*.sql
-build
-.idea
-tests/data
-tests/public
-public/created_files
-###> symfony/web-server-bundle ###
-/.web-server-pid
-###< symfony/web-server-bundle ###
-/public/dendogram.png
-/config/reference.php
+# artefacts générés par les tests (images produites dans le CWD)
+/FCGR.png
+/CGR.png
+/dendogram.png
+/Tests/Service/public/

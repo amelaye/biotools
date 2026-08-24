@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <defaults public="false" />
+
+        <!-- Managers : business logic of the minitools.
+             The API adapter interfaces are aliased by the AmelayeBioPHP bundle. -->
+
+        <service id="Amelaye\BioTools\Service\ChaosGameRepresentationManager">
+            <argument>%amelaye_biotools.nucleotids_graphs%</argument>
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\DistanceAmongSequencesManager">
+            <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\DnaToProteinManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\FastaUploaderManager" />
+
+        <service id="Amelaye\BioTools\Service\FindPalindromeManager" />
+
+        <service id="Amelaye\BioTools\Service\FormulasManager" />
+
+        <service id="Amelaye\BioTools\Service\MeltingTemperatureManager">
+            <argument type="service" id="Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TmBaseStackingApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\MicroarrayAnalysisAdaptiveManager" />
+
+        <service id="Amelaye\BioTools\Service\MicrosatelliteRepeatsFinderManager" />
+
+        <service id="Amelaye\BioTools\Service\PcrAmplificationManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\ProteinPropertiesManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\PKApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\ProteinToDnaManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\RandomSequencesManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\ReduceProteinAlphabetManager">
+            <argument>%amelaye_biotools.protein_colors%</argument>
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\ProteinReductionApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\RestrictionDigestManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\VendorLinkApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TypeIIEndonucleaseApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TypeIIbEndonucleaseApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TypeIIsEndonucleaseApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\VendorApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\SequenceAlignmentManager">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\Pam250MatrixDigitApiAdapter" />
+        </service>
+
+        <service id="Amelaye\BioTools\Service\SequenceManipulationAndDataManager" />
+
+        <service id="Amelaye\BioTools\Service\SkewsManager">
+            <argument>%amelaye_biotools.nucleotids_graphs%</argument>
+            <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface" />
+        </service>
+
+        <!-- Form types -->
+
+        <service id="Amelaye\BioTools\Form\ChaosGameRepresentationType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\DistanceAmongSequencesType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\DnaToProteinType">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter" />
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\FastaUploaderType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\FindPalindromesType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\FormulasType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\MeltingTemperatureType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\MicroArrayDataAnalysisType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\MicrosatelliteRepeatsFinderType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\OligoNucleotideFrequencyType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\PcrAmplificationType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\ProteinPropertiesType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\ProteinToDnaType">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter" />
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\RandomSequencesType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\ReduceAlphabetType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\RestrictionEnzymeDigestType">
+            <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\VendorApiAdapter" />
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\SequenceAlignmentType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\SequenceManipulationType">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Amelaye\BioTools\Form\SkewsType">
+            <tag name="form.type" />
+        </service>
+
+        <!-- Constraint validators -->
+
+        <service id="Amelaye\BioTools\Validator\MeltingTemperatureValidator">
+            <tag name="validator.constraint_validator" />
+        </service>
+
+        <service id="Amelaye\BioTools\Validator\SequenceRecognitionValidator">
+            <tag name="validator.constraint_validator" />
+        </service>
+    </services>
+</container>
