@@ -12,7 +12,7 @@ use Amelaye\BioPHP\Api\Interfaces\PKApiAdapter;
 
 /**
  * Class ProteinPropertiesManager
- * @package MinitoolsBundle\Service
+ * @package BioTools\Service
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
 class ProteinPropertiesManager

@@ -12,7 +12,7 @@ use AppBundle\Api\Bioapi;
 
 /**
  * Class ProteinToDnaManager
- * @package MinitoolsBundle\Service
+ * @package BioTools\Service
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
  */
 class ProteinToDnaManager

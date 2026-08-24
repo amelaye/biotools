@@ -12,7 +12,7 @@
     "type": "symfony-bundle",
     "description": "Symfony forms and services for the BioPHP minitools",
     "keywords": ["symfony", "biology", "php", "bioinformatics", "form"],
-    "homepage": "http://www.amelayes-biophp.net",
+    "homepage": "https://www.amelayes-biophp.net",
     "repositories": [
         {
             "type": "path",
