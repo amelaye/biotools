@@ -240,7 +240,8 @@ class DistanceAmongSequencesManager
     {
         try {
             $cases = $this->getArrayCases($a);
-            for($j = 0; $j < sizeof($cases)+1; $j++) {
+            $temp_a = [];
+            for($j = 0; $j < sizeof($cases); $j++) {
                 $key = $cases[$j];
 
                 // next 3 lines are required in windows for correct comparison
@@ -251,26 +252,26 @@ class DistanceAmongSequencesManager
                 if($key == $this->x || $key == $this->y) {
                     continue;
                 }
-                if($a[$key][$this->x] != "") {
-                    if($a[$key][$this->y] != "") {
+                if(($a[$key][$this->x] ?? "") != "") {
+                    if(($a[$key][$this->y] ?? "") != "") {
                         $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$key][$this->y])/2;
                     }
-                    if($a[$this->x][$key] != "") {
+                    if(($a[$this->x][$key] ?? "") != "") {
                         $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$this->x][$key])/2;
                     }
-                    if($a[$this->y][$key] != "") {
+                    if(($a[$this->y][$key] ?? "") != "") {
                         $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$this->y][$key])/2;
                     }
                 } else {
-                    if($a[$key][$this->y] != "") {
-                        if ($a[$this->x][$key] != "") {
+                    if(($a[$key][$this->y] ?? "") != "") {
+                        if (($a[$this->x][$key] ?? "") != "") {
                             $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->y]+$a[$this->x][$key])/2;
                         }
-                        if($a[$this->y][$key] != "") {
+                        if(($a[$this->y][$key] ?? "") != "") {
                             $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->y]+$a[$this->y][$key])/2;
                         }
                     } else {
-                        if($a[$this->y][$key] != "") {
+                        if(($a[$this->y][$key] ?? "") != "") {
                             $temp_a[$key]["($this->x,$this->y)"] = ($a[$this->y][$key]+$a[$this->y][$key])/2;
                         }
                     }
@@ -282,10 +283,10 @@ class DistanceAmongSequencesManager
                     if ($key == $key2 || $key2 == $this->x || $key2 == $this->y) {
                         continue;
                     }
-                    if ($a[$key][$key2] != "") {
+                    if (($a[$key][$key2] ?? "") != "") {
                         $temp_a[$key][$key2] = $a[$key][$key2];
                     }
-                    if ($a[$key2][$key] != "") {
+                    if (($a[$key2][$key] ?? "") != "") {
                         $temp_a[$key][$key2] = $a[$key2][$key];
                     }
                 }
