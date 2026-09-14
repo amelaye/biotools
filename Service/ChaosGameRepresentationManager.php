@@ -21,22 +21,22 @@ class ChaosGameRepresentationManager
     /**
      * @var array
      */
-    private $nucleotidsGraphs;
+    private $aNucleotidsGraphs;
 
     /**
      * @var array
      */
-    private $dnaComplements;
+    private $aDnaComplements;
 
     /**
      * ChaosGameRepresentationManager constructor.
-     * @param   array                        $nucleotidsGraphs
+     * @param   array                        $aNucleotidsGraphs
      * @param   NucleotidApiAdapter          $nucleotidApi
      */
-    public function __construct(array $nucleotidsGraphs, NucleotidApiAdapter $nucleotidApi)
+    public function __construct(array $aNucleotidsGraphs, NucleotidApiAdapter $nucleotidApi)
     {
-        $this->nucleotidsGraphs = $nucleotidsGraphs;
-        $this->dnaComplements   = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
+        $this->aNucleotidsGraphs = $aNucleotidsGraphs;
+        $this->aDnaComplements   = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
     }
 
     /**
@@ -48,7 +48,7 @@ class ChaosGameRepresentationManager
      */
     private function buildTargetPath(string $sConfiguredName) : string
     {
-        $sDirectory = rtrim($this->nucleotidsGraphs['path_graphs'] ?? '', '/');
+        $sDirectory = rtrim($this->aNucleotidsGraphs['path_graphs'] ?? '', '/');
         $sStem      = pathinfo($sConfiguredName, PATHINFO_FILENAME);
 
         return $sDirectory . '/' . $sStem . '_' . bin2hex(random_bytes(4)) . '.svg';
@@ -66,7 +66,7 @@ class ChaosGameRepresentationManager
         try {
             $aNucleotides = [];
 
-            foreach($this->dnaComplements as $sNucleotide) {
+            foreach($this->aDnaComplements as $sNucleotide) {
                 $aNucleotides[$sNucleotide] = substr_count($aSeqData["sequence"], $sNucleotide);
             }
 
@@ -124,11 +124,11 @@ class ChaosGameRepresentationManager
         try {
             // If double strand is requested to be computed...
             if ($iStrand == 2) {
-                $seqRevert = strrev($sSequence);
-                foreach ($this->dnaComplements as $nucleotide => $complement) {
-                    $seqRevert = str_replace($nucleotide, strtolower($complement), $seqRevert);
+                $sSeqRevert = strrev($sSequence);
+                foreach ($this->aDnaComplements as $sNucleotide => $sComplement) {
+                    $sSeqRevert = str_replace($sNucleotide, strtolower($sComplement), $sSeqRevert);
                 }
-                $sSequence .= " ".strtoupper($seqRevert);
+                $sSequence .= " ".strtoupper($sSeqRevert);
             }
 
             $aDataSeq = array(
@@ -153,39 +153,39 @@ class ChaosGameRepresentationManager
     public function createCGRImage($sSeqName, $sSequence, $iSize)
     {
         try {
-            $im = new SvgCanvas($iSize, $iSize + 20);
-            $white = SvgCanvas::rgb(255, 255, 255);
-            $black = SvgCanvas::rgb(0, 0, 0);
-            $im->background($white);
-            $x = round($iSize / 2);
-            $y = $x;
+            $oIm = new SvgCanvas($iSize, $iSize + 20);
+            $sWhite = SvgCanvas::rgb(255, 255, 255);
+            $sBlack = SvgCanvas::rgb(0, 0, 0);
+            $oIm->background($sWhite);
+            $fX = round($iSize / 2);
+            $fY = $fX;
             $aPoints = [];
             for ($i = 0; $i < strlen($sSequence); $i++) {
-                $w = substr($sSequence, $i, 1);
-                if ($w == "A") {
-                    $x -= $x / 2;
-                    $y += ($iSize - $y) / 2;
+                $sW = substr($sSequence, $i, 1);
+                if ($sW == "A") {
+                    $fX -= $fX / 2;
+                    $fY += ($iSize - $fY) / 2;
                 }
-                if ($w == "C") {
-                    $x -= $x / 2;
-                    $y -= $y / 2;
+                if ($sW == "C") {
+                    $fX -= $fX / 2;
+                    $fY -= $fY / 2;
                 }
-                if ($w == "G") {
-                    $x += ($iSize - $x) / 2;
-                    $y -= $y / 2;
+                if ($sW == "G") {
+                    $fX += ($iSize - $fX) / 2;
+                    $fY -= $fY / 2;
                 }
-                if ($w == "T") {
-                    $x += ($iSize - $x) / 2;
-                    $y += ($iSize - $y) / 2;
+                if ($sW == "T") {
+                    $fX += ($iSize - $fX) / 2;
+                    $fY += ($iSize - $fY) / 2;
                 }
-                $aPoints[] = [floor($x), floor($y)];
+                $aPoints[] = [floor($fX), floor($fY)];
             }
-            $im->pixelCloud($aPoints, $black);
+            $oIm->pixelCloud($aPoints, $sBlack);
 
             $iSeqlen = strlen($sSequence);
-            $im->text(3, 5, $iSize + 5, "$sSeqName ($iSeqlen bp)", $black);
+            $oIm->text(3, 5, $iSize + 5, "$sSeqName ($iSeqlen bp)", $sBlack);
 
-            return $im->save($this->buildTargetPath($this->nucleotidsGraphs["cgr_file"]));
+            return $oIm->save($this->buildTargetPath($this->aNucleotidsGraphs["cgr_file"]));
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -196,114 +196,114 @@ class ChaosGameRepresentationManager
      * The FCGR drawing is written to a file; the image map coordinates and the path
      * written are returned as ["map" => [...], "file" => "..."]
      * Unit Test created
-     * @param   array       $oligos
-     * @param   string      $seq_name
+     * @param   array       $aOligos
+     * @param   string      $sSeqName
      * @param   array       $aNucleotids
-     * @param   int         $seq_len
-     * @param   string      $n
-     * @param   int         $oligo_len
+     * @param   int         $iSeqLen
+     * @param   string      $sN
+     * @param   int         $iOligoLen
      * @return  array
      * @throws  \Exception
      */
-    public function createFCGRImage($oligos, $seq_name, $aNucleotids, $seq_len, $n, $oligo_len)
+    public function createFCGRImage($aOligos, $sSeqName, $aNucleotids, $iSeqLen, $sN, $iOligoLen)
     {
-        if (!is_array($oligos) || [] === $oligos) {
+        if (!is_array($aOligos) || [] === $aOligos) {
             throw new \Exception('The oligonucleotides array must not be empty.');
         }
         try {
             $iFontWeight = 3;
 
-            $max_val = max($oligos);
-            $min_val = min($oligos);
+            $fMaxVal = max($aOligos);
+            $fMinVal = min($aOligos);
 
-            foreach($oligos as $key => $val) {
-                $ratio[$key] = floor(255 - ((255 * ($val - $min_val)) / ($max_val - $min_val)));
+            foreach($aOligos as $sKey => $fVal) {
+                $aRatio[$sKey] = floor(255 - ((255 * ($fVal - $fMinVal)) / ($fMaxVal - $fMinVal)));
             }
 
-            $im = new SvgCanvas(552, 370);
+            $oIm = new SvgCanvas(552, 370);
 
 
-            for($c = 0; $c < 256; $c++) {
-                $thecolor[$c] = SvgCanvas::rgb($c, $c, $c);
+            for($iC = 0; $iC < 256; $iC++) {
+                $aThecolor[$iC] = SvgCanvas::rgb($iC, $iC, $iC);
             }
-            $background_color = SvgCanvas::rgb(255, 255, 255);
-            $im->rect(0,0,552,700,$background_color);
+            $sBackgroundColor = SvgCanvas::rgb(255, 255, 255);
+            $oIm->rect(0,0,552,700,$sBackgroundColor);
 
-            $black  = SvgCanvas::rgb(0, 0, 0);
-            $red    = SvgCanvas::rgb(255, 0, 0);
-            $blue   = SvgCanvas::rgb(0, 0, 255);
+            $sBlack = SvgCanvas::rgb(0, 0, 0);
+            $sRed   = SvgCanvas::rgb(255, 0, 0);
+            $sBlue  = SvgCanvas::rgb(0, 0, 255);
 
-            $im->text(4, 10, 10, "Over or under-representation of oligonucleotides", $blue);
-            $im->text(3, 20, 30, "Chaos Game Representation of frequencies (FCGR)", $black);
-            $im->line(10, 50, 350, 50, $black);
-            $seq_name = substr($seq_name,0,15);
-            $im->text(3, 20, 55, "Sequence name: $seq_name ($seq_len bp)", $black);
+            $oIm->text(4, 10, 10, "Over or under-representation of oligonucleotides", $sBlue);
+            $oIm->text(3, 20, 30, "Chaos Game Representation of frequencies (FCGR)", $sBlack);
+            $oIm->line(10, 50, 350, 50, $sBlack);
+            $sSeqName = substr($sSeqName,0,15);
+            $oIm->text(3, 20, 55, "Sequence name: $sSeqName ($iSeqLen bp)", $sBlack);
 
-            if($n == 1) {
-                $im->text(3, 20, 73, "Results for only one strand", $black);
+            if($sN == 1) {
+                $oIm->text(3, 20, 73, "Results for only one strand", $sBlack);
             }
-            else if($n == 2) {
-                $im->text(3, 20, 73, "Results for both strands", $black);
+            else if($sN == 2) {
+                $oIm->text(3, 20, 73, "Results for both strands", $sBlack);
             }
 
-            $thecolor[255] = SvgCanvas::rgb(255, 255, 255);
+            $aThecolor[255] = SvgCanvas::rgb(255, 255, 255);
 
             // maps area data
-            $for_map = $this->mapAreaData($ratio, $thecolor, $im);
+            $aForMap = $this->mapAreaData($aRatio, $aThecolor, $oIm);
 
-            $imageNucleotids = array(
+            $aImageNucleotids = array(
                 "A" => array("font" => $iFontWeight, "x" => 420,  "y" => 10, "occurences" => $aNucleotids["A"]),
                 "C" => array("font" => $iFontWeight, "x" => 420,  "y" => 30, "occurences" => $aNucleotids["C"]),
                 "G" => array("font" => $iFontWeight, "x" => 420,  "y" => 50, "occurences" => $aNucleotids["G"]),
                 "T" => array("font" => $iFontWeight, "x" => 420,  "y" => 70, "occurences" => $aNucleotids["T"]),
             );
 
-            foreach($imageNucleotids as $key => $l) {
-                $im->text($l["font"], $l["x"], $l["y"],  $key.': '.$l["occurences"].'', $black);
+            foreach($aImageNucleotids as $sKey => $aL) {
+                $oIm->text($aL["font"], $aL["x"], $aL["y"],  $sKey.': '.$aL["occurences"].'', $sBlack);
             }
 
             // lines
-            $im->line(10,  90,  10,  346, $black);
-            $im->line(266, 90,  266, 346, $black);
-            $im->line(10,  90,  266, 90,  $black);
-            $im->line(10,  346, 266, 346, $black);
+            $oIm->line(10,  90,  10,  346, $sBlack);
+            $oIm->line(266, 90,  266, 346, $sBlack);
+            $oIm->line(10,  90,  266, 90,  $sBlack);
+            $oIm->line(10,  346, 266, 346, $sBlack);
 
-            if($oligo_len == 2) {
-                $this->createGraphFor2Nucleo($im, $black, $iFontWeight);
+            if($iOligoLen == 2) {
+                $this->createGraphFor2Nucleo($oIm, $sBlack, $iFontWeight);
             }
-            if ($oligo_len == 3) {
-                $this->createGraphForTrinucleo($im, $black, $iFontWeight);
+            if ($iOligoLen == 3) {
+                $this->createGraphForTrinucleo($oIm, $sBlack, $iFontWeight);
             }
 
             // show length of oligonucleotides
-            $im->text($iFontWeight, 50, 350,  "Oligonucleotide length: $oligo_len", $black);
+            $oIm->text($iFontWeight, 50, 350,  "Oligonucleotide length: $iOligoLen", $sBlack);
 
 
-            $cent = 286;
-            $im->text(2, 6   + $cent, 228, "Frequency", $black);
-            $im->rect(6   + $cent,208,16  + $cent,218,$thecolor[255]);
-            $im->rect(19  + $cent,208,29  + $cent,218,$thecolor[240]);
-            $im->rect(32  + $cent,208,42  + $cent,218,$thecolor[225]);
-            $im->rect(45  + $cent,208,55  + $cent,218,$thecolor[210]);
-            $im->rect(58  + $cent,208,68  + $cent,218,$thecolor[195]);
-            $im->rect(71  + $cent,208,81  + $cent,218,$thecolor[180]);
-            $im->rect(84  + $cent,208,94  + $cent,218,$thecolor[165]);
-            $im->rect(97  + $cent,208,107 + $cent,218,$thecolor[150]);
-            $im->rect(110 + $cent,208,120 + $cent,218,$thecolor[135]);
-            $im->rect(123 + $cent,208,133 + $cent,218,$thecolor[135]);
-            $im->rect(136 + $cent,208,146 + $cent,218,$thecolor[120]);
-            $im->rect(149 + $cent,208,159 + $cent,218,$thecolor[105]);
-            $im->rect(162 + $cent,208,172 + $cent,218,$thecolor[90]);
-            $im->rect(175 + $cent,208,185 + $cent,218,$thecolor[75]);
-            $im->rect(188 + $cent,208,198 + $cent,218,$thecolor[60]);
-            $im->rect(201 + $cent,208,211 + $cent,218,$thecolor[45]);
-            $im->rect(214 + $cent,208,224 + $cent,218,$thecolor[30]);
-            $im->rect(227 + $cent,208,237 + $cent,218,$thecolor[15]);
-            $im->rect(240 + $cent,208,250 + $cent,218,$thecolor[0]);
+            $iCent = 286;
+            $oIm->text(2, 6   + $iCent, 228, "Frequency", $sBlack);
+            $oIm->rect(6   + $iCent,208,16  + $iCent,218,$aThecolor[255]);
+            $oIm->rect(19  + $iCent,208,29  + $iCent,218,$aThecolor[240]);
+            $oIm->rect(32  + $iCent,208,42  + $iCent,218,$aThecolor[225]);
+            $oIm->rect(45  + $iCent,208,55  + $iCent,218,$aThecolor[210]);
+            $oIm->rect(58  + $iCent,208,68  + $iCent,218,$aThecolor[195]);
+            $oIm->rect(71  + $iCent,208,81  + $iCent,218,$aThecolor[180]);
+            $oIm->rect(84  + $iCent,208,94  + $iCent,218,$aThecolor[165]);
+            $oIm->rect(97  + $iCent,208,107 + $iCent,218,$aThecolor[150]);
+            $oIm->rect(110 + $iCent,208,120 + $iCent,218,$aThecolor[135]);
+            $oIm->rect(123 + $iCent,208,133 + $iCent,218,$aThecolor[135]);
+            $oIm->rect(136 + $iCent,208,146 + $iCent,218,$aThecolor[120]);
+            $oIm->rect(149 + $iCent,208,159 + $iCent,218,$aThecolor[105]);
+            $oIm->rect(162 + $iCent,208,172 + $iCent,218,$aThecolor[90]);
+            $oIm->rect(175 + $iCent,208,185 + $iCent,218,$aThecolor[75]);
+            $oIm->rect(188 + $iCent,208,198 + $iCent,218,$aThecolor[60]);
+            $oIm->rect(201 + $iCent,208,211 + $iCent,218,$aThecolor[45]);
+            $oIm->rect(214 + $iCent,208,224 + $iCent,218,$aThecolor[30]);
+            $oIm->rect(227 + $iCent,208,237 + $iCent,218,$aThecolor[15]);
+            $oIm->rect(240 + $iCent,208,250 + $iCent,218,$aThecolor[0]);
 
-            $sFile = $im->save($this->buildTargetPath($this->nucleotidsGraphs["fcgr_file"]));
+            $sFile = $oIm->save($this->buildTargetPath($this->aNucleotidsGraphs["fcgr_file"]));
 
-            return ['map' => $for_map, 'file' => $sFile];
+            return ['map' => $aForMap, 'file' => $sFile];
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -311,103 +311,103 @@ class ChaosGameRepresentationManager
 
     /**
      * Creates graph for two nucleotids
-     * @param   SvgCanvas $im
-     * @param   string $black
+     * @param   SvgCanvas $oIm
+     * @param   string $sBlack
      * @param   int $iFontWeight
      * @throws  \Exception
      */
-    private function createGraphFor2Nucleo(&$im, $black, $iFontWeight)
+    private function createGraphFor2Nucleo(&$oIm, $sBlack, $iFontWeight)
     {
         try {
             // lines
-            $startx     = $this->nucleotidsGraphs["startx_2"];
-            $starty     = $this->nucleotidsGraphs["starty_2"];
-            $interval   = $this->nucleotidsGraphs["intervals_2"];
+            $iStartX    = $this->aNucleotidsGraphs["startx_2"];
+            $iStartY    = $this->aNucleotidsGraphs["starty_2"];
+            $iInterval  = $this->aNucleotidsGraphs["intervals_2"];
 
-            $im->line($startx, ($starty + $interval), ($startx + $interval * 4), ($starty + $interval), $black);
-            $im->line($startx, ($starty + $interval * 2), ($startx + $interval * 4), ($starty + $interval * 2), $black);
-            $im->line($startx, ($starty + $interval * 3), ($startx + $interval * 4), ($starty + $interval * 3), $black);
+            $oIm->line($iStartX, ($iStartY + $iInterval), ($iStartX + $iInterval * 4), ($iStartY + $iInterval), $sBlack);
+            $oIm->line($iStartX, ($iStartY + $iInterval * 2), ($iStartX + $iInterval * 4), ($iStartY + $iInterval * 2), $sBlack);
+            $oIm->line($iStartX, ($iStartY + $iInterval * 3), ($iStartX + $iInterval * 4), ($iStartY + $iInterval * 3), $sBlack);
 
-            $im->line(($startx + $interval), $starty, ($startx + $interval), ($starty + $interval * 4), $black);
-            $im->line(($startx + $interval * 2), $starty, ($startx + $interval * 2), ($starty + $interval * 4), $black);
-            $im->line(($startx + $interval * 3), $starty, ($startx + $interval * 3), ($starty + $interval * 4), $black);
+            $oIm->line(($iStartX + $iInterval), $iStartY, ($iStartX + $iInterval), ($iStartY + $iInterval * 4), $sBlack);
+            $oIm->line(($iStartX + $iInterval * 2), $iStartY, ($iStartX + $iInterval * 2), ($iStartY + $iInterval * 4), $sBlack);
+            $oIm->line(($iStartX + $iInterval * 3), $iStartY, ($iStartX + $iInterval * 3), ($iStartY + $iInterval * 4), $sBlack);
 
             // dimers in their place
-            $h_pos = $this->nucleotidsGraphs["positions_2"]["h_pos"];
-            $v_pos = $this->nucleotidsGraphs["positions_2"]["v_pos"];
+            $iHPos = $this->aNucleotidsGraphs["positions_2"]["h_pos"];
+            $iVPos = $this->aNucleotidsGraphs["positions_2"]["v_pos"];
 
-            $imageNucleotids = array(
+            $aImageNucleotids = array(
                 "CC" => array(
-                    "x" => $startx + $h_pos,
-                    "y" => $starty + $v_pos
+                    "x" => $iStartX + $iHPos,
+                    "y" => $iStartY + $iVPos
                 ),
                 "GC" => array(
-                    "x" => $startx + $interval + $h_pos,
-                    "y" => $starty + $v_pos
+                    "x" => $iStartX + $iInterval + $iHPos,
+                    "y" => $iStartY + $iVPos
                 ),
                 "CG" => array(
-                    "x" => $startx + ($interval * 2) + $h_pos,
-                    "y" => $starty + $v_pos
+                    "x" => $iStartX + ($iInterval * 2) + $iHPos,
+                    "y" => $iStartY + $iVPos
                 ),
                 "GG" => array(
-                    "x" => $startx + ($interval * 3) + $h_pos,
-                    "y" => $starty + $v_pos
+                    "x" => $iStartX + ($iInterval * 3) + $iHPos,
+                    "y" => $iStartY + $iVPos
                 ),
 
                 "AC" => array(
-                    "x" => $startx  + $h_pos,
-                    "y" => $starty + $interval + $v_pos
+                    "x" => $iStartX  + $iHPos,
+                    "y" => $iStartY + $iInterval + $iVPos
                 ),
                 "TC" => array(
-                    "x" => $startx + $interval + $h_pos,
-                    "y" => $starty + $interval + $v_pos
+                    "x" => $iStartX + $iInterval + $iHPos,
+                    "y" => $iStartY + $iInterval + $iVPos
                 ),
                 "AG" => array(
-                    "x" => $startx + ($interval * 2) + $h_pos,
-                    "y" => $starty + $interval + $v_pos
+                    "x" => $iStartX + ($iInterval * 2) + $iHPos,
+                    "y" => $iStartY + $iInterval + $iVPos
                 ),
                 "TG" => array(
-                    "x" => $startx + ($interval * 3) + $h_pos,
-                    "y" => $starty + $interval + $v_pos
+                    "x" => $iStartX + ($iInterval * 3) + $iHPos,
+                    "y" => $iStartY + $iInterval + $iVPos
                 ),
 
                 "CA" => array(
-                    "x" => $startx + $h_pos,
-                    "y" => $starty + ($interval * 2) + $v_pos
+                    "x" => $iStartX + $iHPos,
+                    "y" => $iStartY + ($iInterval * 2) + $iVPos
                 ),
                 "GA" => array(
-                    "x" => $startx + $interval + $h_pos,
-                    "y" => $starty + ($interval * 2) + $v_pos
+                    "x" => $iStartX + $iInterval + $iHPos,
+                    "y" => $iStartY + ($iInterval * 2) + $iVPos
                 ),
                 "CT" => array(
-                    "x" => $startx + ($interval * 2) + $h_pos,
-                    "y" => $starty + ($interval * 2) + $v_pos
+                    "x" => $iStartX + ($iInterval * 2) + $iHPos,
+                    "y" => $iStartY + ($iInterval * 2) + $iVPos
                 ),
                 "GT" => array(
-                    "x" => $startx + ($interval * 3) + $h_pos,
-                    "y" => $starty + ($interval * 2) + $v_pos
+                    "x" => $iStartX + ($iInterval * 3) + $iHPos,
+                    "y" => $iStartY + ($iInterval * 2) + $iVPos
                 ),
 
                 "AA" => array(
-                    "x" => $startx  + $h_pos,
-                    "y" => $starty + ($interval * 3) + $v_pos
+                    "x" => $iStartX  + $iHPos,
+                    "y" => $iStartY + ($iInterval * 3) + $iVPos
                 ),
                 "TA" => array(
-                    "x" => $startx + $interval + $h_pos,
-                    "y" => $starty + ($interval * 3) + $v_pos
+                    "x" => $iStartX + $iInterval + $iHPos,
+                    "y" => $iStartY + ($iInterval * 3) + $iVPos
                 ),
                 "AT" => array(
-                    "x" => $startx + ($interval * 2) + $h_pos,
-                    "y" => $starty + ($interval * 3) + $v_pos
+                    "x" => $iStartX + ($iInterval * 2) + $iHPos,
+                    "y" => $iStartY + ($iInterval * 3) + $iVPos
                 ),
                 "TT" => array(
-                    "x" => $startx + ($interval * 3) + $h_pos,
-                    "y" => $starty + ($interval * 3) + $v_pos
+                    "x" => $iStartX + ($iInterval * 3) + $iHPos,
+                    "y" => $iStartY + ($iInterval * 3) + $iVPos
                 ),
             );
 
-            foreach($imageNucleotids as $key => $l) {
-                $im->text($iFontWeight, $l["x"], $l["y"], $key, $black);
+            foreach($aImageNucleotids as $sKey => $aL) {
+                $oIm->text($iFontWeight, $aL["x"], $aL["y"], $sKey, $sBlack);
             }
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -416,110 +416,110 @@ class ChaosGameRepresentationManager
 
     /**
      * Creates graph for three nucleotids
-     * @param   SvgCanvas $im
-     * @param   string $black
+     * @param   SvgCanvas $oIm
+     * @param   string $sBlack
      * @param   int $iFontWeight
      * @throws  \Exception
      */
-    private function createGraphForTrinucleo(&$im, $black, $iFontWeight)
+    private function createGraphForTrinucleo(&$oIm, $sBlack, $iFontWeight)
     {
         try {
             // lines
-            $im->line(10, 122, 266, 122, $black);
-            $im->line(10, 154, 266, 154, $black);
-            $im->line(10, 186, 266, 186, $black);
-            $im->line(10, 218, 266, 218, $black);
-            $im->line(10, 250, 266, 250, $black);
-            $im->line(10, 282, 266, 282, $black);
-            $im->line(10, 314, 266, 314, $black);
-            $im->line(42, 90, 42, 346, $black);
-            $im->line(74, 90, 74, 346, $black);
-            $im->line(106, 90, 106, 346, $black);
-            $im->line(138, 90, 138, 346, $black);
-            $im->line(170, 90, 170, 346, $black);
-            $im->line(202, 90, 202, 346, $black);
-            $im->line(234, 90, 234, 346, $black);
+            $oIm->line(10, 122, 266, 122, $sBlack);
+            $oIm->line(10, 154, 266, 154, $sBlack);
+            $oIm->line(10, 186, 266, 186, $sBlack);
+            $oIm->line(10, 218, 266, 218, $sBlack);
+            $oIm->line(10, 250, 266, 250, $sBlack);
+            $oIm->line(10, 282, 266, 282, $sBlack);
+            $oIm->line(10, 314, 266, 314, $sBlack);
+            $oIm->line(42, 90, 42, 346, $sBlack);
+            $oIm->line(74, 90, 74, 346, $sBlack);
+            $oIm->line(106, 90, 106, 346, $sBlack);
+            $oIm->line(138, 90, 138, 346, $sBlack);
+            $oIm->line(170, 90, 170, 346, $sBlack);
+            $oIm->line(202, 90, 202, 346, $sBlack);
+            $oIm->line(234, 90, 234, 346, $sBlack);
 
             // trinucleotides in their place
-            $h_pos = 8;
-            $v_pos = 10;
+            $iHPos = 8;
+            $iVPos = 10;
 
-            $imageNucleotids = array(
-                "CCC" => array("x" => 10   + $h_pos,  "y" => 90 + $v_pos), // x + 32
-                "GCC" => array("x" => 42   + $h_pos,  "y" => 90 + $v_pos),
-                "CGC" => array("x" => 74   + $h_pos,  "y" => 90 + $v_pos),
-                "GGC" => array("x" => 106  + $h_pos,  "y" => 90 + $v_pos),
-                "CCG" => array("x" => 138  + $h_pos,  "y" => 90 + $v_pos),
-                "GCG" => array("x" => 170  + $h_pos,  "y" => 90 + $v_pos),
-                "CGG" => array("x" => 202  + $h_pos,  "y" => 90 + $v_pos),
-                "GGG" => array("x" => 234  + $h_pos,  "y" => 90 + $v_pos),
+            $aImageNucleotids = array(
+                "CCC" => array("x" => 10   + $iHPos,  "y" => 90 + $iVPos), // x + 32
+                "GCC" => array("x" => 42   + $iHPos,  "y" => 90 + $iVPos),
+                "CGC" => array("x" => 74   + $iHPos,  "y" => 90 + $iVPos),
+                "GGC" => array("x" => 106  + $iHPos,  "y" => 90 + $iVPos),
+                "CCG" => array("x" => 138  + $iHPos,  "y" => 90 + $iVPos),
+                "GCG" => array("x" => 170  + $iHPos,  "y" => 90 + $iVPos),
+                "CGG" => array("x" => 202  + $iHPos,  "y" => 90 + $iVPos),
+                "GGG" => array("x" => 234  + $iHPos,  "y" => 90 + $iVPos),
 
-                "ACC" => array("x" => 10   + $h_pos,  "y" => 122 + $v_pos), // y + 32
-                "TCC" => array("x" => 42   + $h_pos,  "y" => 122 + $v_pos),
-                "AGC" => array("x" => 74   + $h_pos,  "y" => 122 + $v_pos),
-                "TGC" => array("x" => 106  + $h_pos,  "y" => 122 + $v_pos),
-                "ACG" => array("x" => 138  + $h_pos,  "y" => 122 + $v_pos),
-                "TCG" => array("x" => 170  + $h_pos,  "y" => 122 + $v_pos),
-                "AGG" => array("x" => 202  + $h_pos,  "y" => 122 + $v_pos),
-                "TGG" => array("x" => 234  + $h_pos,  "y" => 122 + $v_pos),
+                "ACC" => array("x" => 10   + $iHPos,  "y" => 122 + $iVPos), // y + 32
+                "TCC" => array("x" => 42   + $iHPos,  "y" => 122 + $iVPos),
+                "AGC" => array("x" => 74   + $iHPos,  "y" => 122 + $iVPos),
+                "TGC" => array("x" => 106  + $iHPos,  "y" => 122 + $iVPos),
+                "ACG" => array("x" => 138  + $iHPos,  "y" => 122 + $iVPos),
+                "TCG" => array("x" => 170  + $iHPos,  "y" => 122 + $iVPos),
+                "AGG" => array("x" => 202  + $iHPos,  "y" => 122 + $iVPos),
+                "TGG" => array("x" => 234  + $iHPos,  "y" => 122 + $iVPos),
 
-                "CAC" => array("x" => 10   + $h_pos,  "y" => 154 + $v_pos),
-                "GAC" => array("x" => 42   + $h_pos,  "y" => 154 + $v_pos),
-                "ATC" => array("x" => 74   + $h_pos,  "y" => 154 + $v_pos),
-                "CTC" => array("x" => 106  + $h_pos,  "y" => 154 + $v_pos),
-                "CAG" => array("x" => 138  + $h_pos,  "y" => 154 + $v_pos),
-                "GAG" => array("x" => 170  + $h_pos,  "y" => 154 + $v_pos),
-                "CTG" => array("x" => 202  + $h_pos,  "y" => 154 + $v_pos),
-                "GTG" => array("x" => 234  + $h_pos,  "y" => 154 + $v_pos),
+                "CAC" => array("x" => 10   + $iHPos,  "y" => 154 + $iVPos),
+                "GAC" => array("x" => 42   + $iHPos,  "y" => 154 + $iVPos),
+                "ATC" => array("x" => 74   + $iHPos,  "y" => 154 + $iVPos),
+                "CTC" => array("x" => 106  + $iHPos,  "y" => 154 + $iVPos),
+                "CAG" => array("x" => 138  + $iHPos,  "y" => 154 + $iVPos),
+                "GAG" => array("x" => 170  + $iHPos,  "y" => 154 + $iVPos),
+                "CTG" => array("x" => 202  + $iHPos,  "y" => 154 + $iVPos),
+                "GTG" => array("x" => 234  + $iHPos,  "y" => 154 + $iVPos),
 
-                "AAC" => array("x" => 10   + $h_pos,  "y" => 186 + $v_pos),
-                "TAC" => array("x" => 42   + $h_pos,  "y" => 186 + $v_pos),
-                "GTC" => array("x" => 74   + $h_pos,  "y" => 186 + $v_pos),
-                "TTC" => array("x" => 106  + $h_pos,  "y" => 186 + $v_pos),
-                "AAG" => array("x" => 138  + $h_pos,  "y" => 186 + $v_pos),
-                "TAG" => array("x" => 170  + $h_pos,  "y" => 186 + $v_pos),
-                "ATG" => array("x" => 202  + $h_pos,  "y" => 186 + $v_pos),
-                "TTG" => array("x" => 234  + $h_pos,  "y" => 186 + $v_pos),
+                "AAC" => array("x" => 10   + $iHPos,  "y" => 186 + $iVPos),
+                "TAC" => array("x" => 42   + $iHPos,  "y" => 186 + $iVPos),
+                "GTC" => array("x" => 74   + $iHPos,  "y" => 186 + $iVPos),
+                "TTC" => array("x" => 106  + $iHPos,  "y" => 186 + $iVPos),
+                "AAG" => array("x" => 138  + $iHPos,  "y" => 186 + $iVPos),
+                "TAG" => array("x" => 170  + $iHPos,  "y" => 186 + $iVPos),
+                "ATG" => array("x" => 202  + $iHPos,  "y" => 186 + $iVPos),
+                "TTG" => array("x" => 234  + $iHPos,  "y" => 186 + $iVPos),
 
-                "CCA" => array("x" => 10   + $h_pos,  "y" => 218 + $v_pos),
-                "GCA" => array("x" => 42   + $h_pos,  "y" => 218 + $v_pos),
-                "CGA" => array("x" => 74   + $h_pos,  "y" => 218 + $v_pos),
-                "GGA" => array("x" => 106  + $h_pos,  "y" => 218 + $v_pos),
-                "CCT" => array("x" => 138  + $h_pos,  "y" => 218 + $v_pos),
-                "GCT" => array("x" => 170  + $h_pos,  "y" => 218 + $v_pos),
-                "CGT" => array("x" => 202  + $h_pos,  "y" => 218 + $v_pos),
-                "GGT" => array("x" => 234  + $h_pos,  "y" => 218 + $v_pos),
+                "CCA" => array("x" => 10   + $iHPos,  "y" => 218 + $iVPos),
+                "GCA" => array("x" => 42   + $iHPos,  "y" => 218 + $iVPos),
+                "CGA" => array("x" => 74   + $iHPos,  "y" => 218 + $iVPos),
+                "GGA" => array("x" => 106  + $iHPos,  "y" => 218 + $iVPos),
+                "CCT" => array("x" => 138  + $iHPos,  "y" => 218 + $iVPos),
+                "GCT" => array("x" => 170  + $iHPos,  "y" => 218 + $iVPos),
+                "CGT" => array("x" => 202  + $iHPos,  "y" => 218 + $iVPos),
+                "GGT" => array("x" => 234  + $iHPos,  "y" => 218 + $iVPos),
 
-                "ACA" => array("x" => 10   + $h_pos,  "y" => 250 + $v_pos),
-                "TCA" => array("x" => 42   + $h_pos,  "y" => 250 + $v_pos),
-                "AGA" => array("x" => 74   + $h_pos,  "y" => 250 + $v_pos),
-                "TGA" => array("x" => 106  + $h_pos,  "y" => 250 + $v_pos),
-                "ACT" => array("x" => 138  + $h_pos,  "y" => 250 + $v_pos),
-                "TCT" => array("x" => 170  + $h_pos,  "y" => 250 + $v_pos),
-                "AGT" => array("x" => 202  + $h_pos,  "y" => 250 + $v_pos),
-                "TGT" => array("x" => 234  + $h_pos,  "y" => 250 + $v_pos),
+                "ACA" => array("x" => 10   + $iHPos,  "y" => 250 + $iVPos),
+                "TCA" => array("x" => 42   + $iHPos,  "y" => 250 + $iVPos),
+                "AGA" => array("x" => 74   + $iHPos,  "y" => 250 + $iVPos),
+                "TGA" => array("x" => 106  + $iHPos,  "y" => 250 + $iVPos),
+                "ACT" => array("x" => 138  + $iHPos,  "y" => 250 + $iVPos),
+                "TCT" => array("x" => 170  + $iHPos,  "y" => 250 + $iVPos),
+                "AGT" => array("x" => 202  + $iHPos,  "y" => 250 + $iVPos),
+                "TGT" => array("x" => 234  + $iHPos,  "y" => 250 + $iVPos),
 
-                "CAA" => array("x" => 10   + $h_pos,  "y" => 282 + $v_pos),
-                "GAA" => array("x" => 42   + $h_pos,  "y" => 282 + $v_pos),
-                "CTA" => array("x" => 74   + $h_pos,  "y" => 282 + $v_pos),
-                "GTA" => array("x" => 106  + $h_pos,  "y" => 282 + $v_pos),
-                "CAT" => array("x" => 138  + $h_pos,  "y" => 282 + $v_pos),
-                "GAT" => array("x" => 170  + $h_pos,  "y" => 282 + $v_pos),
-                "CTT" => array("x" => 202  + $h_pos,  "y" => 282 + $v_pos),
-                "GTT" => array("x" => 234  + $h_pos,  "y" => 282 + $v_pos),
+                "CAA" => array("x" => 10   + $iHPos,  "y" => 282 + $iVPos),
+                "GAA" => array("x" => 42   + $iHPos,  "y" => 282 + $iVPos),
+                "CTA" => array("x" => 74   + $iHPos,  "y" => 282 + $iVPos),
+                "GTA" => array("x" => 106  + $iHPos,  "y" => 282 + $iVPos),
+                "CAT" => array("x" => 138  + $iHPos,  "y" => 282 + $iVPos),
+                "GAT" => array("x" => 170  + $iHPos,  "y" => 282 + $iVPos),
+                "CTT" => array("x" => 202  + $iHPos,  "y" => 282 + $iVPos),
+                "GTT" => array("x" => 234  + $iHPos,  "y" => 282 + $iVPos),
 
-                "AAA" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "TAA" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "ATA" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "TTA" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "AAT" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "TAT" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "ATT" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
-                "TTT" => array("x" => 10   + $h_pos,  "y" => 314 + $v_pos),
+                "AAA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "TAA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "ATA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "TTA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "AAT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "TAT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "ATT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
+                "TTT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
             );
 
-            foreach($imageNucleotids as $key => $l) {
-                $im->text($iFontWeight, $l["x"], $l["y"], $key, $black);
+            foreach($aImageNucleotids as $sKey => $aL) {
+                $oIm->text($iFontWeight, $aL["x"], $aL["y"], $sKey, $sBlack);
             }
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -530,67 +530,67 @@ class ChaosGameRepresentationManager
      * Creates the different positions of areas
      * @param   array   $aRatio
      * @param   array   $aThecolor
-     * @param   $im
+     * @param   SvgCanvas   $oIm
      * @return  array
      * @throws  \Exception
      */
-    private function mapAreaData($aRatio, $aThecolor, $im)
+    private function mapAreaData($aRatio, $aThecolor, $oIm)
     {
         try {
             $aAreas = [];
-            $frameLength = null;
+            $iFrameLength = null;
 
-            foreach($aRatio as $seq => $val) {
-                $len = strlen($seq);
-                switch($len) {
+            foreach($aRatio as $sSeq => $fVal) {
+                $iLen = strlen($sSeq);
+                switch($iLen) {
                     case 7:
-                        $frameLength = 1;
+                        $iFrameLength = 1;
                         break;
                     case 6:
-                        $frameLength = 3;
+                        $iFrameLength = 3;
                         break;
                     case 5:
-                        $frameLength = 7;
+                        $iFrameLength = 7;
                         break;
                     case 4:
-                        $frameLength = 15;
+                        $iFrameLength = 15;
                         break;
                     case 3:
-                        $frameLength = 31;
+                        $iFrameLength = 31;
                         break;
                     case 2:
-                        $frameLength = 63;
+                        $iFrameLength = 63;
                         break;
                 }
 
-                $h_pos = $this->nucleotidsGraphs["startx_2"];
-                $v_pos = $this->nucleotidsGraphs["starty_2"];
+                $iHPos = $this->aNucleotidsGraphs["startx_2"];
+                $iVPos = $this->aNucleotidsGraphs["starty_2"];
 
                 // each position
-                $x = 0;
-                $y = 0;
-                $tt = 0;
-                $len2 = $len;
-                while($len2 > 0) {
-                    $len2 --;
-                    $ttt = pow(2, $tt);
-                    $tt ++;
-                    $subseq1 = substr($seq, $len2, 1);
-                    if($subseq1 == "A" || $subseq1 == "T") {
-                        $y += 128 / $ttt;
+                $fX = 0;
+                $fY = 0;
+                $iTt = 0;
+                $iLen2 = $iLen;
+                while($iLen2 > 0) {
+                    $iLen2 --;
+                    $fTtt = pow(2, $iTt);
+                    $iTt ++;
+                    $sSubseq1 = substr($sSeq, $iLen2, 1);
+                    if($sSubseq1 == "A" || $sSubseq1 == "T") {
+                        $fY += 128 / $fTtt;
                     }
-                    if($subseq1 == "G" || $subseq1 == "T") {
-                        $x += 128 / $ttt;
+                    if($sSubseq1 == "G" || $sSubseq1 == "T") {
+                        $fX += 128 / $fTtt;
                     }
                 }
-                $x += $h_pos;
-                $x2 = $x + $frameLength;
-                $y += $v_pos;
-                $y2 = $y + $frameLength;
+                $fX += $iHPos;
+                $fX2 = $fX + $iFrameLength;
+                $fY += $iVPos;
+                $fY2 = $fY + $iFrameLength;
 
-                $im->rect($x,$y,$x2,$y2,$aThecolor[$val]);
+                $oIm->rect($fX,$fY,$fX2,$fY2,$aThecolor[$fVal]);
 
-                $aAreas[$seq] = array($x,$y,$x2,$y2);
+                $aAreas[$sSeq] = array($fX,$fY,$fX2,$fY2);
             }
             return $aAreas;
         } catch (\Exception $e) {
