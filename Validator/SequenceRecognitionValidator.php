@@ -24,12 +24,12 @@ class SequenceRecognitionValidator extends ConstraintValidator
                 ->addViolation();
         }
 
-        $len_seq = strlen($sSequence);
-        $number_ATGC = $this->countACGT($sSequence);
-        $number_YRWSKMDVHB = $this->countYRWSKMDVHB($sSequence);
-        $number = $number_ATGC + $number_YRWSKMDVHB + substr_count($sSequence,"N");
+        $iLenSeq = strlen($sSequence);
+        $iNumberAtgc = $this->countACGT($sSequence);
+        $iNumberYrwskmdvhb = $this->countYRWSKMDVHB($sSequence);
+        $iNumber = $iNumberAtgc + $iNumberYrwskmdvhb + substr_count($sSequence,"N");
 
-        if ($number != $len_seq) {
+        if ($iNumber != $iLenSeq) {
             $this->context->buildViolation($constraint->message)
                 ->addViolation();
         }
@@ -45,11 +45,11 @@ class SequenceRecognitionValidator extends ConstraintValidator
     public function countACGT($sSequence)
     {
         try {
-            $cg = substr_count($sSequence,"A")
+            $iCg = substr_count($sSequence,"A")
                 + substr_count($sSequence,"T")
                 + substr_count($sSequence,"G")
                 + substr_count($sSequence,"C");
-            return $cg;
+            return $iCg;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -57,39 +57,39 @@ class SequenceRecognitionValidator extends ConstraintValidator
 
     /**
      * Will count number of degenerate nucleotides (Y, R, W, S, K, MD, V, H and B) in the sequence
-     * @param   string $c
+     * @param   string $sC
      * @return  int
      * @throws \Exception
      */
-    public function countYRWSKMDVHB($c){
+    public function countYRWSKMDVHB($sC){
         try {
-            $cg = substr_count($c,"Y")
-                + substr_count($c,"R")
-                + substr_count($c,"W")
-                + substr_count($c,"S")
-                + substr_count($c,"K")
-                + substr_count($c,"M")
-                + substr_count($c,"D")
-                + substr_count($c,"V")
-                + substr_count($c,"H")
-                + substr_count($c,"B");
-            return $cg;
+            $iCg = substr_count($sC,"Y")
+                + substr_count($sC,"R")
+                + substr_count($sC,"W")
+                + substr_count($sC,"S")
+                + substr_count($sC,"K")
+                + substr_count($sC,"M")
+                + substr_count($sC,"D")
+                + substr_count($sC,"V")
+                + substr_count($sC,"H")
+                + substr_count($sC,"B");
+            return $iCg;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
     }
 
     /**
-     * @param $c
+     * @param $sC
      * @return int
      * @throws \Exception
      */
-    public function countCG($c)
+    public function countCG($sC)
     {
         try {
-            $cg = substr_count($c,"G")
-                + substr_count($c,"C");
-            return $cg;
+            $iCg = substr_count($sC,"G")
+                + substr_count($sC,"C");
+            return $iCg;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

@@ -45,11 +45,11 @@ class MeltingTemperatureValidator extends ConstraintValidator
     public function countACGT($sSequence)
     {
         try {
-            $cg = substr_count($sSequence,"A")
+            $iCg = substr_count($sSequence,"A")
                 + substr_count($sSequence,"T")
                 + substr_count($sSequence,"G")
                 + substr_count($sSequence,"C");
-            return $cg;
+            return $iCg;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -65,7 +65,7 @@ class MeltingTemperatureValidator extends ConstraintValidator
     public function countYRWSKMDVHB($sSequence)
     {
         try {
-            $cg = substr_count($sSequence,"Y")
+            $iCg = substr_count($sSequence,"Y")
                 + substr_count($sSequence,"R")
                 + substr_count($sSequence,"W")
                 + substr_count($sSequence,"S")
@@ -75,7 +75,7 @@ class MeltingTemperatureValidator extends ConstraintValidator
                 + substr_count($sSequence,"V")
                 + substr_count($sSequence,"H")
                 + substr_count($sSequence,"B");
-            return $cg;
+            return $iCg;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

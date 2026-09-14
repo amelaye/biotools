@@ -20,20 +20,20 @@ class AmelayeBioToolsExtension extends Extension
 {
     /**
      * Loads the BioTools forms, managers and validators
-     * @param array $configs
+     * @param array $aConfigs
      * @param ContainerBuilder $container
      * @throws \Exception
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $aConfigs, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('services.xml');
+        $oLoader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $oLoader->load('services.xml');
 
-        $configuration = $this->getConfiguration($configs, $container);
-        $config = $this->processConfiguration($configuration, $configs);
+        $oConfiguration = $this->getConfiguration($aConfigs, $container);
+        $aConfig = $this->processConfiguration($oConfiguration, $aConfigs);
 
-        $container->setParameter('amelaye_biotools.nucleotids_graphs', $config['nucleotids_graphs']);
-        $container->setParameter('amelaye_biotools.protein_colors', $config['protein_colors']);
+        $container->setParameter('amelaye_biotools.nucleotids_graphs', $aConfig['nucleotids_graphs']);
+        $container->setParameter('amelaye_biotools.protein_colors', $aConfig['protein_colors']);
     }
 
     /**

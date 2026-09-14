@@ -28,10 +28,10 @@ class Configuration implements ConfigurationInterface
     {
         $aDefaults = require __DIR__ . '/../Resources/config/defaults.php';
 
-        $treeBuilder = new TreeBuilder('amelaye_biotools');
-        $rootNode = $treeBuilder->getRootNode();
+        $oTreeBuilder = new TreeBuilder('amelaye_biotools');
+        $oRootNode = $oTreeBuilder->getRootNode();
 
-        $rootNode
+        $oRootNode
             ->children()
                 ->variableNode('nucleotids_graphs')
                     ->info('Geometry, file names and output directory used to render CGR/FCGR and skew images.')
@@ -43,6 +43,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end();
 
-        return $treeBuilder;
+        return $oTreeBuilder;
     }
 }
