@@ -357,7 +357,7 @@ class RestrictionDigestManager
         try {
             $aEnzymeVendors = [];
 
-            $aEnzymeVendors["company"] = ["name" => $sCompany, "url" => "http://rebase.neb.com/rebase/enz/$sEnzyme.html"];
+            $aEnzymeVendors["company"] = ["name" => $sCompany, "url" => "https://rebase.neb.com/rebase/enz/$sEnzyme.html"];
             foreach($this->vendorLinks as $key => $data) {
                 if(strpos($sCompany, $key) !== false) {
                     $aEnzymeVendors["links"][] = $data;
