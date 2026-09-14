@@ -26,15 +26,15 @@ class SkewsManager
     /**
      * @var array   Geometry and output directory of the generated graphics
      */
-    private $nucleotidsGraphs;
+    private $aNucleotidsGraphs;
 
     /**
-     * @param   array               $nucleotidsGraphs
+     * @param   array               $aNucleotidsGraphs
      * @param   OligosInterface     $oligosManger
      */
-    public function __construct(array $nucleotidsGraphs, OligosInterface $oligosManger)
+    public function __construct(array $aNucleotidsGraphs, OligosInterface $oligosManger)
     {
-        $this->nucleotidsGraphs = $nucleotidsGraphs;
+        $this->aNucleotidsGraphs = $aNucleotidsGraphs;
         $this->oligosManger = $oligosManger;
     }
 
@@ -47,7 +47,7 @@ class SkewsManager
      */
     private function buildTargetPath(string $sName) : string
     {
-        $sDirectory = rtrim($this->nucleotidsGraphs['path_graphs'] ?? '', '/');
+        $sDirectory = rtrim($this->aNucleotidsGraphs['path_graphs'] ?? '', '/');
         $sSafeName  = preg_replace('/[^A-Za-z0-9_-]/', '_', $sName);
 
         return $sDirectory . '/' . $sSafeName . '_' . bin2hex(random_bytes(4)) . '.svg';
@@ -78,10 +78,10 @@ class SkewsManager
             }
             if ($iStrands == 2) {
                 // if both strands are used for computing oligonucleotide frequencies
-                $sequence2 = $this->compDNA($sSequence);
+                $sSequence2 = $this->compDNA($sSequence);
                 $i = 0;
                 while ($i < $iSeqLength - $iWindow + 1) {
-                    $sSequenceCut = substr($sSequence, $i, $iWindow)." ".strrev(substr($sequence2, $i, $iWindow));
+                    $sSequenceCut = substr($sSequence, $i, $iWindow)." ".strrev(substr($sSequence2, $i, $iWindow));
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
@@ -120,30 +120,30 @@ class SkewsManager
         if(sizeof($aValsX) != sizeof($aValsY)) {
             return;
         }
-        $iNw = $iX2y = $iXy2 = $iPreSx = $iPreSy = $iPreRw = 0;
+        $fNw = $fX2y = $fXy2 = $fPreSx = $fPreSy = $fPreRw = 0;
 
-        foreach($aValsX as $key => $iValX) {
-            $iValY = $aValsY[$key];
-            $iNw += $iValX * $iValY;
-            $iX2y += $iValX * $iValX * $iValY;
-            $iXy2 += $iValX * $iValY * $iValY;
+        foreach($aValsX as $sKey => $fValX) {
+            $fValY = $aValsY[$sKey];
+            $fNw += $fValX * $fValY;
+            $fX2y += $fValX * $fValX * $fValY;
+            $fXy2 += $fValX * $fValY * $fValY;
         }
-        $iXw = $iX2y / $iNw;
-        $iYw = $iXy2 / $iNw;
-        foreach($aValsX as $key => $iValX) {
-            $iValY = $aValsY[$key];
-            $iPreSx += pow($iValX - $iXw,2) * $iValX * $iValY;
-            $iPreSy += pow($iValY - $iYw,2) * $iValX * $iValY;
+        $fXw = $fX2y / $fNw;
+        $fYw = $fXy2 / $fNw;
+        foreach($aValsX as $sKey => $fValX) {
+            $fValY = $aValsY[$sKey];
+            $fPreSx += pow($fValX - $fXw,2) * $fValX * $fValY;
+            $fPreSy += pow($fValY - $fYw,2) * $fValX * $fValY;
         }
-        $sx = $iPreSx / $iNw;
-        $sy = $iPreSy / $iNw;
-        foreach($aValsX as $key => $iValX){
-            $iValY = $aValsY[$key];
-            $iPreRw += ($iValX - $iXw) * ($iValY - $iYw) * $iValX * $iValY / (sqrt($sx) * sqrt($sy));
+        $fSx = $fPreSx / $fNw;
+        $fSy = $fPreSy / $fNw;
+        foreach($aValsX as $sKey => $fValX){
+            $fValY = $aValsY[$sKey];
+            $fPreRw += ($fValX - $fXw) * ($fValY - $fYw) * $fValX * $fValY / (sqrt($fSx) * sqrt($fSy));
         }
-        $iRw = $iPreRw / $iNw;
-        $distance = round(1 - $iRw,8);
-        return $distance;
+        $fRw = $fPreRw / $fNw;
+        $fDistance = round(1 - $fRw,8);
+        return $fDistance;
     }
 
     /**
@@ -158,34 +158,34 @@ class SkewsManager
         if(sizeof($aValsX) != sizeof($aValsY)) {
             return;
         }
-        $iSumX = array_sum($aValsX);
-        $iSumY = array_sum($aValsY);
-        $iSumX2 = 0;
-        $iSumY2 = 0;
-        $iSumXY = 0;
-        foreach($aValsX as $key => $iValX) {
-            $iValY = $aValsY[$key];
-            $iSumX2 += $iValX * $iValX;
-            $iSumY2 += $iValY * $iValY;
-            $iSumXY += $iValX * $iValY;
+        $fSumX = array_sum($aValsX);
+        $fSumY = array_sum($aValsY);
+        $fSumX2 = 0;
+        $fSumY2 = 0;
+        $fSumXY = 0;
+        foreach($aValsX as $sKey => $fValX) {
+            $fValY = $aValsY[$sKey];
+            $fSumX2 += $fValX * $fValX;
+            $fSumY2 += $fValY * $fValY;
+            $fSumXY += $fValX * $fValY;
         }
         $iN = sizeof($aValsX);
         // calculate regression
-        $r = ($iN * $iSumXY - $iSumX * $iSumY)
-            / (sqrt($iN * $iSumX2 - $iSumX * $iSumX) * sqrt($iN * $iSumY2 - $iSumY * $iSumY));
+        $fR = ($iN * $fSumXY - $fSumX * $fSumY)
+            / (sqrt($iN * $fSumX2 - $fSumX * $fSumX) * sqrt($iN * $fSumY2 - $fSumY * $fSumY));
         // return distance
-        return (1 - $r);
+        return (1 - $fR);
     }
 
 
     /**
-     * @param $str
-     * @return bool
+     * @param   string  $sStr
+     * @return  bool
      */
-    public function strIsInt($str)
+    public function strIsInt($sStr)
     {
-        $var = intval($str);
-        return("$str" == "$var");
+        $iVar = intval($sStr);
+        return("$sStr" == "$iVar");
     }
 
     /**
@@ -211,28 +211,28 @@ class SkewsManager
             // computes data for GC, AT, KETO and G+C skews (if requested)
             while($iPos < $iSeqLength - $iWindow) {
                 $sSubSequence = substr($sSequence, $iPos, $iWindow);
-                $A = substr_count($sSubSequence,"A");
-                $C = substr_count($sSubSequence,"C");
-                $G = substr_count($sSubSequence,"G");
-                $T = substr_count($sSubSequence,"T");
-                $aGC[$iPos] = ($G-$C) / ($G+$C);
+                $iA = substr_count($sSubSequence,"A");
+                $iC = substr_count($sSubSequence,"C");
+                $iG = substr_count($sSubSequence,"G");
+                $iT = substr_count($sSubSequence,"T");
+                $aGC[$iPos] = ($iG-$iC) / ($iG+$iC);
                 if($bAT) {
-                    $aAT[$iPos] = ($A-$T) / ($A+$T);
+                    $aAT[$iPos] = ($iA-$iT) / ($iA+$iT);
                 }
                 if($bKETO) {
-                    $aKETO[$iPos] = round(($G+$C-$A-$T) / ($A+$C+$G+$T),4);
+                    $aKETO[$iPos] = round(($iG+$iC-$iA-$iT) / ($iA+$iC+$iG+$iT),4);
                 }
                 if($bGmC) {
-                    $aGmC[$iPos] = ($G+$C)/($A+$C+$G+$T);
+                    $aGmC[$iPos] = ($iG+$iC)/($iA+$iC+$iG+$iT);
                 }
                 $iPos += $iPeriod;
             }
 
             // scale related variables
-            $iMax = max(max($aAT), max($aGC), max($aKETO));
-            $iMin = min(min($aAT), min($aGC), min($aKETO));
-            $iNmax = max($iMax, -$iMin);
-            return $iNmax;
+            $fMax = max(max($aAT), max($aGC), max($aKETO));
+            $fMin = min(min($aAT), min($aGC), min($aKETO));
+            $fNmax = max($fMax, -$fMin);
+            return $fNmax;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -257,30 +257,30 @@ class SkewsManager
     public function createImage($sSequence, $iWindow, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $iOlen, $iFrom, $iTo, $sName)
     {
         try {
-            $pos = 0;
-            $len_seq = strlen($sSequence);
-            $period = ceil($len_seq / 6000);
+            $iPos = 0;
+            $iLenSeq = strlen($sSequence);
+            $iPeriod = ceil($iLenSeq / 6000);
             $aAT = $aGC = $aGmC = $aKETO = [null];
 
-            $nmax = $this->computeImage($sSequence, $pos, $iWindow, $bAT, $bKETO, $bGmC, $len_seq, $period, $aAT, $aGC, $aGmC, $aKETO);
-            $rectify = round(200 / $nmax);
+            $fNmax = $this->computeImage($sSequence, $iPos, $iWindow, $bAT, $bKETO, $bGmC, $iLenSeq, $iPeriod, $aAT, $aGC, $aGmC, $aKETO);
+            $fRectify = round(200 / $fNmax);
 
             // starts the image
-            $im                 = new SvgCanvas(850, 450);
-            $background_color   = SvgCanvas::rgb(255, 255, 255);
-            $black              = SvgCanvas::rgb(0, 0, 0);
-            $qblack2            = SvgCanvas::rgb(228, 228, 228);
-            $qblack             = SvgCanvas::rgb(192, 192, 192);
-            $red                = SvgCanvas::rgb(255, 0, 0);
-            $blue               = SvgCanvas::rgb(0, 0, 255);
-            $green              = SvgCanvas::rgb(0, 255, 0);
-            $rb                 = SvgCanvas::rgb(255, 0, 255);
-            $gb                 = SvgCanvas::rgb(0, 150,150);
+            $oIm                = new SvgCanvas(850, 450);
+            $sBackgroundColor   = SvgCanvas::rgb(255, 255, 255);
+            $sBlack             = SvgCanvas::rgb(0, 0, 0);
+            $sQblack2           = SvgCanvas::rgb(228, 228, 228);
+            $sQblack            = SvgCanvas::rgb(192, 192, 192);
+            $sRed               = SvgCanvas::rgb(255, 0, 0);
+            $sBlue              = SvgCanvas::rgb(0, 0, 255);
+            $sGreen             = SvgCanvas::rgb(0, 255, 0);
+            $sRb                = SvgCanvas::rgb(255, 0, 255);
+            $sGb                = SvgCanvas::rgb(0, 150,150);
 
-            $im->background($background_color);
+            $oIm->background($sBackgroundColor);
 
-            $im->text(2, 610, 432,  "by biophp.org", $black);
-            $im->text(3, 600, 5,  "Window: $iWindow", $black);
+            $oIm->text(2, 610, 432,  "by biophp.org", $sBlack);
+            $oIm->text(3, 600, 5,  "Window: $iWindow", $sBlack);
 
             // writes length of sequence
             if ($iFrom != "" || $iTo != "") {
@@ -288,63 +288,63 @@ class SkewsManager
                     $iFrom = 0;
                 }
                 if($iTo == "") {
-                    $iTo = $len_seq;
+                    $iTo = $iLenSeq;
                 }
-                $im->text(3, 5, 432, "Length of $sName: $len_seq (from position $iFrom to $iTo)", $black);
+                $oIm->text(3, 5, 432, "Length of $sName: $iLenSeq (from position $iFrom to $iTo)", $sBlack);
             } else {
-                $im->text(3, 5, 432, "Length of $sName: $len_seq", $black);
+                $oIm->text(3, 5, 432, "Length of $sName: $iLenSeq", $sBlack);
             }
 
-            $this->writeSkews($im, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $blue, $red, $green, $black, $iOlen, $gb);
-            $this->printScales($im, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $red, $black, $gb, $nmax);
+            $this->writeSkews($oIm, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $sBlue, $sRed, $sGreen, $sBlack, $iOlen, $sGb);
+            $this->printScales($oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $sRed, $sBlack, $sGb, $fNmax);
 
             // print oligo-skew
             // oligo-skews must be the first one to be printed out
-            $xp = ($iWindow * 700) / (2 * $len_seq);
+            $fXp = ($iWindow * 700) / (2 * $iLenSeq);
             if(sizeof($aOligoSkew) > 10) {
-                foreach($aOligoSkew as $pos => $val) {
-                    $x = round(($pos * 700 / $len_seq) + $xp);
-                    $im->line($x, 20, $x, 19 + (500 * $val), $qblack2);
-                    $im->pixel($x, 20 + (500 * $val), $gb);
+                foreach($aOligoSkew as $iPos => $fVal) {
+                    $fX = round(($iPos * 700 / $iLenSeq) + $fXp);
+                    $oIm->line($fX, 20, $fX, 19 + (500 * $fVal), $sQblack2);
+                    $oIm->pixel($fX, 20 + (500 * $fVal), $sGb);
                 }
             }
             // print AT, GC and/or KETO-skews
             // each one with its color; the points of a same series are gathered so
             // that each curve costs one path instead of one element per sample
             $aAtPoints = $aGcPoints = $aKetoPoints = $aGmcPoints = [];
-            foreach ($aGC as $pos => $val) {
-                $x = round(( $pos * 700 / $len_seq) + $xp);
+            foreach ($aGC as $iPos => $fVal) {
+                $fX = round(( $iPos * 700 / $iLenSeq) + $fXp);
                 if($bAT) {
-                    $aAtPoints[] = [$x, 220 - $aAT[$pos] * $rectify];
+                    $aAtPoints[] = [$fX, 220 - $aAT[$iPos] * $fRectify];
                 }
                 if($bGC) {
-                    $aGcPoints[] = [$x, 220 - $val * $rectify];
+                    $aGcPoints[] = [$fX, 220 - $fVal * $fRectify];
                 }
                 if($bKETO) {
-                    $aKetoPoints[] = [$x, 220 - $aKETO[$pos] * $rectify];
+                    $aKetoPoints[] = [$fX, 220 - $aKETO[$iPos] * $fRectify];
                 }
                 if($bGmC) {
-                    $aGmcPoints[] = [$x, 470 - (500 * $aGmC[$pos])];
+                    $aGmcPoints[] = [$fX, 470 - (500 * $aGmC[$iPos])];
                 }
             }
-            $im->pixelCloud($aAtPoints, $red);
-            $im->pixelCloud($aGcPoints, $blue);
-            $im->pixelCloud($aKetoPoints, $green);
-            $im->pixelCloud($aGmcPoints, $black);
+            $oIm->pixelCloud($aAtPoints, $sRed);
+            $oIm->pixelCloud($aGcPoints, $sBlue);
+            $oIm->pixelCloud($aKetoPoints, $sGreen);
+            $oIm->pixelCloud($aGmcPoints, $sBlack);
 
             // write some aditional lines
             for($i = 20; $i < 421; $i += 50) {
-                $im->line(0,$i,700,$i,$black);
+                $oIm->line(0,$i,700,$i,$sBlack);
             }
 
-            $intervals = [70, 140, 210, 280, 350, 420, 490, 560, 630];
-            foreach($intervals as $interval) {
-                $im->line($interval, 20, $interval, 420, $qblack);
+            $aIntervals = [70, 140, 210, 280, 350, 420, 490, 560, 630];
+            foreach($aIntervals as $iInterval) {
+                $oIm->line($iInterval, 20, $iInterval, 420, $sQblack);
             }
-            $im->line(700, 20, 700, 420, $black);
+            $oIm->line(700, 20, 700, 420, $sBlack);
 
             // output the image to a file
-            return $im->save($this->buildTargetPath($sName));
+            return $oIm->save($this->buildTargetPath($sName));
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -352,7 +352,7 @@ class SkewsManager
 
     /**
      * Write the kind of skews in proper color
-     * @param       SvgCanvas    $im             The drawing being built
+     * @param       SvgCanvas    $oIm            The drawing being built
      * @param       int         $bGC            Show GC
      * @param       int         $bAT            Show AT-Skew
      * @param       int         $bKETO          Show KETO-Skew
@@ -367,30 +367,30 @@ class SkewsManager
      * @return      int
      * @throws      \Exception
      */
-    private function writeSkews(&$im, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $iBlue, $iRed, $iGreen, $iBlack, $iOlen, $iGb)
+    private function writeSkews(&$oIm, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $iBlue, $iRed, $iGreen, $iBlack, $iOlen, $iGb)
     {
         try {
-            $goright = 0;
+            $iGoright = 0;
             if ($bGC) {
-                $im->text(3, 5 + $goright, 5, "GC-skew", $iBlue);
-                $goright = 70;
+                $oIm->text(3, 5 + $iGoright, 5, "GC-skew", $iBlue);
+                $iGoright = 70;
             }
             if ($bAT) {
-                $im->text(3, 5 + $goright, 5, "AT-skew", $iRed);
-                $goright += 70;
+                $oIm->text(3, 5 + $iGoright, 5, "AT-skew", $iRed);
+                $iGoright += 70;
             }
             if ($bKETO) {
-                $im->text(3, 5 + $goright, 5, "KETO-skew", $iGreen);
-                $goright += 80;
+                $oIm->text(3, 5 + $iGoright, 5, "KETO-skew", $iGreen);
+                $iGoright += 80;
             }
             if ($bGmC) {
-                $im->text(3, 5 + $goright, 5, "G+C", $iBlack);
-                $goright += 60;
+                $oIm->text(3, 5 + $iGoright, 5, "G+C", $iBlack);
+                $iGoright += 60;
             }
             if (sizeof($aOligoSkew) > 10) {
-                $im->text(3, 5 + $goright, 5, "oligo-skew ($iOlen)", $iGb);
+                $oIm->text(3, 5 + $iGoright, 5, "oligo-skew ($iOlen)", $iGb);
             }
-            return $goright;
+            return $iGoright;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -398,7 +398,7 @@ class SkewsManager
 
     /**
      * Print scale for AT, GC or KETO skews + GC Skews + oligo-skew
-     * @param       SvgCanvas    $im             The drawing being built
+     * @param       SvgCanvas    $oIm            The drawing being built
      * @param       array       $aOligoSkew     Datas
      * @param       int         $bGC            Show GC
      * @param       int         $bAT            Show AT-Skew
@@ -410,51 +410,51 @@ class SkewsManager
      * @param       int         $iNmax
      * @throws      \Exception
      */
-    private function printScales(&$im, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $iRed, $iBlack, $iGb, $iNmax)
+    private function printScales(&$oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $iRed, $iBlack, $iGb, $iNmax)
     {
         try {
-            $ne = 0;
+            $iNe = 0;
             if ($bAT || $bGC || $bKETO) {
-                $im->text(3, 710, 210, "0", $iRed);
-                $scale = round($iNmax * 0.25,3);
-                $v = $scale * 3;
-                $im->text(3, 710, 60, $v, $iRed);
-                $im->text(3, 710, 360, -$v, $iRed);
-                $v = $scale * 2;
-                $im->text(3, 710, 110, $v, $iRed);
-                $im->text(3, 710, 310, -$v, $iRed);
-                $v = $scale;
-                $im->text(3, 710, 160, $v, $iRed);
-                $im->text(3, 710, 260, -$v, $iRed);
-                $ne = 60;
+                $oIm->text(3, 710, 210, "0", $iRed);
+                $fScale = round($iNmax * 0.25,3);
+                $fV = $fScale * 3;
+                $oIm->text(3, 710, 60, $fV, $iRed);
+                $oIm->text(3, 710, 360, -$fV, $iRed);
+                $fV = $fScale * 2;
+                $oIm->text(3, 710, 110, $fV, $iRed);
+                $oIm->text(3, 710, 310, -$fV, $iRed);
+                $fV = $fScale;
+                $oIm->text(3, 710, 160, $fV, $iRed);
+                $oIm->text(3, 710, 260, -$fV, $iRed);
+                $iNe = 60;
             }
             // print scale for G+C skew
             if($bGmC == 1) {
-                $kkk = 360;
+                $iKkk = 360;
                 for($i = 20; $i < 81; $i += 10) {
-                    $im->text(3, 710+$ne, $kkk, "$i%", $iBlack);
-                    $kkk -= 50;
+                    $oIm->text(3, 710+$iNe, $iKkk, "$i%", $iBlack);
+                    $iKkk -= 50;
                 }
-                if($ne == 60) {
+                if($iNe == 60) {
                     for($i = 20; $i < 421; $i += 50) {
-                        $im->line(698 + $ne, $i, 703+$ne, $i, $iBlack);
+                        $oIm->line(698 + $iNe, $i, 703+$iNe, $i, $iBlack);
                     }
-                    $im->line(764,20,764,420,$iBlack);
+                    $oIm->line(764,20,764,420,$iBlack);
                 }
-                $ne += 60;
+                $iNe += 60;
             }
             // print scale for oligo-skew
             if(sizeof($aOligoSkew) > 10) {
-                $kkk = 15;
+                $iKkk = 15;
                 for($i = 0; $i < 9; $i ++) {
-                    $im->text(3, 710+$ne, $kkk, "0.$i", $iGb);
-                    $kkk += 50;
+                    $oIm->text(3, 710+$iNe, $iKkk, "0.$i", $iGb);
+                    $iKkk += 50;
                 }
-                if($ne > 0) {
+                if($iNe > 0) {
                     for($i = 20; $i < 421; $i += 50) {
-                        $im->line(698 + $ne, $i, 703+$ne, $i, $iBlack);
+                        $oIm->line(698 + $iNe, $i, 703+$iNe, $i, $iBlack);
                     }
-                    $im->line(704+$ne, 20, 704 + $ne, 420, $iBlack);
+                    $oIm->line(704+$iNe, 20, 704 + $iNe, 420, $iBlack);
                 }
             }
         } catch (\Exception $e) {
