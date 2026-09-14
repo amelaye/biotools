@@ -99,4 +99,57 @@ class MicrosatelliteRepeatsFinderManagerTest extends TestCase
         $service = new MicrosatelliteRepeatsFinderManager();
         $service->includeNPlus1($sPrimer, $iMinus);
     }
+
+    /**
+     * Every combination of three wildcard positions, C(5,3) = 10 patterns for a 5-mer.
+     * Legacy's includeN_3() is a byte-for-byte copy of includeN_2() and only ever places
+     * two wildcards, so this is a deliberate divergence from it.
+     */
+    public function testIncludeN3()
+    {
+        $sPrimer = "AACAA";
+        $iMinus = 0;
+        $sExpected = "...AA|..C.A|..CA.|.A..A|.A.A.|.AC..|A...A|A..A.|A.C..|AA...";
+
+        $service = new MicrosatelliteRepeatsFinderManager();
+        $testFunction = $service->includeN3($sPrimer, $iMinus);
+
+        $this->assertEquals($sExpected, $testFunction);
+    }
+
+    /**
+     * $iMinus keeps that many bases in 3' always matching, so a 5-mer with $iMinus = 1
+     * only wildcards within its first four bases: C(4,3) = 4 patterns, all ending in "A"
+     */
+    public function testIncludeN3KeepsTheThreePrimeEndIntact()
+    {
+        $service = new MicrosatelliteRepeatsFinderManager();
+
+        $this->assertEquals("...AA|..C.A|.A..A|A...A", $service->includeN3("AACAA", 1));
+    }
+
+    public function testIncludeN3Exception()
+    {
+        $this->expectException(\Exception::class);
+
+        $service = new MicrosatelliteRepeatsFinderManager();
+        $service->includeN3([], 0);
+    }
+
+    /**
+     * The three-mismatch branch is reachable from the form: the mismatch count is
+     * floor(length x percentage / 100), so the 30% option on a 10 base subsequence
+     * asks for 3. It must now use a genuine three-wildcard pattern.
+     */
+    public function testThreeMismatchesUseTheThreeWildcardPattern()
+    {
+        $service = new MicrosatelliteRepeatsFinderManager();
+
+        // ACGTACGTAC repeated, with 3 substitutions in the second copy
+        $sSequence = "ACGTACGTAC" . "AGGTAGGTAG" . "ACGTACGTAC";
+        $aResults = $service->findMicrosatelliteRepeats($sSequence, 10, 10, 3, 10, 30);
+
+        $this->assertNotEmpty($aResults);
+        $this->assertEquals(3, $aResults[0]["repeats"]);
+    }
 }

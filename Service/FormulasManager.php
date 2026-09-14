@@ -424,4 +424,50 @@ class FormulasManager
             throw new \Exception($e);
         }
     }
+
+    /**
+     * Centrifugation: revolutions per minute to relative centrifugal force
+     * RCF = 1.12 x R x (RPM / 1000)^2, R being the rotor radius in millimetres
+     *
+     * biophp.org's original declares a revpermin($rpm, $RCF, $R) for this, but nothing
+     * ever calls it and it is a no-op: it builds $rcf from $rpm, then divides it by the
+     * same 1.12 x $R it just multiplied in, so 1000 x sqrt() hands back the $rpm it was
+     * given. Its $RCF argument is never read. The conversion is implemented here in
+     * both directions instead.
+     * @param       float       $fRpm       Revolutions per minute
+     * @param       float       $fRadius    Rotor radius in millimetres
+     * @return      float|int
+     * @throws      \Exception
+     */
+    public function rpmToRcf($fRpm, $fRadius)
+    {
+        try {
+            if (!$fRpm || !$fRadius) {
+                return 0;
+            }
+            return 1.12 * $fRadius * pow($fRpm / 1000, 2);
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Centrifugation: relative centrifugal force to revolutions per minute
+     * RPM = 1000 x sqrt(RCF / (1.12 x R)), R being the rotor radius in millimetres
+     * @param       float       $fRcf       Relative centrifugal force (x g)
+     * @param       float       $fRadius    Rotor radius in millimetres
+     * @return      float|int
+     * @throws      \Exception
+     */
+    public function rcfToRpm($fRcf, $fRadius)
+    {
+        try {
+            if (!$fRcf || !$fRadius) {
+                return 0;
+            }
+            return 1000 * sqrt($fRcf / (1.12 * $fRadius));
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
 }

@@ -78,11 +78,24 @@ static three-row HTML tables. The formulas reproduce those tables, and in passin
 correct the last cell of the second one, which reads `2.7 bp` where the stated rule
 gives 2702.7 bp.
 
-`revpermin()` (`useful_formulas.php`) is deliberately **not** migrated: nothing in the
-original ever calls it, and it is a no-op anyway — it computes
+`microsatellite_repeats_finder.php` dispatches on the mismatch count to one of three
+helpers, but `includeN_3()` is a byte-for-byte copy of `includeN_2()` and places only
+two wildcards — its own comment reads "allows **two** missmaches". Asking for three
+mismatches therefore searched with a two-mismatch pattern.
+`MicrosatelliteRepeatsFinderManager::includeN3()` builds a genuine three-wildcard
+pattern, so the three-mismatch case now finds repeats the original missed. It is
+reachable from the form: the count is `floor(length × percentage / 100)`, so the 30%
+option on a 10 base subsequence asks for 3.
+
+`revpermin()` (`useful_formulas.php`) is a no-op in the original — it computes
 `$rcf = 1.12 * $R * ($rpm/1000)^2` then immediately divides `$rcf` by `1.12 * $R`
-again, so `1000 * sqrt(...)` just returns the `$rpm` it was given. It also carries a
-leftover `print $temp;`.
+again, so `1000 * sqrt(...)` just returns the `$rpm` it was given. Its `$RCF` argument
+is never read, nothing ever calls it, and it carries a leftover `print $temp;`. The
+conversion it was named for is implemented properly in `FormulasManager` as
+`rpmToRcf()` / `rcfToRpm()` (`RCF = 1.12 × R × (RPM/1000)²`, R being the rotor radius
+in millimetres). Both are service methods only: the original never exposed
+centrifugation in its menu, so `FormulasType` still lists exactly the formulas the
+original offered.
 
 `reader_gff_fasta.php` has no modern equivalent yet.
 

@@ -52,8 +52,10 @@ class MicrosatelliteRepeatsFinderManager
                             $sSubSeqPattern = $this->includeN1($sSubSeq,0);
                             break;
                         case 2:
-                        case 3:
                             $sSubSeqPattern = $this->includeNPlus1($sSubSeq,0);
+                            break;
+                        case 3:
+                            $sSubSeqPattern = $this->includeN3($sSubSeq,0);
                             break;
                         default:
                             $sSubSeqPattern = $sSubSeq;
@@ -142,6 +144,44 @@ class MicrosatelliteRepeatsFinderManager
 
             $sCode = substr($sCode,1);
             return $sCode;
+        } catch (\Exception $e) {
+            throw new \Exception($e);
+        }
+    }
+
+    /**
+     * Similar to IncludeN1 and IncludeNPlus1, but allows three mismatches: for "acgta"
+     * it returns "...ta|..g.a|..gt.|.c..a|.c.t.|.cg..|a...a|a..t.|a.g..|ac...".
+     * Legacy has an includeN_3(), but its body is a byte-for-byte copy of includeN_2()
+     * and places only two wildcards - its own comment reads "allows two missmaches" -
+     * so asking for three mismatches silently searched with a two-mismatch pattern.
+     * That case is reachable from the form: 30% of a 10 base subsequence is 3.
+     * @param   string      $sPrimer     DNA sequence (oligonucleotide, primer)
+     * @param   int         $iMinus      Number of bases in 3' which will always much the DNA sequence.
+     * @return  string                   Pattern
+     * @throws  \Exception
+     */
+    public function includeN3($sPrimer, $iMinus)
+    {
+        if (!is_string($sPrimer)) {
+            throw new \Exception('The primer must be a string.');
+        }
+        try {
+            $iMax = strlen($sPrimer) - $iMinus;
+            $aPatterns = [];
+            for($i = 0; $i < $iMax; $i++) {
+                for($j = $i + 1; $j < $iMax; $j++) {
+                    for($k = $j + 1; $k < $iMax; $k++) {
+                        $sPattern = $sPrimer;
+                        $sPattern[$i] = ".";
+                        $sPattern[$j] = ".";
+                        $sPattern[$k] = ".";
+                        $aPatterns[] = $sPattern;
+                    }
+                }
+            }
+
+            return implode("|", $aPatterns);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

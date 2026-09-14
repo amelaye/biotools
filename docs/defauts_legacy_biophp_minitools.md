@@ -181,8 +181,10 @@ says "Similar to function IncludeN_1 and IncludeN_2, but allows **two** missmach
 so the name is the only thing promising three. A request allowing three mismatches
 silently searches with a two-mismatch pattern.
 
-**Suggested fix**: either implement the three-wildcard pattern, or drop `includeN_3()`
-and let the 2 and 3 cases share one helper (what the port does).
+**Suggested fix**: implement the three-wildcard pattern — what the port now does in
+`MicrosatelliteRepeatsFinderManager::includeN3()`. Dropping `includeN_3()` and letting
+the 2 and 3 cases share one helper would preserve the current behaviour, but it is the
+name rather than the behaviour that looks right.
 
 ## 10. `revpermin()` is dead code and a mathematical no-op
 
@@ -204,7 +206,8 @@ Nothing in the file calls it. Were it called, it would return its own `$rpm` arg
 the leftover `print $temp;` would write a raw number into the middle of the page.
 
 **Suggested fix**: remove it, or implement the intended RPM/RCF conversion
-(`RCF = 1.12 x R x (RPM/1000)^2`, so `RPM = 1000 x sqrt(RCF / (1.12 x R))`).
+(`RCF = 1.12 x R x (RPM/1000)^2`, so `RPM = 1000 x sqrt(RCF / (1.12 x R))`) — the port
+now carries the latter as `FormulasManager::rpmToRcf()` / `rcfToRpm()`.
 
 ---
 

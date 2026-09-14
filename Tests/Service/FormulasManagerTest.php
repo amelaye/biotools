@@ -256,4 +256,44 @@ class FormulasManagerTest extends TestCase
         $service = new FormulasManager();
         $this->assertEquals(0, $service->kDaToBasePairs(0));
     }
+
+    /**
+     * RCF = 1.12 x R x (RPM/1000)^2 : a 100 mm rotor at 10000 rpm pulls 11200 x g.
+     * biophp.org declares a revpermin() for this but never calls it, and it is a no-op
+     * that returns the rpm it was handed.
+     */
+    public function testRpmToRcf()
+    {
+        $service = new FormulasManager();
+
+        $this->assertEqualsWithDelta(11200, $service->rpmToRcf(10000, 100), 0.01);
+    }
+
+    public function testRcfToRpm()
+    {
+        $service = new FormulasManager();
+
+        $this->assertEqualsWithDelta(10000, $service->rcfToRpm(11200, 100), 0.01);
+    }
+
+    public function testRpmAndRcfRoundTrip()
+    {
+        $service = new FormulasManager();
+        $fRcf = $service->rpmToRcf(4500, 85);
+
+        $this->assertEqualsWithDelta(4500, $service->rcfToRpm($fRcf, 85), 0.01);
+    }
+
+    /**
+     * A zero radius would divide by zero in rcfToRpm, which PHP 8 makes fatal
+     */
+    public function testRpmAndRcfWithoutValue()
+    {
+        $service = new FormulasManager();
+
+        $this->assertEquals(0, $service->rpmToRcf(0, 100));
+        $this->assertEquals(0, $service->rpmToRcf(10000, 0));
+        $this->assertEquals(0, $service->rcfToRpm(0, 100));
+        $this->assertEquals(0, $service->rcfToRpm(11200, 0));
+    }
 }
