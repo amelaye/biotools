@@ -3,7 +3,7 @@
  * Microsatellite Repeats Finder Fonctions
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -45,9 +45,9 @@ class MicrosatelliteRepeatsFinderManager
                     }
                     $sSubSeq = substr($sSequence,$i,$j);
                     $iLenSubSeq = strlen($sSubSeq);
-                    $mismatches = floor($iLenSubSeq * $iMismatchesAllowed / 100);
+                    $iMismatches = floor($iLenSubSeq * $iMismatchesAllowed / 100);
 
-                    switch($mismatches) {
+                    switch($iMismatches) {
                         case 1:
                             $sSubSeqPattern = $this->includeN1($sSubSeq,0);
                             break;
@@ -60,7 +60,7 @@ class MicrosatelliteRepeatsFinderManager
                     }
 
                     $iMatches = 1;
-                    while(preg_match_all("/($sSubSeqPattern)/",substr($sSequence,($i+$j*$iMatches),$j),$out) == 1) {
+                    while(preg_match_all("/($sSubSeqPattern)/",substr($sSequence,($i+$j*$iMatches),$j),$aOut) == 1) {
                         $iMatches ++;
                     }
 
