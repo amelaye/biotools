@@ -3,7 +3,7 @@
  * MicroarrayAnalysisAdaptive
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Service;
 

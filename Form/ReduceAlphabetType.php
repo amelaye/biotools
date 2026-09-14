@@ -3,7 +3,7 @@
  * Class ReduceAlphabetType
  * Freely inspired by BioPHP's project biophp.org
  * Created 7 april 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Form;
 

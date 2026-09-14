@@ -2,7 +2,7 @@
 /**
  * Inspired by BioPHP's project biophp.org
  * Created 28 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
