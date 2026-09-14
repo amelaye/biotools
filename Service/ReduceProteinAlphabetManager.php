@@ -3,7 +3,7 @@
  * Class ReduceProteinAlphabetManager
  * Inspired by BioPHP's project biophp.org
  * Created 27 february 2019 - RIP Pasha =^._.^= ∫
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -19,7 +19,7 @@ class ReduceProteinAlphabetManager
     /**
      * @var array
      */
-    private $proteinColors;
+    private $aProteinColors;
 
     /**
      * @var array
@@ -33,12 +33,12 @@ class ReduceProteinAlphabetManager
 
     /**
      * ReduceProteinAlphabetManager constructor.
-     * @param       array                      $proteinColors
+     * @param       array                      $aProteinColors
      * @param       ProteinReductionApiAdapter $oProteinReduction
      */
-    public function __construct(array $proteinColors, ProteinReductionApiAdapter $oProteinReduction)
+    public function __construct(array $aProteinColors, ProteinReductionApiAdapter $oProteinReduction)
     {
-        $this->proteinColors     = $proteinColors;
+        $this->aProteinColors     = $aProteinColors;
         $this->oProteinReduction = $oProteinReduction;
         $this->aReductions       = $oProteinReduction::GetReductionsArray($oProteinReduction->getReductions());
     }
@@ -77,13 +77,13 @@ class ReduceProteinAlphabetManager
         try {
             $sCustomAlphabet = strtolower($sCustomAlphabet);
             // array with reduced code
-            $a = preg_split("//",$sCustomAlphabet,-1,PREG_SPLIT_NO_EMPTY);
+            $aA = preg_split("//",$sCustomAlphabet,-1,PREG_SPLIT_NO_EMPTY);
             // array with aminoacids
-            $b = preg_split("//","ARNDCEQGHILKMFPSTWYV",-1,PREG_SPLIT_NO_EMPTY);
+            $aB = preg_split("//","ARNDCEQGHILKMFPSTWYV",-1,PREG_SPLIT_NO_EMPTY);
 
-            foreach($a as $key=> $val) {
+            foreach($aA as $iKey=> $sVal) {
                 // replace aminoacids by reduced codes
-                $sSequence = preg_replace("/".$b[$key]."/", $val, $sSequence);
+                $sSequence = preg_replace("/".$aB[$iKey]."/", $sVal, $sSequence);
             }
             $sSequence = strtoupper($sSequence);
             return $sSequence;

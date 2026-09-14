@@ -50,8 +50,8 @@ class RandomSequencesManager
     {
         try {
             $sElements = "";
-            foreach($aElements as $key => $element) {
-                $sElements .= str_repeat($key, $element);
+            foreach($aElements as $sKey => $iElement) {
+                $sElements .= str_repeat($sKey, $iElement);
             }
             return str_shuffle($sElements);
         } catch (\Exception $e) {
@@ -71,50 +71,50 @@ class RandomSequencesManager
         try {
             if($iLength != null) {
                 // remove from sequence characters different to ACGT.
-                $seqACGT = preg_replace("/[^ACGT]/","", $sSequence);
-                // The sequence is DNA if A+C+G+T>70% (so, if $seqACGT is long enough)
-                if(strlen($seqACGT) > strlen($sSequence) * 0.7) {
-                    $acgt = 0;
+                $sSeqACGT = preg_replace("/[^ACGT]/","", $sSequence);
+                // The sequence is DNA if A+C+G+T>70% (so, if $sSeqACGT is long enough)
+                if(strlen($sSeqACGT) > strlen($sSequence) * 0.7) {
+                    $iAcgt = 0;
                     $aDNA = [];
 
                     // The sequence is DNA
                     // get the frequencies for each nucleotide
-                    foreach($this->aAminos as $amino) {
-                        $$amino = substr_count($sSequence,$amino);
-                        $acgt += $$amino;
+                    foreach($this->aAminos as $sAmino) {
+                        $$sAmino = substr_count($sSequence,$sAmino);
+                        $iAcgt += $$sAmino;
                     }
 
                     // Get number of ocurrences per each nucleotide for a seq with length=$length1
-                    foreach($this->aAminos as $amino) {
-                        $aDNA[$amino] = round($$amino * $iLength / $acgt);
+                    foreach($this->aAminos as $sAmino) {
+                        $aDNA[$sAmino] = round($$sAmino * $iLength / $iAcgt);
                     }
 
                     // get randomized sequence
-                    $result = $this->randomize($aDNA);
+                    $sResult = $this->randomize($aDNA);
                 } else {
                     // The sequence is protein
                     $aProteins = [];
-                    $ACDEFGHIKLMNPGRSTVWY = 0;
+                    $iAcdefghiklmnpgrstvwy = 0;
                     $aListProteins = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"];
 
                     // get the frequencies for each aminoacid
-                    foreach($aListProteins as $protein) {
-                        $$protein = substr_count($sSequence, $protein);
-                        $ACDEFGHIKLMNPGRSTVWY += $$protein;
+                    foreach($aListProteins as $sProtein) {
+                        $$sProtein = substr_count($sSequence, $sProtein);
+                        $iAcdefghiklmnpgrstvwy += $$sProtein;
                     }
 
                     // Get number of ocurrences per each nucleotide for a seq with length=$length1
-                    foreach($aListProteins as $protein) {
-                        $aProteins[$protein] = round($$protein * $iLength / $ACDEFGHIKLMNPGRSTVWY);
+                    foreach($aListProteins as $sProtein) {
+                        $aProteins[$sProtein] = round($$sProtein * $iLength / $iAcdefghiklmnpgrstvwy);
                     }
 
-                    $result = $this->randomize($aProteins);
+                    $sResult = $this->randomize($aProteins);
                 }
             } else {
                 // just shuffle the sequence when length is not provided
-                $result = str_shuffle($sSequence);
+                $sResult = str_shuffle($sSequence);
             }
-            return $result;
+            return $sResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -131,24 +131,24 @@ class RandomSequencesManager
     {
         try {
             $aDNA = [];
-            $acgt = 0;
+            $iAcgt = 0;
             if ($iLength != null) {
                 // in case length is specified
-                foreach($aAminoAcids as $amino) {
-                    $acgt += $amino;
+                foreach($aAminoAcids as $iAmino) {
+                    $iAcgt += $iAmino;
                 }
-                foreach($aAminoAcids as $key => $data) {
-                    $aDNA[$key] = round($data * $iLength / $acgt);
+                foreach($aAminoAcids as $sKey => $iData) {
+                    $aDNA[$sKey] = round($iData * $iLength / $iAcgt);
                 }
             } else {
                 // in case length is not specified
-                foreach($aAminoAcids as $key => $data) {
-                    $aDNA[$key] = round($data);
+                foreach($aAminoAcids as $sKey => $iData) {
+                    $aDNA[$sKey] = round($iData);
                 }
             }
 
-            $result = $this->randomize($aDNA); // get randomized sequence
-            return $result;
+            $sResult = $this->randomize($aDNA); // get randomized sequence
+            return $sResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -165,28 +165,28 @@ class RandomSequencesManager
     {
         try {
             $aProteins = [];
-            $ACDEFGHIKLMNPGRSTVWY = 0;
+            $iAcdefghiklmnpgrstvwy = 0;
 
             // Get number of ocurrences per each aminoacid
             if ($iLength != null) {
                 // in case length is specified
-                foreach($aAminoAcids as $amino) {
-                    $ACDEFGHIKLMNPGRSTVWY += $amino;
+                foreach($aAminoAcids as $iAmino) {
+                    $iAcdefghiklmnpgrstvwy += $iAmino;
                 }
 
-                foreach($aAminoAcids as $key => $data) {
-                    $aProteins[$key] = round($data * $iLength / $ACDEFGHIKLMNPGRSTVWY);
+                foreach($aAminoAcids as $sKey => $iData) {
+                    $aProteins[$sKey] = round($iData * $iLength / $iAcdefghiklmnpgrstvwy);
                 }
 
             } else {
                 // in case length is not specified
-                foreach($aAminoAcids as $key => $data) {
-                    $aProteins[$key] = round($data);
+                foreach($aAminoAcids as $sKey => $iData) {
+                    $aProteins[$sKey] = round($iData);
                 }
             }
             // get randomized sequence
-            $result = $this->randomize($aProteins);
-            return $result;
+            $sResult = $this->randomize($aProteins);
+            return $sResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
