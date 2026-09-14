@@ -3,7 +3,7 @@
  * DistanceAmongSequencesManager
  * Freely inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -24,24 +24,24 @@ class DistanceAmongSequencesManager
     use SequenceTrait;
 
     /**
-     * @var int
+     * @var int|string
      */
-    private $x = null;
+    private $sX = null;
 
     /**
-     * @var int
+     * @var int|string
      */
-    private $y = null;
-
-    /**
-     * @var int
-     */
-    private $cases = null;
+    private $sY = null;
 
     /**
      * @var array
      */
-    private $dnaComplements;
+    private $aCases = null;
+
+    /**
+     * @var array
+     */
+    private $aDnaComplements;
 
     /**
      * @var OligosManager
@@ -55,28 +55,28 @@ class DistanceAmongSequencesManager
      */
     public function __construct(OligosInterface $oligosManager, NucleotidApiAdapter $nucleotidApi)
     {
-        $this->dnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
+        $this->aDnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
         $this->oligosManager = $oligosManager;
     }
 
     /**
-     * Get the name of each sequence (save names to array $seq_name)
+     * Get the name of each sequence (save names to array $aSeqName)
      * Unit test created
-     * @param $seqs
-     * @return array[]|false|string[]
-     * @throws \Exception
+     * @param   string  $sSeqs
+     * @return  array[]|false|string[]
+     * @throws  \Exception
      */
-    public function formatSequences($seqs)
+    public function formatSequences($sSeqs)
     {
         try {
-            $seqs = preg_split("/>/", $seqs,-1,PREG_SPLIT_NO_EMPTY);
-            foreach ($seqs as $key => $val) {
-                $seq_name[$key] = substr($val,0,strpos($val,"\n"));
-                $temp_val = substr($val,strpos($val,"\n"));
-                $temp_val = preg_replace("/\W|\d/","",$temp_val);
-                $seqs[$key] = strtoupper($temp_val);
+            $aSeqs = preg_split("/>/", $sSeqs,-1,PREG_SPLIT_NO_EMPTY);
+            foreach ($aSeqs as $iKey => $sVal) {
+                $aSeqName[$iKey] = substr($sVal,0,strpos($sVal,"\n"));
+                $sTempVal = substr($sVal,strpos($sVal,"\n"));
+                $sTempVal = preg_replace("/\W|\d/","",$sTempVal);
+                $aSeqs[$iKey] = strtoupper($sTempVal);
             }
-            return $seqs;
+            return $aSeqs;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -90,29 +90,29 @@ class DistanceAmongSequencesManager
      * @return mixed
      * @throws \Exception
      */
-    public function computeOligonucleotidsFrequenciesEuclidean($seqs, $len)
+    public function computeOligonucleotidsFrequenciesEuclidean($aSeqs, $iLen)
     {
-        if (!is_array($seqs)) {
+        if (!is_array($aSeqs)) {
             throw new \Exception('The sequences must be an array.');
         }
         try {
-            $oligo_array = [];
-            foreach ($seqs as $key => $val) {
+            $aOligoArray = [];
+            foreach ($aSeqs as $iKey => $sVal) {
                 // to compute oligonucleotide frequencies, both strands are used
-                $valRevert = strrev($val);
-                foreach ($this->dnaComplements as $nucleotide => $complement) {
-                    $valRevert = str_replace($nucleotide, strtolower($complement), $valRevert);
+                $sValRevert = strrev($sVal);
+                foreach ($this->aDnaComplements as $sNucleotide => $sComplement) {
+                    $sValRevert = str_replace($sNucleotide, strtolower($sComplement), $sValRevert);
                 }
-                $seq_and_revseq = $val." ".strtoupper($valRevert);
+                $sSeqAndRevseq = $sVal." ".strtoupper($sValRevert);
 
-                $oligos = $this->oligosManager->findOligos(
-                    $seq_and_revseq,
-                    $len
+                $aOligos = $this->oligosManager->findOligos(
+                    $sSeqAndRevseq,
+                    $iLen
                 );
 
-                $oligo_array[$key] = $this->standardFrecuencies($oligos, $len);
+                $aOligoArray[$iKey] = $this->standardFrecuencies($aOligos, $iLen);
             }
-            return $oligo_array;
+            return $aOligoArray;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -125,17 +125,17 @@ class DistanceAmongSequencesManager
      * @return array
      * @throws \Exception
      */
-    public function computeOligonucleotidsFrequencies($seqs)
+    public function computeOligonucleotidsFrequencies($aSeqs)
     {
-        if (!is_array($seqs)) {
+        if (!is_array($aSeqs)) {
             throw new \Exception('The sequences must be an array.');
         }
         try {
-            $oligo_array = [];
-            foreach ($seqs as $key => $theseq) {
-                $oligo_array[$key] = $this->computeZscoresForTetranucleotides($theseq);
+            $aOligoArray = [];
+            foreach ($aSeqs as $iKey => $sTheseq) {
+                $aOligoArray[$iKey] = $this->computeZscoresForTetranucleotides($sTheseq);
             }
-            return $oligo_array;
+            return $aOligoArray;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -152,23 +152,23 @@ class DistanceAmongSequencesManager
      * @return  array
      * @throws  \Exception
      */
-    public function computeDistancesAmongFrequenciesEuclidean($seqs, $oligo_array, $len)
+    public function computeDistancesAmongFrequenciesEuclidean($aSeqs, $aOligoArray, $iLen)
     {
         try {
-            $data = [];
-            foreach ($seqs as $key => $val) {
-                foreach($seqs as $key2 => $val2) {
-                    if ($key >= $key2) {
+            $aData = [];
+            foreach ($aSeqs as $iKey => $sVal) {
+                foreach($aSeqs as $iKey2 => $sVal2) {
+                    if ($iKey >= $iKey2) {
                         continue;
                     }
-                    $data[$key][$key2] = $this->euclidDistance(
-                        $oligo_array[$key],
-                        $oligo_array[$key2],
-                        $len
+                    $aData[$iKey][$iKey2] = $this->euclidDistance(
+                        $aOligoArray[$iKey],
+                        $aOligoArray[$iKey2],
+                        $iLen
                     );
                 }
             }
-            return $data;
+            return $aData;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -184,22 +184,22 @@ class DistanceAmongSequencesManager
      * @return  mixed
      * @throws  \Exception
      */
-    public function computeDistancesAmongFrequencies($seqs, $oligo_array)
+    public function computeDistancesAmongFrequencies($aSeqs, $aOligoArray)
     {
         try {
-            $data = [];
-            foreach($seqs as $key => $val){
-                foreach($seqs as $key2 => $val2){
-                    if ($key >= $key2) {
+            $aData = [];
+            foreach($aSeqs as $iKey => $sVal){
+                foreach($aSeqs as $iKey2 => $sVal2){
+                    if ($iKey >= $iKey2) {
                         continue;
                     }
-                    $data[$key][$key2]= $this->pearsonDistance(
-                        $oligo_array[$key],
-                        $oligo_array[$key2]
+                    $aData[$iKey][$iKey2]= $this->pearsonDistance(
+                        $aOligoArray[$iKey],
+                        $aOligoArray[$iKey2]
                     );
                 }
             }
-            return $data;
+            return $aData;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -207,24 +207,24 @@ class DistanceAmongSequencesManager
 
 
     /**
-     * @param $a
-     * @return array|array[]|false|string[]
-     * @throws \Exception
+     * @param   array   $aArray
+     * @return  array|array[]|false|string[]
+     * @throws  \Exception
      */
-    public function getArrayCases($a)
+    public function getArrayCases($aArray)
     {
         try {
-            $done = "";
-            foreach($a as $key => $val){
-                $done .= "#$key";
-                foreach($a[$key] as $key2 =>$val2){
-                    $done .= "#$key2";
+            $sDone = "";
+            foreach($aArray as $sKey => $aVal){
+                $sDone .= "#$sKey";
+                foreach($aArray[$sKey] as $sKey2 => $fVal2){
+                    $sDone .= "#$sKey2";
                 }
             }
-            $cases = preg_split("/#/",$done,-1,PREG_SPLIT_NO_EMPTY);
-            $cases = array_unique($cases);
-            sort($cases);
-            return $cases;
+            $aCases = preg_split("/#/",$sDone,-1,PREG_SPLIT_NO_EMPTY);
+            $aCases = array_unique($aCases);
+            sort($aCases);
+            return $aCases;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -232,66 +232,66 @@ class DistanceAmongSequencesManager
 
 
     /**
-     * @param $a
-     * @return mixed
-     * @throws \Exception
+     * @param   array   $aArray
+     * @return  mixed
+     * @throws  \Exception
      */
-    public function newArray($a)
+    public function newArray($aArray)
     {
         try {
-            $cases = $this->getArrayCases($a);
-            $temp_a = [];
-            for($j = 0; $j < sizeof($cases); $j++) {
-                $key = $cases[$j];
+            $aCases = $this->getArrayCases($aArray);
+            $aTempA = [];
+            for($iJ = 0; $iJ < sizeof($aCases); $iJ++) {
+                $sKey = $aCases[$iJ];
 
                 // next 3 lines are required in windows for correct comparison
-                settype($key, "string");
-                settype($this->x, "string");
-                settype($this->y, "string");
+                settype($sKey, "string");
+                settype($this->sX, "string");
+                settype($this->sY, "string");
 
-                if($key == $this->x || $key == $this->y) {
+                if($sKey == $this->sX || $sKey == $this->sY) {
                     continue;
                 }
-                if(($a[$key][$this->x] ?? "") != "") {
-                    if(($a[$key][$this->y] ?? "") != "") {
-                        $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$key][$this->y])/2;
+                if(($aArray[$sKey][$this->sX] ?? "") != "") {
+                    if(($aArray[$sKey][$this->sY] ?? "") != "") {
+                        $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$sKey][$this->sX]+$aArray[$sKey][$this->sY])/2;
                     }
-                    if(($a[$this->x][$key] ?? "") != "") {
-                        $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$this->x][$key])/2;
+                    if(($aArray[$this->sX][$sKey] ?? "") != "") {
+                        $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$sKey][$this->sX]+$aArray[$this->sX][$sKey])/2;
                     }
-                    if(($a[$this->y][$key] ?? "") != "") {
-                        $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->x]+$a[$this->y][$key])/2;
+                    if(($aArray[$this->sY][$sKey] ?? "") != "") {
+                        $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$sKey][$this->sX]+$aArray[$this->sY][$sKey])/2;
                     }
                 } else {
-                    if(($a[$key][$this->y] ?? "") != "") {
-                        if (($a[$this->x][$key] ?? "") != "") {
-                            $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->y]+$a[$this->x][$key])/2;
+                    if(($aArray[$sKey][$this->sY] ?? "") != "") {
+                        if (($aArray[$this->sX][$sKey] ?? "") != "") {
+                            $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$sKey][$this->sY]+$aArray[$this->sX][$sKey])/2;
                         }
-                        if(($a[$this->y][$key] ?? "") != "") {
-                            $temp_a[$key]["($this->x,$this->y)"] = ($a[$key][$this->y]+$a[$this->y][$key])/2;
+                        if(($aArray[$this->sY][$sKey] ?? "") != "") {
+                            $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$sKey][$this->sY]+$aArray[$this->sY][$sKey])/2;
                         }
                     } else {
-                        if(($a[$this->y][$key] ?? "") != "") {
-                            $temp_a[$key]["($this->x,$this->y)"] = ($a[$this->y][$key]+$a[$this->y][$key])/2;
+                        if(($aArray[$this->sY][$sKey] ?? "") != "") {
+                            $aTempA[$sKey]["($this->sX,$this->sY)"] = ($aArray[$this->sY][$sKey]+$aArray[$this->sY][$sKey])/2;
                         }
                     }
                 }
 
-                for($i = $j+1; $i < sizeof($cases); $i++) {
-                    $key2 = $cases[$i];
-                    settype($key2, "string");
-                    if ($key == $key2 || $key2 == $this->x || $key2 == $this->y) {
+                for($i = $iJ+1; $i < sizeof($aCases); $i++) {
+                    $sKey2 = $aCases[$i];
+                    settype($sKey2, "string");
+                    if ($sKey == $sKey2 || $sKey2 == $this->sX || $sKey2 == $this->sY) {
                         continue;
                     }
-                    if (($a[$key][$key2] ?? "") != "") {
-                        $temp_a[$key][$key2] = $a[$key][$key2];
+                    if (($aArray[$sKey][$sKey2] ?? "") != "") {
+                        $aTempA[$sKey][$sKey2] = $aArray[$sKey][$sKey2];
                     }
-                    if (($a[$key2][$key] ?? "") != "") {
-                        $temp_a[$key][$key2] = $a[$key2][$key];
+                    if (($aArray[$sKey2][$sKey] ?? "") != "") {
+                        $aTempA[$sKey][$sKey2] = $aArray[$sKey2][$sKey];
                     }
                 }
             }
-            return $temp_a;
+            return $aTempA;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -299,34 +299,34 @@ class DistanceAmongSequencesManager
 
 
     /**
-     * @param $a
-     * @return int|mixed
-     * @throws \Exception
+     * @param   array   $aArray
+     * @return  int|mixed
+     * @throws  \Exception
      */
-    public function minArray($a)
+    public function minArray($aArray)
     {
         try {
-            $str_cases  = "";
-            $min        = 1000000;
-            $done       = "";
-            foreach ($a as $key => $val) {
-                $str_cases .= "#$key";
-                foreach($a[$key] as $key2 =>$val2) {
-                    if ($val == "") {
+            $sStrCases  = "";
+            $fMin       = 1000000;
+            $sDone      = "";
+            foreach ($aArray as $sKey => $aVal) {
+                $sStrCases .= "#$sKey";
+                foreach($aArray[$sKey] as $sKey2 => $fVal2) {
+                    if ($aVal == "") {
                         continue;
                     }
-                    $str_cases .= "#$key2";
-                    if ($val2 < $min) {
-                        $min = $val2;
-                        $this->x = $key;
-                        $this->y = $key2;
+                    $sStrCases .= "#$sKey2";
+                    if ($fVal2 < $fMin) {
+                        $fMin = $fVal2;
+                        $this->sX = $sKey;
+                        $this->sY = $sKey2;
                     }
                 }
             }
-            $this->cases = preg_split("/#/",$done,-1,PREG_SPLIT_NO_EMPTY);
-            $this->cases = array_unique($this->cases);
-            sort($this->cases);
-            return $min;
+            $this->aCases = preg_split("/#/",$sDone,-1,PREG_SPLIT_NO_EMPTY);
+            $this->aCases = array_unique($this->aCases);
+            sort($this->aCases);
+            return $fMin;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -342,107 +342,107 @@ class DistanceAmongSequencesManager
      * @return  string      The path written
      * @throws  \Exception
      */
-    public function createDendrogram($str, $comp, $dendogramFile, $method, $len)
+    public function createDendrogram($sStr, $aComp, $sDendogramFile, $sMethod, $iLen)
     {
         try {
-            $w      = 20;          //height for each line (case)
-            $wherex = [];
+            $iW      = 20;          //height for each line (case)
+            $aWherex = [];
 
-            $str    = preg_replace("/\(|\)/","",$str).",";
-            $a      = preg_split("/,/",$str,-1,PREG_SPLIT_NO_EMPTY);
-            $rows   = sizeof($a);
+            $sStr   = preg_replace("/\(|\)/","",$sStr).",";
+            $aStr   = preg_split("/,/",$sStr,-1,PREG_SPLIT_NO_EMPTY);
+            $iRows  = sizeof($aStr);
 
-            $width  = 600;     // width of scale from 0 to 2
-            $im     = new SvgCanvas((int) ($width*1.2), $rows*$w+40);
-            $white  = SvgCanvas::rgb(255, 255, 255);
-            $black  = SvgCanvas::rgb(0, 0, 0);
-            $red    = SvgCanvas::rgb(255, 0, 0);
-            $im->background($white);
+            $iWidth = 600;     // width of scale from 0 to 2
+            $oIm    = new SvgCanvas((int) ($iWidth*1.2), $iRows*$iW+40);
+            $sWhite = SvgCanvas::rgb(255, 255, 255);
+            $sBlack = SvgCanvas::rgb(0, 0, 0);
+            $sRed   = SvgCanvas::rgb(255, 0, 0);
+            $oIm->background($sWhite);
 
-            $y = $rows*$w;    // vertical location
-            $f = $width;      // multiplication factor
+            $iY = $iRows*$iW;    // vertical location
+            $iF = $iWidth;       // multiplication factor
 
             // lines for scale
             $aJValues = [0.1, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0];
 
-            foreach($aJValues as $j) {
-                $x = log($j + 1) * $f + 20;
-                $x2 = log($j + 1) * $f - 8 + 20;
-                $im->line($x, $y, $x, $y + 10, $black);
-                $im->text(1, $x2, $y + 12,  $j, $black);
+            foreach($aJValues as $fJ) {
+                $fX = log($fJ + 1) * $iF + 20;
+                $fX2 = log($fJ + 1) * $iF - 8 + 20;
+                $oIm->line($fX, $iY, $fX, $iY + 10, $sBlack);
+                $oIm->text(1, $fX2, $iY + 12,  $fJ, $sBlack);
             }
 
             // write into the image the numbers corresponding to cases
-            foreach($a as $n => $val) {
-                if(strlen($val) == 1) {
-                    $val = " $val";
+            foreach($aStr as $iN => $sVal) {
+                if(strlen($sVal) == 1) {
+                    $sVal = " $sVal";
                 }
-                $im->text(3, 5, $n * $w + 5,  $val, $black);
+                $oIm->text(3, 5, $iN * $iW + 5,  $sVal, $sBlack);
             }
 
             // WRITE LINES
-            foreach ($comp as $key => $val) {
-                $pos1 = $pos2 = 0;
-                foreach ($comp[$key] as $key2 => $val2) {
+            foreach ($aComp as $sKey => $aVal) {
+                $fPos1 = $fPos2 = 0;
+                foreach ($aComp[$sKey] as $sKey2 => $fVal2) {
 
                     // get position of case in the list
-                    $keya = preg_replace("/\(|\)/","",$key);
-                    $pos1 = substr_count (" ,".substr($str, 0,strpos(" ,".$str,",$keya,")),",")-0.4;
-                    $keyb = preg_replace("/\(|\)/","",$key2);
-                    $pos2 = substr_count (" ,".substr($str, 0,strpos(" ,".$str,",$keyb,")),",")-0.4;
-                    if(substr_count($keya,",")>0) {
-                        $pos1b = $pos1 + substr_count($keya,",")/2;
+                    $sKeyA = preg_replace("/\(|\)/","",$sKey);
+                    $fPos1 = substr_count (" ,".substr($sStr, 0,strpos(" ,".$sStr,",$sKeyA,")),",")-0.4;
+                    $sKeyB = preg_replace("/\(|\)/","",$sKey2);
+                    $fPos2 = substr_count (" ,".substr($sStr, 0,strpos(" ,".$sStr,",$sKeyB,")),",")-0.4;
+                    if(substr_count($sKeyA,",")>0) {
+                        $fPos1b = $fPos1 + substr_count($sKeyA,",")/2;
                     } else {
-                        $pos1b = $pos1;
+                        $fPos1b = $fPos1;
                     }
-                    if(substr_count($keyb,",") > 0) {
-                        $pos2b = $pos2+substr_count($keyb,",")/2;
+                    if(substr_count($sKeyB,",") > 0) {
+                        $fPos2b = $fPos2+substr_count($sKeyB,",")/2;
                     } else {
-                        $pos2b = $pos2;
+                        $fPos2b = $fPos2;
                     }
 
                     // Position related data
-                    $xkey1 = isset($wherex[$key]) ? $xkey1 = $wherex[$key] : $xkey1 = 0;
-                    if($xkey1 == "") {
-                        $xkey1 = 0;
+                    $fXKey1 = isset($aWherex[$sKey]) ? $fXKey1 = $aWherex[$sKey] : $fXKey1 = 0;
+                    if($fXKey1 == "") {
+                        $fXKey1 = 0;
                     }
 
-                    $xkey2 = isset($wherex[$key2]) ? $xkey2 = $wherex[$key2] : $xkey2 = 0;
-                    if($xkey2 == "") {
-                        $xkey2 = 0;
+                    $fXKey2 = isset($aWherex[$sKey2]) ? $fXKey2 = $aWherex[$sKey2] : $fXKey2 = 0;
+                    if($fXKey2 == "") {
+                        $fXKey2 = 0;
                     }
-                    $max = max($xkey1,$xkey2);
-                    $min = min($xkey1,$xkey2);
-                    $xmax = $max+(($val2-($max))/2);
-                    $val4 = log($xmax+1)*$f;
-                    $val4max = log($max+1)*$f;
-                    $val4min = log($min+1)*$f;
+                    $fMax = max($fXKey1,$fXKey2);
+                    $fMin = min($fXKey1,$fXKey2);
+                    $fXmax = $fMax+(($fVal2-($fMax))/2);
+                    $fVal4 = log($fXmax+1)*$iF;
+                    $fVal4max = log($fMax+1)*$iF;
+                    $fVal4min = log($fMin+1)*$iF;
 
                     // write lines
-                    if (isset($wherex[$key]) && $wherex[$key] == $max) {
-                        $im->line($val4max+20, $pos1b*$w, $val4+20, $pos1b*$w, $black);
-                        $im->line($val4+20, $pos1b*$w, $val4+20, $pos2b*$w, $black);
-                        $im->line($val4min+20, $pos2b*$w, $val4+20, $pos2b*$w, $black);
+                    if (isset($aWherex[$sKey]) && $aWherex[$sKey] == $fMax) {
+                        $oIm->line($fVal4max+20, $fPos1b*$iW, $fVal4+20, $fPos1b*$iW, $sBlack);
+                        $oIm->line($fVal4+20, $fPos1b*$iW, $fVal4+20, $fPos2b*$iW, $sBlack);
+                        $oIm->line($fVal4min+20, $fPos2b*$iW, $fVal4+20, $fPos2b*$iW, $sBlack);
                     }else{
-                        $im->line($val4min+20, $pos1b*$w, $val4+20, $pos1b*$w, $black);
-                        $im->line($val4+20, $pos1b*$w, $val4+20, $pos2b*$w, $black);
-                        $im->line($val4max+20, $pos2b*$w, $val4+20, $pos2b*$w, $black);
+                        $oIm->line($fVal4min+20, $fPos1b*$iW, $fVal4+20, $fPos1b*$iW, $sBlack);
+                        $oIm->line($fVal4+20, $fPos1b*$iW, $fVal4+20, $fPos2b*$iW, $sBlack);
+                        $oIm->line($fVal4max+20, $fPos2b*$iW, $fVal4+20, $fPos2b*$iW, $sBlack);
                     }
-                    $wherex["(".$key.",".$key2.")"] = $xmax;
+                    $aWherex["(".$sKey.",".$sKey2.")"] = $fXmax;
                 }
 
             }
-            $im->line($val4+20, ($pos1b+$pos2b)*$w/2, $val4+40, ($pos1b+$pos2b)*$w/2, $black);
-            $im->line(20, $y, $width*1.2, $y, $black);
+            $oIm->line($fVal4+20, ($fPos1b+$fPos2b)*$iW/2, $fVal4+40, ($fPos1b+$fPos2b)*$iW/2, $sBlack);
+            $oIm->line(20, $iY, $iWidth*1.2, $iY, $sBlack);
 
-            if ($method == "euclidean") {
-                $im->text(2, 5, $rows*$w+25,  "Euclidean distance for ".$len." bases long oligonucleotides.", $red);
+            if ($sMethod == "euclidean") {
+                $oIm->text(2, 5, $iRows*$iW+25,  "Euclidean distance for ".$iLen." bases long oligonucleotides.", $sRed);
             } else {
-                $im->text(2, 5, $rows*$w+25,  "Pearson distance for z-scores of tetranucleotides.", $red);
+                $oIm->text(2, 5, $iRows*$iW+25,  "Pearson distance for z-scores of tetranucleotides.", $sRed);
             }
 
-            $im->text(2, $width*1, $rows*$w+25,  "by insilico.ehu.es", $black);
-            return $im->save($dendogramFile);
+            $oIm->text(2, $iWidth*1, $iRows*$iW+25,  "by insilico.ehu.es", $sBlack);
+            return $oIm->save($sDendogramFile);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -459,23 +459,23 @@ class DistanceAmongSequencesManager
      * @return  float
      * @throws \Exception
      */
-    public function euclidDistance($a, $b, $len)
+    public function euclidDistance($aA, $aB, $iLen)
     {
-        if (!is_array($a)) {
+        if (!is_array($aA)) {
             throw new \Exception('The X values must be an array.');
         }
-        if (!is_array($b)) {
+        if (!is_array($aB)) {
             throw new \Exception('The Y values must be an array.');
         }
         try {
-            $c = sqrt(pow(2, $len))
-                / pow(4, $len);   // content
-            $sum = 0;
-            foreach($a as $key => $val) {
-                $sum += pow($val-$b[$key],2);
+            $fC = sqrt(pow(2, $iLen))
+                / pow(4, $iLen);   // content
+            $fSum = 0;
+            foreach($aA as $sKey => $fVal) {
+                $fSum += pow($fVal-$aB[$sKey],2);
             }
-            $result = $c * sqrt($sum);
-            return $result;
+            $fResult = $fC * sqrt($fSum);
+            return $fResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -491,45 +491,45 @@ class DistanceAmongSequencesManager
      * @return  int
      * @throws  \Exception
      */
-    public function pearsonDistance($vals_x, $vals_y)
+    public function pearsonDistance($aValsX, $aValsY)
     {
-        if (!is_array($vals_x)) {
+        if (!is_array($aValsX)) {
             throw new \Exception('The X values must be an array.');
         }
-        if (!is_array($vals_y)) {
+        if (!is_array($aValsY)) {
             throw new \Exception('The Y values must be an array.');
         }
         try {
-            $value = 0;
+            $fValue = 0;
             // normal correlation
-            if (sizeof($vals_x) != sizeof($vals_y)) {
-                return $value;
+            if (sizeof($aValsX) != sizeof($aValsY)) {
+                return $fValue;
             }
-            $sum_x = 0;
-            $sum_x2 = 0;
-            $sum_y = 0;
-            $sum_y2 = 0;
-            $sum_xy = 0;
-            $n = sizeof($vals_x);
-            foreach($vals_x as $key => $val){
-                $val_x = $val;
-                $val_y = $vals_y[$key];
-                $sum_x += $val_x;
-                $sum_x2 += $val_x * $val_x;
-                $sum_y += $val_y;
-                $sum_y2 += $val_y * $val_y;
-                $sum_xy += $val_x * $val_y;
+            $fSumX = 0;
+            $fSumX2 = 0;
+            $fSumY = 0;
+            $fSumY2 = 0;
+            $fSumXY = 0;
+            $iN = sizeof($aValsX);
+            foreach($aValsX as $sKey => $fVal){
+                $fValX = $fVal;
+                $fValY = $aValsY[$sKey];
+                $fSumX += $fValX;
+                $fSumX2 += $fValX * $fValX;
+                $fSumY += $fValY;
+                $fSumY2 += $fValY * $fValY;
+                $fSumXY += $fValX * $fValY;
             }
             // calculate regression
-            $tempa = sqrt($sum_y2 - (1 / $n) * $sum_y * $sum_y);
-            $tempb = sqrt($sum_x2 - (1 / $n) * $sum_x * $sum_x);
-            $tempc = $sum_xy - (1 / $n) * $sum_x * $sum_y;
-            $regresion = $tempc / ($tempb * $tempa);
-            if ($regresion > 0.999999999) {
-                $regresion = 1;
+            $fTempA = sqrt($fSumY2 - (1 / $iN) * $fSumY * $fSumY);
+            $fTempB = sqrt($fSumX2 - (1 / $iN) * $fSumX * $fSumX);
+            $fTempC = $fSumXY - (1 / $iN) * $fSumX * $fSumY;
+            $fRegresion = $fTempC / ($fTempB * $fTempA);
+            if ($fRegresion > 0.999999999) {
+                $fRegresion = 1;
             }      // round data
-            $value = 1 - $regresion;
-            return $value;
+            $fValue = 1 - $fRegresion;
+            return $fValue;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -543,22 +543,22 @@ class DistanceAmongSequencesManager
      * @return  array
      * @throws  \Exception
      */
-    private function iterateOligo($theseq, $iteration)
+    private function iterateOligo($sTheseq, $iIteration)
     {
         try {
-            $oligos = [];
+            $aOligos = [];
             $i = 0;
-            $len = strlen($theseq) - $iteration + 1;
-            while($i < $len) {
-                $seq = substr($theseq, $i,$iteration);
-                if(isset($oligos[$seq])) {
-                    $oligos[$seq]++;
+            $iLen = strlen($sTheseq) - $iIteration + 1;
+            while($i < $iLen) {
+                $sSeq = substr($sTheseq, $i,$iIteration);
+                if(isset($aOligos[$sSeq])) {
+                    $aOligos[$sSeq]++;
                 } else {
-                    $oligos[$seq] = 1;
+                    $aOligos[$sSeq] = 1;
                 }
                 $i++;
             }
-            return $oligos;
+            return $aOligos;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -567,22 +567,22 @@ class DistanceAmongSequencesManager
     /**
      * As described by Teeling et al. BMC Bioinformatics 2004, 5:163.
      * Unit test created
-     * @param $theseq
-     * @return mixed
-     * @throws \Exception
+     * @param   string  $sTheseq
+     * @return  mixed
+     * @throws  \Exception
      */
-    public function computeZscoresForTetranucleotides($theseq)
+    public function computeZscoresForTetranucleotides($sTheseq)
     {
         try {
-            $theseq .= " ".$this->revCompDNA($theseq);
+            $sTheseq .= " ".$this->revCompDNA($sTheseq);
 
-            $oligos2 = $this->iterateOligo($theseq, 2);
-            $oligos3 = $this->iterateOligo($theseq, 3);
-            $oligos4 = $this->iterateOligo($theseq, 4);
+            $aOligos2 = $this->iterateOligo($sTheseq, 2);
+            $aOligos3 = $this->iterateOligo($sTheseq, 3);
+            $aOligos4 = $this->iterateOligo($sTheseq, 4);
 
-            $zscore = $this->oligosManager->findZScore($oligos2, $oligos3, $oligos4);
+            $aZscore = $this->oligosManager->findZScore($aOligos2, $aOligos3, $aOligos4);
 
-            return $zscore;
+            return $aZscore;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -591,26 +591,26 @@ class DistanceAmongSequencesManager
     /**
      * Generates array of frequencies
      * Unit test created
-     * @param       array   $array
-     * @param       int     $len
+     * @param       array   $aArray
+     * @param       int     $iLen
      * @return      mixed
      * @throws      \Exception
      */
-    public function standardFrecuencies($array, $len)
+    public function standardFrecuencies($aArray, $iLen)
     {
-        if (!is_array($array) || [] === $array) {
+        if (!is_array($aArray) || [] === $aArray) {
             throw new \Exception('The frequencies array must not be empty.');
         }
         try {
-            $sum = 0;
-            foreach($array as $k => $v) {
-                $sum += $v;
+            $fSum = 0;
+            foreach($aArray as $sK => $fV) {
+                $fSum += $fV;
             }
-            $c = pow(4, $len) / $sum;
-            foreach($array as $k => $v) {
-                $array[$k] = $c * $v;
+            $fC = pow(4, $iLen) / $fSum;
+            foreach($aArray as $sK => $fV) {
+                $aArray[$sK] = $fC * $fV;
             }
-            return $array;
+            return $aArray;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -625,35 +625,35 @@ class DistanceAmongSequencesManager
      * @param $dendogramFile
      * @throws \Exception
      */
-    public function upgmaClustering($data, $method, $len, $dendogramFile)
+    public function upgmaClustering($aData, $sMethod, $iLen, $sDendogramFile)
     {
         try {
-            while (sizeof($data) > 1) {
-                $min = $this->minArray($data);
-                $comp[$this->x][$this->y] = $min;
-                $data = $this->newArray($data);
+            while (sizeof($aData) > 1) {
+                $fMin = $this->minArray($aData);
+                $aComp[$this->sX][$this->sY] = $fMin;
+                $aData = $this->newArray($aData);
             }
 
-            $min = $this->minArray($data);
+            $fMin = $this->minArray($aData);
 
-            $x = $this->x;
-            $y = $this->y;
+            $sX = $this->sX;
+            $sY = $this->sY;
 
             /*
              * end of clustering
-             * array $comp stores the important data
+             * array $aComp stores the important data
              */
-            $comp[$x][$y] = $min;
+            $aComp[$sX][$sY] = $fMin;
 
             /*
-             * $textcluster is the results of the cluster as text.
+             * $sTextcluster is the results of the cluster as text.
              * p.e.:  ((3,4),7),(((5,6),1),2)
              */
-            $textcluster = $x.",".$y;
+            $sTextcluster = $sX.",".$sY;
 
 
             // CREATE THE IMAGE WITH THE DENDROGRAM
-            return $this->createDendrogram($textcluster, $comp, $dendogramFile, $method, $len);
+            return $this->createDendrogram($sTextcluster, $aComp, $sDendogramFile, $sMethod, $iLen);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

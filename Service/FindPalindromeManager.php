@@ -3,7 +3,7 @@
  * FindPalindromeManager
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -32,20 +32,20 @@ class FindPalindromeManager
             throw new \Exception('The sequence must be a string.');
         }
         try {
-            $results = [];
-            $seqLen = strlen($sSequence);
-            for($i = 0; $i < $seqLen-$iMin+1; $i++) {
-                $j = $iMin;
-                while($j < $iMax+1 && ($i+$j) <= $seqLen) {
-                    $subSeq = substr($sSequence, $i, $j);
-                    if ($this->dnaIsPalindrome($subSeq) == 1) {
-                        $results[$i] = $subSeq;
+            $aResults = [];
+            $iSeqLen = strlen($sSequence);
+            for($i = 0; $i < $iSeqLen-$iMin+1; $i++) {
+                $iJ = $iMin;
+                while($iJ < $iMax+1 && ($i+$iJ) <= $iSeqLen) {
+                    $sSubSeq = substr($sSequence, $i, $iJ);
+                    if ($this->dnaIsPalindrome($sSubSeq) == 1) {
+                        $aResults[$i] = $sSubSeq;
                     }
-                    $j++;
+                    $iJ++;
                 }
 
             }
-            return $results;
+            return $aResults;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

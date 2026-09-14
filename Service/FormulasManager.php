@@ -3,7 +3,7 @@
  * Formulas Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march  2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -42,8 +42,8 @@ class FormulasManager
     public function mwOfSsDNA($sSequence)
     {
         try {
-            $iNbasePair = strlen($sSequence);
-            return ($iNbasePair * 330);
+            $iNbBasePair = strlen($sSequence);
+            return ($iNbBasePair * 330);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -128,11 +128,11 @@ class FormulasManager
     public function microToPmolSsDNA($sPmolSsDNASequence, $iNbOfMicroSsDNA)
     {
         try {
-            $iNbBase_pair = strlen($sPmolSsDNASequence);
-            if (!$iNbBase_pair || !$iNbOfMicroSsDNA) {
+            $iNbBasePair = strlen($sPmolSsDNASequence);
+            if (!$iNbBasePair || !$iNbOfMicroSsDNA) {
                 return 0;
             } else {
-                return (($iNbOfMicroSsDNA * 3030) / $iNbBase_pair);
+                return (($iNbOfMicroSsDNA * 3030) / $iNbBasePair);
             }
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -150,11 +150,11 @@ class FormulasManager
     public function pmolToMicroDsDNA($sMicroDsDNASequence, $iNbOfPmolDsDNA)
     {
         try {
-            $iNbBase_pair = strlen($sMicroDsDNASequence);
-            if (!$iNbBase_pair || !$iNbOfPmolDsDNA) {
+            $iNbBasePair = strlen($sMicroDsDNASequence);
+            if (!$iNbBasePair || !$iNbOfPmolDsDNA) {
                 return 0;
             } else {
-                return ($iNbOfPmolDsDNA * $iNbBase_pair * (6.6 * pow(10, (-4))));
+                return ($iNbOfPmolDsDNA * $iNbBasePair * (6.6 * pow(10, (-4))));
             }
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -172,11 +172,11 @@ class FormulasManager
     public function pmolToMicroSsDNA($sMicrossDNASequence, $iNbOfPmolSsDNA)
     {
         try {
-            $nbBasePair = strlen($sMicrossDNASequence);
-            if (!$nbBasePair || !$iNbOfPmolSsDNA) {
+            $iNbBasePair = strlen($sMicrossDNASequence);
+            if (!$iNbBasePair || !$iNbOfPmolSsDNA) {
                 return 0;
             } else {
-                return ($iNbOfPmolSsDNA * $nbBasePair * (3.3 * pow(10, (-4))));
+                return ($iNbOfPmolSsDNA * $iNbBasePair * (3.3 * pow(10, (-4))));
             }
         } catch (\Exception $e) {
             throw new \Exception($e);
