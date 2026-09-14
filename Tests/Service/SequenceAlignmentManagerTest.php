@@ -1075,4 +1075,28 @@ class SequenceAlignmentManagerTest extends TestCase
 
         $this->assertEquals($aExpected, $testFunction);
     }
+
+    public function testCompareAlignment()
+    {
+        $seqa = "-------GGAGTGAGGGGAGCAGTTGGCTGA";
+        $seqb = "CGCATGCGGAGTGAGGGGAGCAGTTGGGAACA";
+
+        $aExpected = "       ||||||||||||||||||||    ";
+
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $testFunction = $service->compareAlignment($seqa, $seqb);
+
+        $this->assertEquals($aExpected, $testFunction);
+    }
+
+    public function testCompareAlignmentIdentical()
+    {
+        $seqa = "ACGT";
+        $seqb = "ACGT";
+
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $testFunction = $service->compareAlignment($seqa, $seqb);
+
+        $this->assertEquals("||||", $testFunction);
+    }
 }

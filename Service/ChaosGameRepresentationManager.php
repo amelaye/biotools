@@ -3,7 +3,7 @@
  * Chaos Game Representation Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -90,12 +90,16 @@ class ChaosGameRepresentationManager
             $iSeqLen = strlen($sSequence);
 
             if($iSize == "auto") {
-                $iSize = 256;
+                // legacy bug fix: the >100000 check used to run unconditionally after the
+                // >1000000 one, so a sequence over 1,000,000 bp (which is also over 100,000)
+                // always had its size overwritten back down to 512 and never reached 1024.
+                // Ordered as a tier so the largest matching threshold wins.
                 if($iSeqLen > 1000000) {
                     $iSize = 1024;
-                }
-                if($iSeqLen > 100000) {
+                } elseif($iSeqLen > 100000) {
                     $iSize = 512;
+                } else {
+                    $iSize = 256;
                 }
             }
 

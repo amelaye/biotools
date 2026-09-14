@@ -620,4 +620,66 @@ class ChaosGameRepresentationManagerTest extends TestCase
 
         $this->assertEquals($aExpected, $testFunction);
     }
+
+    public function testFCGRComputeSingleStrand()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $testFunction = $service->FCGRCompute("ACGTACGT", 2, 1);
+
+        $this->assertEquals(["sequence" => "ACGTACGT", "length" => 2], $testFunction);
+    }
+
+    public function testFCGRComputeDoubleStrand()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $testFunction = $service->FCGRCompute("ACGTACGT", 2, 2);
+
+        $this->assertEquals(["sequence" => "ACGTACGT ACGTACGT", "length" => 2], $testFunction);
+    }
+
+    public function testCreateCGRImage()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $path = $service->createCGRImage("MySeq", "ACGTACGTACGTACGT", 64);
+
+        $this->assertFileExists($path);
+
+        $content = file_get_contents($path);
+        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="84" viewBox="0 0 64 84">', $content);
+        $this->assertStringContainsString('MySeq (16 bp)', $content);
+
+        unlink($path);
+    }
+
+    /**
+     * @dataProvider provideCGRComputeAutoSizes
+     */
+    public function testCGRComputeAutoSizing($iSeqLen, $iExpectedWidth)
+    {
+        // a sequence over 1,000,000 bp needs more than PHP's default 128M memory_limit
+        // to draw every point, just like the legacy script would in production; raising
+        // it here is one-way for the rest of the test run, since PHP cannot shrink the
+        // limit back below memory already in use
+        if ((int) ini_get('memory_limit') < 256) {
+            ini_set('memory_limit', '256M');
+        }
+
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $path = $service->CGRCompute("Seq", str_repeat("A", $iSeqLen), "auto");
+        $content = file_get_contents($path);
+
+        $this->assertStringContainsString('width="' . $iExpectedWidth . '"', $content);
+
+        unlink($path);
+    }
+
+    public static function provideCGRComputeAutoSizes(): array
+    {
+        return [
+            'up to 100000 bp uses 256' => [100, 256],
+            'over 100000 bp uses 512' => [150000, 512],
+            // legacy bug fix: this tier used to be unreachable, see ChaosGameRepresentationManager::CGRCompute
+            'over 1000000 bp uses 1024' => [1000001, 1024],
+        ];
+    }
 }
