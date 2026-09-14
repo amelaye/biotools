@@ -161,6 +161,20 @@ class MeltingTemperatureManagerTest extends TestCase
         $service->calculateCG($primer);
     }
 
+    /**
+     * An empty primer used to divide by its own length, which PHP 8 turns into a fatal
+     * DivisionByZeroError. It is reachable: legacy only enforces the 6-50 bp range on a
+     * non-empty primer ("if ($primer!="" and (strlen($primer)<6 ...))"), and the
+     * MeltingTemperature constraint reproduces that rule, so "" passes validation.
+     * No base means no C+G, so 0.
+     */
+    public function testCalculateCGOfAnEmptyPrimer()
+    {
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $this->assertEquals(0, $service->calculateCG(""));
+    }
+
     public function testTmBaseStacking()
     {
         $primer = "AAAATTTGGGGCCCATGCCC";

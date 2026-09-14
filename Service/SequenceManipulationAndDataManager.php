@@ -51,16 +51,24 @@ class SequenceManipulationAndDataManager
 
     /**
      * Displays the content of G and C
+     * An empty sequence has no G+C at all, so it scores 0. Legacy divided by
+     * strlen() unguarded: under PHP 5 that warned and yielded INF, but since PHP 8
+     * it is a fatal DivisionByZeroError, and the sequence field is emptied by the
+     * form whenever the input holds no codable character at all (e.g. "ZZZZ").
      * @param   string      $sSeq
-     * @return  string
+     * @return  float|int
      * @throws  \Exception
      */
     public function gcContent($sSeq)
     {
         try {
+            $iLenSeq = strlen((string) $sSeq);
+            if ($iLenSeq === 0) {
+                return 0;
+            }
             $iNumberOfG = substr_count($sSeq,"G");
             $iNumberOfC = substr_count($sSeq,"C");
-            $fGcPercent = round(100*($iNumberOfG + $iNumberOfC)/strlen($sSeq),2);
+            $fGcPercent = round(100*($iNumberOfG + $iNumberOfC)/$iLenSeq,2);
             return $fGcPercent;
         } catch (\Exception $e) {
             throw new \Exception($e);

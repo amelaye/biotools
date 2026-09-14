@@ -1,6 +1,7 @@
 # Defects found in the original BioPHP minitools
 
-**Date**: 24 august 2026
+**Date**: 24 august 2026, extended 14 september 2026 (defects 7 to 10, found during a
+systematic manager-by-manager re-audit against `legacy/`)
 **Reported by**: Amélie DUVERNET (amelaye) — maintainer of the `amelaye/biotools` port
 **Upstream**: <http://www.biophp.org/resources.php?mode=minitools>, author Joseba Bikandi, GNU GPL v2
 **Sources examined**: the 20 minitools, retrieved through each tool's
@@ -122,6 +123,88 @@ The table reads:
 The last cell should be **2.7 kb** (2700 bp). The first two rows are consistent with the
 stated rule (1 kb of DNA encodes 333 amino acids = 3.7 × 10⁴ Da, so bp = kDa × 1000/37);
 only the unit of the third is wrong.
+
+## 7. `Oligo_skew_array_calculation4bothstrands()` never builds the second strand
+
+**File**: `skews/index.php`, line 279
+
+This function is the optimised path taken by the tool's **default** settings
+(`oligo_len == 4` and `strands == 2`, chosen at line 107). Its own header comment says
+it "provides tetranucleotide frequencies from both strands". The window is built at
+line 304 with:
+
+```php
+$subsequence=substr($sequence,$i,$window)." ".strrev(substr($sequence2,$i,$window));
+```
+
+`$sequence2` is never assigned anywhere in the function. The general sibling
+`Oligo_skew_array_calculation()` does assign it (`$sequence2=Comp($sequence);`, line
+254), but that line has no counterpart here. `substr()` on the undefined variable
+yields an empty string, so the appended half is always empty and the function scores
+**one** strand while reporting both.
+
+**Suggested fix**: add `$sequence2 = Comp($sequence);` before the loop.
+
+## 8. `distance()` is called but never defined — fatal error
+
+**File**: `skews/index.php`, line 261
+
+```php
+$data[$i]=distance($oligofreqsA,$oligofreqsB);
+```
+
+`Oligo_skew_array_calculation()` calls `distance()` on its `strands == 2` branch, but
+no `distance()` exists in the file, and the file includes nothing. Every request
+combining both strands with an oligonucleotide length other than 4 therefore dies with
+"Call to undefined function distance()". Only the default length 4 escapes it, by being
+routed to the separate (and itself defective, see 7) optimised function.
+
+**Suggested fix**: supply the missing function — the header comment of
+`Oligo_skew_array_calculation()` points at the modified Pearson correlation of Almeida
+et al, 2001, which is what the port implements.
+
+## 9. `includeN_3()` is a copy of `includeN_2()` and allows only two mismatches
+
+**File**: `microsatellite_repeats_finder/index.php`, lines 178 and 204
+
+The dispatcher selects one of three helpers by mismatch count:
+
+```php
+if ($mismatches==1){$sub_seq_pattern=includeN_1($sub_seq,0);}
+elseif ($mismatches==2){$sub_seq_pattern=includeN_2($sub_seq,0);}
+elseif ($mismatches==3){$sub_seq_pattern=includeN_3($sub_seq,0);}
+```
+
+`includeN_3()` and `includeN_2()` have byte-for-byte identical bodies: two nested loops
+placing exactly two `.` wildcards. The documentation block above `includeN_3()` even
+says "Similar to function IncludeN_1 and IncludeN_2, but allows **two** missmaches",
+so the name is the only thing promising three. A request allowing three mismatches
+silently searches with a two-mismatch pattern.
+
+**Suggested fix**: either implement the three-wildcard pattern, or drop `includeN_3()`
+and let the 2 and 3 cases share one helper (what the port does).
+
+## 10. `revpermin()` is dead code and a mathematical no-op
+
+**File**: `useful_formulas/index.php`, line 929
+
+```php
+function revpermin($rpm,$RCF,$R){
+$rcf=1.12*$R*(pow(( $rpm/1000),2) );
+$temp=($rcf / (1.12*$R));
+print $temp;
+$res=1000*( sqrt($temp) );
+return ($res);
+}
+```
+
+Nothing in the file calls it. Were it called, it would return its own `$rpm` argument:
+`$temp` divides `$rcf` by the very `1.12*$R` that was just multiplied in, leaving
+`($rpm/1000)^2`, and `1000*sqrt()` undoes the rest. The `$RCF` parameter is unused, and
+the leftover `print $temp;` would write a raw number into the middle of the page.
+
+**Suggested fix**: remove it, or implement the intended RPM/RCF conversion
+(`RCF = 1.12 x R x (RPM/1000)^2`, so `RPM = 1000 x sqrt(RCF / (1.12 x R))`).
 
 ---
 

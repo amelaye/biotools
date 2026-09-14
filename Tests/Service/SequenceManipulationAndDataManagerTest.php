@@ -109,14 +109,15 @@ class SequenceManipulationAndDataManagerTest extends TestCase
     }
 
     /**
-     * An empty sequence divides by its own length: PHP 8 raises a DivisionByZeroError,
-     * which is an Error and not caught by the service's catch(\Exception)
+     * An empty sequence used to divide by its own length, which PHP 8 turns into a
+     * fatal DivisionByZeroError (an Error, so not even caught by the service's
+     * catch(\Exception)). It is reachable: SequenceManipulationType strips every
+     * non-codable character in PRE_SUBMIT and carries no NotBlank, so an input like
+     * "ZZZZ" reaches the manager as an empty sequence. No base means no G+C, so 0.
      */
     public function testGcContentOfAnEmptySequence()
     {
-        $this->expectException(\DivisionByZeroError::class);
-
-        $this->service->gcContent("");
+        $this->assertEquals(0, $this->service->gcContent(""));
     }
 
     /**

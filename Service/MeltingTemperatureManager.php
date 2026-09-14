@@ -52,14 +52,22 @@ class MeltingTemperatureManager
 
     /**
      * Calculates CG
+     * An empty primer has no C+G at all, so it scores 0. Legacy divided by strlen()
+     * unguarded: under PHP 5 that warned and yielded INF, but since PHP 8 it is a
+     * fatal DivisionByZeroError, and an empty primer does reach here - legacy only
+     * enforces the 6-50 bp range on a non-empty primer ("if ($primer!="" and ...)"),
+     * a rule the MeltingTemperature constraint reproduces.
      * @param       string     $sPrimer
-     * @return      float
+     * @return      float|int
      * @throws      \Exception
      */
     public function calculateCG($sPrimer)
     {
         if (!is_string($sPrimer)) {
             throw new \Exception('The primer must be a string.');
+        }
+        if ($sPrimer === "") {
+            return 0;
         }
         $fCg = round(100 * GeneticsFunctions::CountCG($sPrimer) / strlen($sPrimer),1);
         return $fCg;
