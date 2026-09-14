@@ -6,6 +6,7 @@ namespace Tests\MinitoolsBundle\Service;
 use Amelaye\BioPHP\Api\AminoApi;
 use Amelaye\BioPHP\Api\PKApi;
 use Amelaye\BioTools\Service\ProteinPropertiesManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ProteinPropertiesManagerTest extends TestCase
@@ -445,6 +446,51 @@ class ProteinPropertiesManagerTest extends TestCase
         $this->assertEqualsWithDelta($fExpected, $testFunction, 0.0001);
     }
 
+    /**
+     * Deliberate deviation from legacy: legacy's molecular weight formula sums
+     * "$aminoacid_content['Z']*99.13" for Valine, a typo for the "V" key the content
+     * array actually uses, so legacy always adds 0 for Valine (undefined index) and its
+     * molecular weight is scientifically wrong for any sequence containing V. This port
+     * counts Valine correctly, so a single V residue adds its real weight (99.13) here.
+     */
+    public function testProteinMolecularWeightIncludesValine()
+    {
+        $aminoacid_content = [
+            "*" => 0,
+            "A" => 1,
+            "C" => 1,
+            "D" => 1,
+            "E" => 1,
+            "F" => 1,
+            "G" => 1,
+            "H" => 1,
+            "I" => 1,
+            "K" => 1,
+            "L" => 1,
+            "M" => 1,
+            "N" => 1,
+            "O" => 0,
+            "P" => 1,
+            "Q" => 1,
+            "R" => 1,
+            "S" => 1,
+            "T" => 1,
+            "U" => 0,
+            "V" => 1,
+            "W" => 0,
+            "X" => 0,
+            "Y" => 0,
+        ];
+
+        // 1947.07 (no Valine) + 99.13 (one Valine residue) = 2046.20
+        $fExpected = 2046.20;
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $testFunction = $service->proteinMolecularWeight($aminoacid_content);
+
+        $this->assertEqualsWithDelta($fExpected, $testFunction, 0.0001);
+    }
+
     public function testProteinAminoacidNature1()
     {
         $sSequence = "ARNDCEQGHILKMFPST";
@@ -613,5 +659,101 @@ class ProteinPropertiesManagerTest extends TestCase
         $testFunction = $service->proteinAminoacidNature2($sSequence, $aColors);
 
         $this->assertEquals($aExpected, $testFunction);
+    }
+
+    /**
+     * Each amino acid is replaced by the letter of its chemical group: L for the
+     * aliphatic ones (G A V L I), H for the hydroxyl ones (S T), M for the amide ones
+     * (N Q), R for the aromatic ones (F Y W), S for the sulfur ones (C M), I for the
+     * imino acid (P), A for the acidic ones (D E) and C for the basic ones (K R H).
+     */
+    public function testProteinAminoacidsChemicalGroup()
+    {
+        $sSequence = "ACDEFGHIKLMNPQRSTVWY";
+        $sExpected = "LSAARLCLCLSMIMCHHLRR";
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEquals($sExpected, $service->proteinAminoacidsChemicalGroup($sSequence));
+    }
+
+    /**
+     * The group of each amino acid, taken one at a time
+     */
+    #[DataProvider('providerChemicalGroups')]
+    public function testProteinAminoacidsChemicalGroupOfASingleAminoAcid($sAminoAcid, $sGroup)
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEquals($sGroup, $service->proteinAminoacidsChemicalGroup($sAminoAcid));
+    }
+
+    public static function providerChemicalGroups()
+    {
+        return [
+            "G aliphatic" => ["G", "L"],
+            "A aliphatic" => ["A", "L"],
+            "V aliphatic" => ["V", "L"],
+            "L aliphatic" => ["L", "L"],
+            "I aliphatic" => ["I", "L"],
+            "S hydroxyl"  => ["S", "H"],
+            "T hydroxyl"  => ["T", "H"],
+            "N amide"     => ["N", "M"],
+            "Q amide"     => ["Q", "M"],
+            "F aromatic"  => ["F", "R"],
+            "Y aromatic"  => ["Y", "R"],
+            "W aromatic"  => ["W", "R"],
+            "C sulfur"    => ["C", "S"],
+            "M sulfur"    => ["M", "S"],
+            "P imino"     => ["P", "I"],
+            "D acidic"    => ["D", "A"],
+            "E acidic"    => ["E", "A"],
+            "K basic"     => ["K", "C"],
+            "R basic"     => ["R", "C"],
+            "H basic"     => ["H", "C"],
+        ];
+    }
+
+    /**
+     * A stop codon is kept as it is, and an unknown amino acid stays unknown
+     */
+    public function testProteinAminoacidsChemicalGroupKeepsTheStopAndTheUnknown()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEquals("*", $service->proteinAminoacidsChemicalGroup("*"));
+        $this->assertEquals("X", $service->proteinAminoacidsChemicalGroup("X"));
+        $this->assertEquals("LX*", $service->proteinAminoacidsChemicalGroup("AX*"));
+    }
+
+    public function testProteinAminoacidsChemicalGroupOfAnEmptySequence()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEquals("", $service->proteinAminoacidsChemicalGroup(""));
+    }
+
+    /**
+     * A symbol that is not an amino acid stops the translation
+     */
+    public function testProteinAminoacidsChemicalGroupRefusesAnUnknownSymbol()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->expectException(\Exception::class);
+
+        $service->proteinAminoacidsChemicalGroup("AZ");
+    }
+
+    /**
+     * The classification is case sensitive: a lower case sequence is refused
+     */
+    public function testProteinAminoacidsChemicalGroupIsCaseSensitive()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->expectException(\Exception::class);
+
+        $service->proteinAminoacidsChemicalGroup("acdefg");
     }
 }

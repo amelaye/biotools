@@ -109,21 +109,24 @@ class RestrictionDigestManager
      * @param   bool    $bIIs       Asks for IIs array
      * @param   bool    $bIIb       Asks for IIb array
      * @param   bool    $bDefined   Only restriction enzymes with known bases
+     * @param   string  $sWre       A specific enzyme requested from the dropdown, if any
      * @return  array
      * @throws \Exception
      */
-    public function getNucleolasesInfos($bIIs, $bIIb, $bDefined)
+    public function getNucleolasesInfos($bIIs, $bIIb, $bDefined, $sWre = "")
     {
         try {
             $enzymes_array = $this->type2;
 
-            // if TypeIIs endonucleases are requested, get them
-            if (($bIIs && !$bDefined)) {
+            // if TypeIIs endonucleases are requested, get them - or, whatever the
+            // checkboxes say, when a specific enzyme was requested from the dropdown,
+            // since reduceEnzymesArray() will narrow the pool down to just that one
+            if (($bIIs && !$bDefined) || $sWre != "") {
                 $enzymes_array = array_merge($enzymes_array, $this->type2s);
                 asort($enzymes_array);
             }
-            // if TypeIIb endonucleases are requested, get them
-            if (($bIIb && !$bDefined)) {
+            // if TypeIIb endonucleases are requested, get them - same rule as above
+            if (($bIIb && !$bDefined) || $sWre != "") {
                 $enzymes_array = array_merge($enzymes_array, $this->type2b);
                 asort($enzymes_array);
             }
@@ -293,11 +296,12 @@ class RestrictionDigestManager
 
             // Two or more sequence available
             foreach($aEnzymes as $enzyme => $val) {
+                $checker = false;
                 if ($bIsOnlyDiff == false || $sWre != ""){
                     // Show all restriction results, when endonuclease cuts at least one sequence
                     foreach($aSequence as $number => $val2){
                         if (isset($aDigestion[$number][$enzyme]) && sizeof($aDigestion[$number][$enzyme]["cuts"]) > 0) {
-                            $digestionMulti[] = $enzyme;
+                            $checker = true;
                         }
                     }
                 } else {
@@ -305,7 +309,7 @@ class RestrictionDigestManager
                     if(isset($aDigestion[0][$enzyme])) {
                         // Show restriction results when they are different
                         $aTempData = sizeof($aDigestion[0][$enzyme]["cuts"]);
-                        if ($aTemp > 0){
+                        if ($aTempData > 0){
                             $aTemp = $aDigestion[0][$enzyme]["cuts"];
                         }
                     }
@@ -317,18 +321,22 @@ class RestrictionDigestManager
                         if(isset($aDigestion[$number][$enzyme])) {
                             $aTempData2 = sizeof($aDigestion[$number][$enzyme]["cuts"]);
                             if ($aTempData != $aTempData2) {
-                                $digestionMulti[] = $enzyme;
+                                $checker = true;
                                 break;
                             }
                             if ($aTempData2>0){
                                 $aTemp = array_diff($aTemp, $aDigestion[$number][$enzyme]["cuts"]);
                                 if (sizeof($aTemp) > 0) {
-                                    $digestionMulti[] = $enzyme;
+                                    $checker = true;
                                     break;
                                 }
                             }
                         }
                     }
+                }
+                if ($checker) {
+                    // one entry per qualifying enzyme, however many sequences it cuts
+                    $digestionMulti[] = $enzyme;
                 }
             }
             return $digestionMulti;

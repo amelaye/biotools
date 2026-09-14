@@ -128,6 +128,19 @@ class MeltingTemperatureManager
             throw new \Exception('The primer must be a string.');
         }
         try {
+            // legacy: "if (CountATCG($c)!= strlen($c)){return "Non computed. The
+            // oligonucleotide contains degenerated nucleotides.";}" - the nearest
+            // neighbor / base stacking method has no defined thermodynamic values for
+            // degenerate nucleotides, unlike the basic Tm methods which tolerate them
+            if (GeneticsFunctions::CountACGT($sPrimer) != strlen($sPrimer)) {
+                return [
+                    'tm'        => null,
+                    'enthalpy'  => null,
+                    'entropy'   => null,
+                    'message'   => 'Non computed. The oligonucleotide contains degenerated nucleotides.',
+                ];
+            }
+
             $h = $s = 0;
 
             $aEnthalpyValues = $this->enthalpyValues;

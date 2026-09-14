@@ -14,9 +14,11 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Form ReduceAlphabetType
@@ -103,14 +105,6 @@ class ReduceAlphabetType extends AbstractType
                 'data' => "TCDCTCDTRAACDRDTDRRA",
                 'attr' => [
                     'class' => "form-control"
-                ],
-                'constraints' => [
-                    new Length([
-                        'min' => 20,
-                        'max' => 20,
-                        'minMessage' => "The personalized alphabet is not correct",
-                        'maxMessage' => "The personalized alphabet is not correct"
-                    ])
                 ]
             ]
         );
@@ -164,5 +158,36 @@ class ReduceAlphabetType extends AbstractType
 
             $event->setData($data);
         });
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'constraints' => [
+                new Callback([
+                    'callback' => [$this, 'validateCustomAlphabet'],
+                ]),
+            ]
+        ]);
+    }
+
+    /**
+     * The custom alphabet length is only checked when a personalized alphabet is
+     * actually requested - legacy only validates it "for personalized reduced
+     * alphabets" (reduce_protein_alphabet.php: the "else" branch reached when mode is
+     * not "pre", i.e. mode is "custom")
+     * @param $object
+     * @param ExecutionContextInterface $context
+     */
+    public static function validateCustomAlphabet($object, ExecutionContextInterface $context)
+    {
+        if (($object["mode"] ?? null) === "custom" && strlen($object["custom_alphabet"]) != 20) {
+            $context->buildViolation("The personalized alphabet is not correct")
+                ->atPath("custom_alphabet")
+                ->addViolation();
+        }
     }
 }

@@ -17,8 +17,10 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 //use AppBundle\Api\Bioapi;
 use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 
@@ -88,6 +90,7 @@ class DnaToProteinType extends AbstractType
             ChoiceType::class,
             [
                 'choices' => $optionsFrames,
+                'data' => "3", // legacy: "<option value=3 selected>1-3"
                 'label' => "Translate frames : ",
                 'attr' => [
                     'class' => "custom-select d-block w-20"
@@ -174,14 +177,6 @@ class DnaToProteinType extends AbstractType
                 'data' => "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
                 'attr' => [
                     'class' => "form-control"
-                ],
-                'constraints' => [
-                    new Length([
-                        'min' => 64,
-                        'max' => 64,
-                        'minMessage' => 'The custom code is not correct (is not 64 characters long)',
-                        'maxMessage' => 'The custom code is not correct (is not 64 characters long)'
-                    ]),
                 ]
             ]
         );
@@ -205,5 +200,35 @@ class DnaToProteinType extends AbstractType
 
             $event->setData($data);
         });
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'constraints' => [
+                new Callback([
+                    'callback' => [$this, 'validateCustomCode'],
+                ]),
+            ]
+        ]);
+    }
+
+    /**
+     * The custom code length is only checked when the custom genetic code is actually
+     * requested - legacy only validates it "when usage of custom genetic code is
+     * requested" (dna_to_protein.php: "if($_POST["usemycode"]==1){ ... }")
+     * @param $object
+     * @param ExecutionContextInterface $context
+     */
+    public static function validateCustomCode($object, ExecutionContextInterface $context)
+    {
+        if (!empty($object["usemycode"]) && strlen($object["mycode"]) != 64) {
+            $context->buildViolation("The custom code is not correct (is not 64 characters long)")
+                ->atPath("mycode")
+                ->addViolation();
+        }
     }
 }

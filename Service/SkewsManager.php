@@ -96,7 +96,7 @@ class SkewsManager
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
-                    $aDistances[$i] = $this->distance($aOligosX, $aOligosY);
+                    $aDistances[$i] = $this->pearsonDistance($aOligosX, $aOligosY);
                     $i += $iPeriod;
                 }
             }
@@ -144,6 +144,37 @@ class SkewsManager
         $iRw = $iPreRw / $iNw;
         $distance = round(1 - $iRw,8);
         return $distance;
+    }
+
+    /**
+     * Computes the standard Pearson distance between two arrays of values, used to
+     * compare oligonucleotide frequencies when only one strand is analysed
+     * @param       array       $aValsX     Values for X
+     * @param       array       $aValsY     Values for Y
+     * @return      float|void
+     */
+    public function pearsonDistance($aValsX, $aValsY)
+    {
+        if(sizeof($aValsX) != sizeof($aValsY)) {
+            return;
+        }
+        $iSumX = array_sum($aValsX);
+        $iSumY = array_sum($aValsY);
+        $iSumX2 = 0;
+        $iSumY2 = 0;
+        $iSumXY = 0;
+        foreach($aValsX as $key => $iValX) {
+            $iValY = $aValsY[$key];
+            $iSumX2 += $iValX * $iValX;
+            $iSumY2 += $iValY * $iValY;
+            $iSumXY += $iValX * $iValY;
+        }
+        $iN = sizeof($aValsX);
+        // calculate regression
+        $r = ($iN * $iSumXY - $iSumX * $iSumY)
+            / (sqrt($iN * $iSumX2 - $iSumX * $iSumX) * sqrt($iN * $iSumY2 - $iSumY * $iSumY));
+        // return distance
+        return (1 - $r);
     }
 
 

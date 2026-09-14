@@ -306,11 +306,11 @@ class SequenceAlignmentManager
                 }
             }
             if($j+1 == $iMaxB) {
-                for($ii = $i; $ii < $iMaxB; $ii++) {
+                for($ii = $i; $ii < $iMaxA; $ii++) {
                     $sSeqa .= $aSequenceA[$ii];
                 }
                 $sSeqb .= $aSequenceB[$j];
-                for($ii = $i; $ii < $iMaxB-1; $ii++) {
+                for($ii = $i; $ii < $iMaxA-1; $ii++) {
                     $sSeqb .= "-";
                 }
             }

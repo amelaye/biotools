@@ -5,6 +5,7 @@ namespace Tests\MinitoolsBundle\Service;
 
 use Amelaye\BioPHP\Api\ProteinReductionApi;
 use Amelaye\BioTools\Service\ReduceProteinAlphabetManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ReduceProteinAlphabetManagerTest extends TestCase
@@ -239,5 +240,214 @@ class ReduceProteinAlphabetManagerTest extends TestCase
         $testFunction = $service->reduceAlphabetCustom($sSequence, $sCustomAlphabet);
 
         $this->assertEquals($sExpected, $testFunction);
+    }
+
+    /**
+     * Every reduction the minitool offers, applied to the complete amino acid alphabet
+     * plus the unknown X and the stop codon
+     */
+    #[DataProvider('providerAlphabets')]
+    public function testReduceAlphabetOfEveryPredefinedAlphabet($sType, $sExpected)
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals($sExpected, $service->reduceAlphabet("ARNDCEQGHILKMFPSTWYVX*", $sType));
+    }
+
+    public static function providerAlphabets()
+    {
+        return [
+            "Murphy 2"  => ["Murphy2",  "PEEEPEEPEPPEPPPPPPPPX*"],
+            "Murphy 4"  => ["Murphy4",  "AEEELEEAELLELFAAAFFLX*"],
+            "Murphy 10" => ["Murphy10", "AKEECEEGHLLKLFPSSFFLX*"],
+            "Murphy 15" => ["Murphy15", "AKNDCEQGHLLKLFPSTWFLX*"],
+            "Wang 2"    => ["Wang2",    "AAAAIAAAAIIAIIAAAIIIX*"],
+            "Wang 3"    => ["Wang3",    "AAEEIEEAAIIEIIAEAIIIX*"],
+            "Wang 5"    => ["Wang5",    "AKKEIEKGAIIKIIGKAIIIX*"],
+            "Wang 5v"   => ["Wang5v",   "AKEEIEEAKILKIIKAALLLX*"],
+            "Li 3"      => ["Li3",      "SEEEIEESEIIEIISSSIIIX*"],
+            "Li 4"      => ["Li4",      "SEEEYEESEIIEIYSSSYYIX*"],
+            "Li 5"      => ["Li5",      "SEEEYEEGEIIEIYSSSYYIX*"],
+            "Li 10"     => ["Li10",     "SKNECEEGNVLKLYPSSYYVX*"],
+            "IMGT 3"    => ["3IMG",     "HPPPHPPNHHHPNHNNNHNHX*"],
+            "IMGT 5"    => ["5IMG",     "GMCCCEEGEMMMMFCGCFFEX*"],
+            "IMGT 11"   => ["11IMG",    "AHNDCDNGHAAHCFPSSWYAX*"],
+        ];
+    }
+
+    /**
+     * The unknown amino acid and the stop codon belong to no group and are left as they are
+     */
+    public function testReduceAlphabetLeavesTheUnknownAndTheStopUntouched()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals("X*X*", $service->reduceAlphabet("X*X*", "Murphy2"));
+    }
+
+    public function testReduceAlphabetOfAnEmptySequence()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals("", $service->reduceAlphabet("", "Murphy2"));
+    }
+
+    /**
+     * A two letters alphabet leaves only two different symbols in the reduced sequence,
+     * one per group, and does not change its length
+     */
+    public function testReduceAlphabetKeepsOnlyTheSymbolsOfTheAlphabet()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $sReduced = $service->reduceAlphabet("ARNDCEQGHILKMFPSTWYV", "Murphy2");
+
+        $aSymbols = array_unique(str_split($sReduced));
+        sort($aSymbols);
+
+        $this->assertEquals(["E", "P"], $aSymbols);
+        $this->assertEquals(20, strlen($sReduced));
+    }
+
+    /**
+     * The custom alphabet gives one letter per amino acid, in the ARNDCEQGHILKMFPSTWYV
+     * order the minitool shows above the input field
+     */
+    public function testReduceAlphabetCustomMapsTheAminoAcidsInOrder()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        // every amino acid onto the same letter
+        $this->assertEquals(
+            "AAAAAAAAAAAAAAAAAAAAX*",
+            $service->reduceAlphabetCustom("ARNDCEQGHILKMFPSTWYVX*", str_repeat("A", 20))
+        );
+    }
+
+    /**
+     * The custom alphabet is lower cased before being applied, so a letter that has just
+     * been substituted is not substituted again by a later amino acid: mapping A onto R
+     * and R onto A swaps them instead of collapsing both onto one letter
+     */
+    public function testReduceAlphabetCustomDoesNotCascade()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $sCustom = "RA" . "NDCEQGHILKMFPSTWYV"; // A -> R, R -> A, the rest unchanged
+
+        $this->assertEquals(
+            "RANDCEQGHILKMFPSTWYV",
+            $service->reduceAlphabetCustom("ARNDCEQGHILKMFPSTWYV", $sCustom)
+        );
+    }
+
+    /**
+     * A custom alphabet shorter than twenty letters only reduces the amino acids it
+     * reaches, the following ones are kept as they are
+     */
+    public function testReduceAlphabetCustomShorterThanTheAlphabet()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        // only A, R and N are mapped, onto X, Y and Z
+        $this->assertEquals(
+            "XYZDCEQGHILKMFPSTWYV",
+            $service->reduceAlphabetCustom("ARNDCEQGHILKMFPSTWYV", "XYZ")
+        );
+    }
+
+    public function testReduceAlphabetCustomOfAnEmptySequence()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals("", $service->reduceAlphabetCustom("", str_repeat("A", 20)));
+    }
+
+    /**
+     * The description and the groups of a reduction, as the minitool prints them under
+     * the coloured sequence
+     */
+    public function testCreateReduceCode()
+    {
+        $aExpected = [
+            "Description" => "Murphy et al, 2000; 2 letters alphabet",
+            "Elements" => [
+                "LVIMCAGSTPFYW" => "P: Hydrophobic",
+                "EDNQKRH"       => "E: Hydrophilic",
+            ],
+        ];
+
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals($aExpected, $service->createReduceCode("Murphy2"));
+    }
+
+    public function testCreateReduceCodeOfTheElevenLettersImgtAlphabet()
+    {
+        $aExpected = [
+            "Description" => "11 IMGT amino acid chemical characteristics alphabet",
+            "Elements" => [
+                "AVIL" => "A: Aliphatic",
+                "F"    => "F: Phenylalanine",
+                "CM"   => "G: Sulfur",
+                "G"    => "G: Glycine",
+                "ST"   => "S: Hydroxyl",
+                "W"    => "W: Tryptophan",
+                "Y"    => "Y: Tyrosine",
+                "P"    => "P: Proline",
+                "DE"   => "A: Acidic",
+                "NQ"   => "N: Amide",
+                "HKR"  => "H: Basic",
+            ],
+        ];
+
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals($aExpected, $service->createReduceCode("11IMG"));
+    }
+
+    /**
+     * Every reduction carries its description and as many groups as its name announces
+     */
+    #[DataProvider('providerAlphabetDescriptions')]
+    public function testCreateReduceCodeDescribesEveryAlphabet($sType, $sDescription, $iGroups)
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $aReduction = $service->createReduceCode($sType);
+
+        $this->assertEquals($sDescription, $aReduction["Description"]);
+        $this->assertCount($iGroups, $aReduction["Elements"]);
+    }
+
+    public static function providerAlphabetDescriptions()
+    {
+        return [
+            "Murphy 2"  => ["Murphy2",  "Murphy et al, 2000; 2 letters alphabet", 2],
+            "Murphy 4"  => ["Murphy4",  "Murphy et al, 2000; 4 letters alphabet", 4],
+            "Murphy 10" => ["Murphy10", "Murphy et al, 2000; 10 letters alphabet", 10],
+            "Murphy 15" => ["Murphy15", "Murphy et al, 2000; 15 letters alphabet", 15],
+            "Wang 2"    => ["Wang2",    "Wang & Wang, 1999; 2 letters alphabet", 2],
+            "Wang 3"    => ["Wang3",    "Wang & Wang, 1999; 3 letters alphabet", 3],
+            "Wang 5"    => ["Wang5",    "Wang & Wang, 1999; 5 letters alphabet", 5],
+            "Wang 5v"   => ["Wang5v",   "Wang & Wang, 1999; 5 letters variant alphabet", 5],
+            "Li 3"      => ["Li3",      "Li et al, 2003; 3 letters alphabet", 3],
+            "Li 4"      => ["Li4",      "Li et al, 2003; 4 letters alphabet", 4],
+            "Li 5"      => ["Li5",      "Li et al, 2003; 5 letters alphabet", 5],
+            "Li 10"     => ["Li10",     "Li et al, 2003; 10 letters alphabet", 10],
+            "IMGT 3"    => ["3IMG",     "3 IMGT amino acid hydropathy alphabet", 3],
+            "IMGT 5"    => ["5IMG",     "5 IMGT amino acid volume alphabet", 5],
+            "IMGT 11"   => ["11IMG",    "11 IMGT amino acid chemical characteristics alphabet", 11],
+        ];
+    }
+
+    /**
+     * An alphabet the API does not know gives nothing rather than failing
+     */
+    public function testCreateReduceCodeOfAnUnknownAlphabet()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals([], $service->createReduceCode("NoSuchAlphabet"));
     }
 }

@@ -101,6 +101,7 @@ class FindPalindromesType extends AbstractType
             ChoiceType::class,
             [
                 'choices' => $maxData,
+                'data' => 10, // legacy: "<option selected=\"selected\">10</option>"
                 'label' => "Maximum length of palindromic sequence : ",
                 'attr' => [
                     'class' => "custom-select d-block w-20"

@@ -67,7 +67,10 @@ class SequenceManipulationType extends AbstractType
                 'attr' => [
                     'class' => "custom-select d-block w-20",
                 ],
-                'multiple' => true
+                // legacy's "<select name=action size=7>" has no "multiple" attribute -
+                // size=7 only sets how many rows are visible - and the business logic
+                // treats $action as a single scalar, comparing it with == one value at a
+                // time, so only one action can ever apply
             ]
         );
         $builder->add(

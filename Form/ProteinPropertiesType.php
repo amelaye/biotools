@@ -54,7 +54,8 @@ class ProteinPropertiesType extends AbstractType
             TextType::class,
             [
                 'required' => false,
-                'data' => 2,
+                // legacy leaves this blank by default, using the whole sequence
+                // ($_POST["start"]!="" ? ... : $start=0)
                 'attr' => [
                     'class' => "form-control"
                 ],
@@ -67,7 +68,8 @@ class ProteinPropertiesType extends AbstractType
             TextType::class,
             [
                 'required' => false,
-                'data' => 18,
+                // legacy leaves this blank by default, using the whole sequence
+                // ($_POST["end"]!="" ? ... : $end=strlen($seq))
                 'attr' => [
                     'class' => "form-control"
                 ],
@@ -135,7 +137,7 @@ class ProteinPropertiesType extends AbstractType
             'pH',
             TextType::class,
             [
-                'data' => 50,
+                'data' => 7, // legacy: "$pH=7.0;" (protein_properties.php:117)
                 'attr' => [
                     'class' => "form-control"
                 ]

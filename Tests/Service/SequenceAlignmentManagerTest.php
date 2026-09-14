@@ -45,6 +45,30 @@ class SequenceAlignmentManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * generateResults() pads the shorter sequence with the tail of the longer one once
+     * the Smith-Waterman traceback exhausts sequence B first. This case only fires for
+     * sequences of unequal length - the loop bound previously used $iMaxB (length of
+     * sequence B) instead of $iMaxA (length of sequence A) here, truncating both output
+     * sequences to the position where the traceback stopped instead of padding out to the
+     * end of sequence A.
+     */
+    public function testAlignDNAWithUnequalLengthSequences()
+    {
+        $seqa = "ACGTACGTACGTACGTACGT";
+        $seqb = "ACGTACGT";
+
+        $aExpected = [
+          "seqa" => "ACGTACGTACGTACGTACG",
+          "seqb" => "ACGTACGT-----------"
+        ];
+
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $testFunction = $service->alignDNA($seqa, $seqb);
+
+        $this->assertEquals($aExpected, $testFunction);
+    }
+
     public function testGenerateResultsProtein()
     {
         $aMatrix = [

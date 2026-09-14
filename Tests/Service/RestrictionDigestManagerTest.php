@@ -3738,6 +3738,30 @@ class RestrictionDigestManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * legacy always includes the Type IIs/IIb enzymes in the candidate pool whenever a
+     * specific enzyme has been requested from the "Use only this endonuclease" dropdown
+     * ($wre), regardless of whether the "Include Type IIs/IIb" checkboxes are ticked -
+     * because reduceEnzymesArray() narrows the pool down to just that one enzyme anyway.
+     * Without this, a Type IIs/IIb enzyme requested by name could never be found.
+     */
+    public function testGetNucleolasesInfosWreTriggersTypeIIsAndTypeIIbRegardlessOfCheckboxes()
+    {
+        $bIIs = false;
+        $bIIb = false;
+        $bDefined = false;
+        $sWre = "AarI";
+
+        $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
+            $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
+        $testFunction = $service->getNucleolasesInfos($bIIs, $bIIb, $bDefined, $sWre);
+
+        $aExpected = array_merge($this->aType2, $this->type2s);
+        $aExpected = array_merge($aExpected, $this->type2b);
+
+        $this->assertEquals($aExpected, $testFunction);
+    }
+
     public function testReduceEnzymesArray()
     {
         $aEnzymes = $this->aType2;
@@ -5730,22 +5754,19 @@ class RestrictionDigestManagerTest extends TestCase
         $bIsOnlyDiff = false;
         $sWre = "AarI";
 
+        // legacy prints exactly one row per qualifying enzyme, however many sequences
+        // it cuts - the previous (buggy) port listed an enzyme once per matching sequence
         $aExpected = [
           0 => "AfaI",
-          1 => "AfaI",
-          2 => "AluI",
-          3 => "AluI",
-          4 => "AsuNHI",
-          5 => "BfaI",
-          6 => "BmtI",
-          7 => "BsiWI",
-          8 => "BstSNI",
-          9 => "Csp6I",
-          10 => "Csp6I",
-          11 => "HpyCH4IV",
-          12 => "HpyCH4IV",
-          13 => "TaiI",
-          14 => "TaiI",
+          1 => "AluI",
+          2 => "AsuNHI",
+          3 => "BfaI",
+          4 => "BmtI",
+          5 => "BsiWI",
+          6 => "BstSNI",
+          7 => "Csp6I",
+          8 => "HpyCH4IV",
+          9 => "TaiI",
         ];
 
         $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,

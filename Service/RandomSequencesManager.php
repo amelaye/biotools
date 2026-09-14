@@ -132,7 +132,7 @@ class RandomSequencesManager
         try {
             $aDNA = [];
             $acgt = 0;
-            if ($iLength != "") {
+            if ($iLength != null) {
                 // in case length is specified
                 foreach($aAminoAcids as $amino) {
                     $acgt += $amino;
@@ -168,7 +168,7 @@ class RandomSequencesManager
             $ACDEFGHIKLMNPGRSTVWY = 0;
 
             // Get number of ocurrences per each aminoacid
-            if ($iLength != "") {
+            if ($iLength != null) {
                 // in case length is specified
                 foreach($aAminoAcids as $amino) {
                     $ACDEFGHIKLMNPGRSTVWY += $amino;

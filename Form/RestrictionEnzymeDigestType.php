@@ -78,6 +78,7 @@ class RestrictionEnzymeDigestType extends AbstractType
             CheckboxType::class,
             [
                 'required' => false,
+                'data' => true, // legacy: "<input checked=\"checked\" value=\"1\" name=\"showcode\" type=\"checkbox\">"
                 'label' => "Show code "
             ]
         );
@@ -96,6 +97,7 @@ class RestrictionEnzymeDigestType extends AbstractType
                     7 => 7,
                     8 => 8
                 ],
+                'data' => 4, // legacy: "<option selected>4" (restriction_digest.php:284)
                 'attr' => [
                     'class' => "custom-select d-block w-20"
                 ],

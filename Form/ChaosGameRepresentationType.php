@@ -112,9 +112,10 @@ class ChaosGameRepresentationType extends AbstractType
                 'label' => "Sequence : ",
                 'data'  => $sampleADN,
                 'constraints' => array(
+                    // legacy: $input_min=50; $input_max=5000000 (chaos_game_representation.php:23-24)
                     new Length([
                         'min' => 50,
-                        'max' => 50000,
+                        'max' => 5000000,
                         'minMessage' => 'Minumum sequence length: {{ limit }} bp',
                         'maxMessage' => 'Sequence is longer than {{ limit }} bp. At this moment we can not provide this service to such a long sequences.'
                     ]),
@@ -136,6 +137,7 @@ class ChaosGameRepresentationType extends AbstractType
             CheckboxType::class,
             [
                 'required' => false,
+                'data' => true, // legacy: "<input type=checkbox name=freq value=1 checked>"
                 'label' => "Show oligonuclotide frequencies"
             ]
         );

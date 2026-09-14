@@ -33,10 +33,12 @@ class FastaUploaderType extends AbstractType
             [
                 'label' => 'FASTA File',
                 'constraints' => array(
+                    // legacy (gc_content_finder.php) performs no server-side MIME check at
+                    // all - only a client-side MAX_FILE_SIZE hint most browsers can ignore -
+                    // so a real .fasta/.fa upload tagged application/octet-stream by the
+                    // browser must not be rejected here either
                     new File([
                         "maxSize" => "100000k",
-                        "mimeTypes" =>  "text/plain",
-                        "mimeTypesMessage" => "Please upload a valid TXT"
                     ])
                 )
             ]

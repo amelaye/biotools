@@ -147,6 +147,27 @@ class RandomSequencesManagerTest extends TestCase
         $this->assertEquals(30, strlen($testFunction));
     }
 
+    /**
+     * When no length is requested (form submits 0), legacy just rounds the raw
+     * occurrence counts instead of scaling them - the resulting sequence length is the
+     * sum of those rounded counts, not the requested length
+     */
+    public function testCreateFromACGTWithoutRequestedLength()
+    {
+        $aAminoAcids = [
+          "A" => "29.5",
+          "C" => "20.5",
+          "G" => "20.5",
+          "T" => "29.5"
+        ];
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromACGT($aAminoAcids, 0);
+
+        // round(29.5)=30, round(20.5)=21, round(20.5)=21, round(29.5)=30
+        $this->assertEquals(102, strlen($testFunction));
+    }
+
     public function testcreateFromAA()
     {
         $aAminoAcids = [
@@ -178,5 +199,40 @@ class RandomSequencesManagerTest extends TestCase
         $testFunction = $service->createFromAA($aAminoAcids, $iLength);
 
         $this->assertEquals(99, strlen($testFunction));
+    }
+
+    /**
+     * When no length is requested (form submits 0), legacy just rounds the raw
+     * occurrence counts instead of scaling them
+     */
+    public function testCreateFromAAWithoutRequestedLength()
+    {
+        $aAminoAcids = [
+          "A" => "1.174",
+          "C" => "2.395",
+          "D" => "4.872",
+          "E" => "6.662",
+          "F" => "3.624",
+          "G" => "7.532",
+          "H" => "7.532",
+          "I" => "7.532",
+          "K" => "5.635",
+          "L" => "9.412",
+          "M" => "2.196",
+          "N" => "3.789",
+          "P" => "6.294",
+          "Q" => "4.509",
+          "R" => "5.607",
+          "S" => "7.527",
+          "T" => "5.685",
+          "V" => "6.026",
+          "W" => "1.48",
+          "Y" => "2.84"
+        ];
+
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+        $testFunction = $service->createFromAA($aAminoAcids, 0);
+
+        $this->assertEquals(105, strlen($testFunction));
     }
 }

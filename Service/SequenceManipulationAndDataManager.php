@@ -28,8 +28,8 @@ class SequenceManipulationAndDataManager
     public function displayBothStrands($seq)
     {
         try {
-            // get the complementary sequence
-            $revcomp = $this->revCompDNA($seq);
+            // get the complementary sequence, base for base under the forward strand
+            $revcomp = $this->compDNA($seq);
             $result = "";
             $i = 0;
             while ($i < strlen($seq)) {

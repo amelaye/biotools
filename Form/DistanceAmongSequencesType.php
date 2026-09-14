@@ -46,8 +46,9 @@ class DistanceAmongSequencesType extends AbstractType
                 ],
                 'label' => "Sequence : ",
                 'constraints' => array(
+                    // legacy: strlen($allsequences)>2000000 (distance_among_sequences.php:31)
                     new Length([
-                        'max' => 20000,
+                        'max' => 2000000,
                         'maxMessage' => 'This service does not handle input requests longer than {{ limit }} bp.'
                     ]),
                 )
@@ -64,6 +65,7 @@ class DistanceAmongSequencesType extends AbstractType
                 ],
                 'multiple' => false,
                 'expanded' => true,
+                'data' => "euclidean", // legacy: "<input type=radio name=method value=euclidean checked>"
             ]
         );
 
@@ -72,6 +74,7 @@ class DistanceAmongSequencesType extends AbstractType
             ChoiceType::class,
             [
                 'choices' => $euclidianDistance,
+                'data' => 4, // legacy: "<option value=4 selected>tetranucleotides"
                 'attr' => [
                     'class' => "custom-select d-block w-20"
                 ]

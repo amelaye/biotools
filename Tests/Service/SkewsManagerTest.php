@@ -5,6 +5,7 @@ namespace Tests\MinitoolsBundle\Service;
 use Amelaye\BioPHP\Api\NucleotidApi;
 use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
 use Amelaye\BioTools\Service\SkewsManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class SkewsManagerTest extends TestCase
@@ -66,147 +67,147 @@ class SkewsManagerTest extends TestCase
         $oskew = 2;
         $strands = 1;
         $aExpected = [
-          0 => 0.01022312,
-          10 => 0.00447745,
-          20 => 0.00869665,
-          30 => 0.00353055,
-          40 => 0.00252984,
-          50 => 0.0030252,
-          60 => 0.00313104,
-          70 => 0.00220797,
-          80 => 0.00647436,
-          90 => 0.00159728,
-          100 => 0.00252984,
-          110 => 0.00315182,
-          120 => 0.01022312,
-          130 => 0.00447745,
-          140 => 0.00869665,
-          150 => 0.00353055,
-          160 => 0.00252984,
-          170 => 0.0030252,
-          180 => 0.00313104,
-          190 => 0.00220797,
-          200 => 0.00647436,
-          210 => 0.00159728,
-          220 => 0.00252984,
-          230 => 0.00315182,
-          240 => 0.01022312,
-          250 => 0.00447745,
-          260 => 0.00869665,
-          270 => 0.00353055,
-          280 => 0.00252984,
-          290 => 0.0030252,
-          300 => 0.00313104,
-          310 => 0.00220797,
-          320 => 0.00647436,
-          330 => 0.00159728,
-          340 => 0.00252984,
-          350 => 0.00315182,
-          360 => 0.01022312,
-          370 => 0.00447745,
-          380 => 0.00869665,
-          390 => 0.00353055,
-          400 => 0.00252984,
-          410 => 0.0030252,
-          420 => 0.00313104,
-          430 => 0.00220797,
-          440 => 0.00647436,
-          450 => 0.00159728,
-          460 => 0.00252984,
-          470 => 0.00315182,
-          480 => 0.01022312,
-          490 => 0.00447745,
-          500 => 0.00869665,
-          510 => 0.00353055,
-          520 => 0.00252984,
-          530 => 0.0030252,
-          540 => 0.00313104,
-          550 => 0.00220797,
-          560 => 0.00647436,
-          570 => 0.00159728,
-          580 => 0.00252984,
-          590 => 0.00315182,
-          600 => 0.01022312,
-          610 => 0.00447745,
-          620 => 0.00869665,
-          630 => 0.00353055,
-          640 => 0.00252984,
-          650 => 0.0030252,
-          660 => 0.00313104,
-          670 => 0.00220797,
-          680 => 0.00647436,
-          690 => 0.00159728,
-          700 => 0.00252984,
-          710 => 0.00315182,
-          720 => 0.01022312,
-          730 => 0.00447745,
-          740 => 0.00869665,
-          750 => 0.00353055,
-          760 => 0.00252984,
-          770 => 0.0030252,
-          780 => 0.00313104,
-          790 => 0.00220797,
-          800 => 0.00647436,
-          810 => 0.00159728,
-          820 => 0.00252984,
-          830 => 0.00315182,
-          840 => 0.01022312,
-          850 => 0.00447745,
-          860 => 0.00869665,
-          870 => 0.00353055,
-          880 => 0.00252984,
-          890 => 0.0030252,
-          900 => 0.00313104,
-          910 => 0.00220797,
-          920 => 0.00647436,
-          930 => 0.00159728,
-          940 => 0.00252984,
-          950 => 0.00315182,
-          960 => 0.01022312,
-          970 => 0.00447745,
-          980 => 0.00869665,
-          990 => 0.00353055,
-          1000 => 0.00252984,
-          1010 => 0.0030252,
-          1020 => 0.00313104,
-          1030 => 0.00220797,
-          1040 => 0.00647436,
-          1050 => 0.00159728,
-          1060 => 0.00252984,
-          1070 => 0.00315182,
-          1080 => 0.01022312,
-          1090 => 0.00447745,
-          1100 => 0.00869665,
-          1110 => 0.00353055,
-          1120 => 0.00252984,
-          1130 => 0.0030252,
-          1140 => 0.00313104,
-          1150 => 0.00220797,
-          1160 => 0.00647436,
-          1170 => 0.00159728,
-          1180 => 0.00252984,
-          1190 => 0.00315182,
-          1200 => 0.01022312,
-          1210 => 0.00447745,
-          1220 => 0.00869665,
-          1230 => 0.00353055,
-          1240 => 0.00252984,
-          1250 => 0.0030252,
-          1260 => 0.00313104,
-          1270 => 0.00220797,
-          1280 => 0.00647436,
-          1290 => 0.00159728,
-          1300 => 0.00252984,
-          1310 => 0.00315182,
-          1320 => 0.01022312,
-          1330 => 0.00447745,
-          1340 => 0.00869665,
-          1350 => 0.00353055,
-          1360 => 0.00252984,
-          1370 => 0.0030252,
-          1380 => 0.00313104,
-          1390 => 0.00220797,
-          1400 => 0.00647436,
+          0 => 0.01747301247356392,
+          10 => 0.011503492709996177,
+          20 => 0.012192746060215143,
+          30 => 0.006132526096025437,
+          40 => 0.00847296932044761,
+          50 => 0.006656959166325915,
+          60 => 0.006194935829367254,
+          70 => 0.0043327552996897944,
+          80 => 0.009865689688507984,
+          90 => 0.004870769156677723,
+          100 => 0.00847296932044761,
+          110 => 0.006082046185521217,
+          120 => 0.01747301247356392,
+          130 => 0.011503492709996177,
+          140 => 0.012192746060215143,
+          150 => 0.006132526096025437,
+          160 => 0.00847296932044761,
+          170 => 0.006656959166325915,
+          180 => 0.006194935829367254,
+          190 => 0.0043327552996897944,
+          200 => 0.009865689688507984,
+          210 => 0.004870769156677723,
+          220 => 0.00847296932044761,
+          230 => 0.006082046185521217,
+          240 => 0.01747301247356392,
+          250 => 0.011503492709996177,
+          260 => 0.012192746060215143,
+          270 => 0.006132526096025437,
+          280 => 0.00847296932044761,
+          290 => 0.006656959166325915,
+          300 => 0.006194935829367254,
+          310 => 0.0043327552996897944,
+          320 => 0.009865689688507984,
+          330 => 0.004870769156677723,
+          340 => 0.00847296932044761,
+          350 => 0.006082046185521217,
+          360 => 0.01747301247356392,
+          370 => 0.011503492709996177,
+          380 => 0.012192746060215143,
+          390 => 0.006132526096025437,
+          400 => 0.00847296932044761,
+          410 => 0.006656959166325915,
+          420 => 0.006194935829367254,
+          430 => 0.0043327552996897944,
+          440 => 0.009865689688507984,
+          450 => 0.004870769156677723,
+          460 => 0.00847296932044761,
+          470 => 0.006082046185521217,
+          480 => 0.01747301247356392,
+          490 => 0.011503492709996177,
+          500 => 0.012192746060215143,
+          510 => 0.006132526096025437,
+          520 => 0.00847296932044761,
+          530 => 0.006656959166325915,
+          540 => 0.006194935829367254,
+          550 => 0.0043327552996897944,
+          560 => 0.009865689688507984,
+          570 => 0.004870769156677723,
+          580 => 0.00847296932044761,
+          590 => 0.006082046185521217,
+          600 => 0.01747301247356392,
+          610 => 0.011503492709996177,
+          620 => 0.012192746060215143,
+          630 => 0.006132526096025437,
+          640 => 0.00847296932044761,
+          650 => 0.006656959166325915,
+          660 => 0.006194935829367254,
+          670 => 0.0043327552996897944,
+          680 => 0.009865689688507984,
+          690 => 0.004870769156677723,
+          700 => 0.00847296932044761,
+          710 => 0.006082046185521217,
+          720 => 0.01747301247356392,
+          730 => 0.011503492709996177,
+          740 => 0.012192746060215143,
+          750 => 0.006132526096025437,
+          760 => 0.00847296932044761,
+          770 => 0.006656959166325915,
+          780 => 0.006194935829367254,
+          790 => 0.0043327552996897944,
+          800 => 0.009865689688507984,
+          810 => 0.004870769156677723,
+          820 => 0.00847296932044761,
+          830 => 0.006082046185521217,
+          840 => 0.01747301247356392,
+          850 => 0.011503492709996177,
+          860 => 0.012192746060215143,
+          870 => 0.006132526096025437,
+          880 => 0.00847296932044761,
+          890 => 0.006656959166325915,
+          900 => 0.006194935829367254,
+          910 => 0.0043327552996897944,
+          920 => 0.009865689688507984,
+          930 => 0.004870769156677723,
+          940 => 0.00847296932044761,
+          950 => 0.006082046185521217,
+          960 => 0.01747301247356392,
+          970 => 0.011503492709996177,
+          980 => 0.012192746060215143,
+          990 => 0.006132526096025437,
+          1000 => 0.00847296932044761,
+          1010 => 0.006656959166325915,
+          1020 => 0.006194935829367254,
+          1030 => 0.0043327552996897944,
+          1040 => 0.009865689688507984,
+          1050 => 0.004870769156677723,
+          1060 => 0.00847296932044761,
+          1070 => 0.006082046185521217,
+          1080 => 0.01747301247356392,
+          1090 => 0.011503492709996177,
+          1100 => 0.012192746060215143,
+          1110 => 0.006132526096025437,
+          1120 => 0.00847296932044761,
+          1130 => 0.006656959166325915,
+          1140 => 0.006194935829367254,
+          1150 => 0.0043327552996897944,
+          1160 => 0.009865689688507984,
+          1170 => 0.004870769156677723,
+          1180 => 0.00847296932044761,
+          1190 => 0.006082046185521217,
+          1200 => 0.01747301247356392,
+          1210 => 0.011503492709996177,
+          1220 => 0.012192746060215143,
+          1230 => 0.006132526096025437,
+          1240 => 0.00847296932044761,
+          1250 => 0.006656959166325915,
+          1260 => 0.006194935829367254,
+          1270 => 0.0043327552996897944,
+          1280 => 0.009865689688507984,
+          1290 => 0.004870769156677723,
+          1300 => 0.00847296932044761,
+          1310 => 0.006082046185521217,
+          1320 => 0.01747301247356392,
+          1330 => 0.011503492709996177,
+          1340 => 0.012192746060215143,
+          1350 => 0.006132526096025437,
+          1360 => 0.00847296932044761,
+          1370 => 0.006656959166325915,
+          1380 => 0.006194935829367254,
+          1390 => 0.0043327552996897944,
+          1400 => 0.009865689688507984,
         ];
 
         $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
@@ -899,6 +900,40 @@ class SkewsManagerTest extends TestCase
         $this->assertEquals($fExpected, $testFunction);
     }
 
+    /**
+     * The standard Pearson distance used by the minitool when only one strand is
+     * analysed (legacy skews.php's Pearson_distance() - not to be confused with
+     * distance(), the modified/weighted Pearson correlation used for both strands)
+     */
+    public function testPearsonDistance()
+    {
+        $vals_x = [1, 2, 3, 4];
+        $vals_y = [4, 3, 2, 1];
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $testFunction = $service->pearsonDistance($vals_x, $vals_y);
+
+        $this->assertEqualsWithDelta(2.0, $testFunction, 1e-9);
+    }
+
+    public function testPearsonDistancePerfectCorrelation()
+    {
+        $vals_x = [1, 2, 3, 4, 5];
+        $vals_y = [2, 4, 6, 8, 10];
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $testFunction = $service->pearsonDistance($vals_x, $vals_y);
+
+        $this->assertEqualsWithDelta(0.0, $testFunction, 1e-9);
+    }
+
+    public function testPearsonDistanceOfArraysWithDifferentSizes()
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $this->assertNull($service->pearsonDistance([1, 2, 3], [1, 2]));
+    }
+
     public function testComputeImageWithGmC()
     {
         $sequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGG";
@@ -1128,5 +1163,58 @@ class SkewsManagerTest extends TestCase
         $this->assertStringContainsString('<svg', file_get_contents($testFunction));
 
         unlink($testFunction);
+    }
+
+    /**
+     * The minitool reads the window size and the period from the form as strings, and
+     * checks them against their own integer cast. The comparison is a loose one, so any
+     * numeric string whose value is a whole number goes through, whatever its formatting.
+     */
+    #[DataProvider('providerWholeNumbers')]
+    public function testStrIsIntAcceptsAWholeNumber($mValue)
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $this->assertTrue($service->strIsInt($mValue));
+    }
+
+    public static function providerWholeNumbers()
+    {
+        return [
+            "a number as a string"   => ["5"],
+            "a number as an integer" => [5],
+            "zero"                   => ["0"],
+            "a negative number"      => ["-3"],
+            "a large window"         => ["100000"],
+            // the comparison is numeric, so these are all read as the whole number 5
+            "a leading zero"         => ["05"],
+            "a leading space"        => [" 5"],
+            "a trailing space"       => ["5 "],
+            "a plus sign"            => ["+5"],
+            "a zero decimal part"    => ["5.0"],
+        ];
+    }
+
+    /**
+     * A window size holding a real decimal part, or anything that is not a number at all,
+     * is refused rather than silently truncated
+     */
+    #[DataProvider('providerNotWholeNumbers')]
+    public function testStrIsIntRefusesAnythingElse($mValue)
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $this->assertFalse($service->strIsInt($mValue));
+    }
+
+    public static function providerNotWholeNumbers()
+    {
+        return [
+            "a decimal number"    => ["5.5"],
+            "a word"              => ["abc"],
+            "an empty string"     => [""],
+            "a number and a word" => ["5abc"],
+            "a sequence"          => ["ACGT"],
+        ];
     }
 }

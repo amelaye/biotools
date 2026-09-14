@@ -155,7 +155,7 @@ class RandomSequencesType extends AbstractType
                     'class' => "form-control",
                 ],
                 'label' => "A :",
-                'data' => 1.174,
+                'data' => 7.174, // legacy: "else{print \"7.174> &#8240\"...}"
                 'required' => false
             ]
         );
@@ -234,7 +234,7 @@ class RandomSequencesType extends AbstractType
                     'class' => "form-control",
                 ],
                 'label' => "H :",
-                'data' => 7.532,
+                'data' => 2.366, // legacy: "else{print \"2.366> &#8240\"...}"
                 'required' => false
             ]
         );
@@ -247,7 +247,7 @@ class RandomSequencesType extends AbstractType
                     'class' => "form-control",
                 ],
                 'label' => "I :",
-                'data' => 7.532,
+                'data' => 4.374, // legacy: "else{print \"4.374> &#8240\"...}"
                 'required' => false
             ]
         );

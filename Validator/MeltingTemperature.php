@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraint;
 class MeltingTemperature extends Constraint
 {
     public $message = "The oligonucleotide is not valid.";
+    public $lengthMessage = "Length of primer must be 6-50 bp.";
 
     public function validatedBy(): string
     {

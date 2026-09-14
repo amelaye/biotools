@@ -19,7 +19,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\GreaterThan;
-use Symfony\Component\Validator\Constraints\LessThan;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -96,7 +96,8 @@ class SkewsType extends AbstractType
                 'choices' => [
                     5000 => 5000,
                     10000 => 10000,
-                    50000 => 50000
+                    50000 => 50000,
+                    100000 => 100000
                 ],
                 'required'   => false,
                 'label' => "Window size : ",
@@ -117,8 +118,9 @@ class SkewsType extends AbstractType
                     'class' => "form-control"
                 ],
                 'constraints' => array(
-                    // check whether $window is in the correct range
-                    new LessThan(50000),
+                    // check whether $window is in the correct range: legacy accepts
+                    // 100 to 100000 bases (skews.php: "$window<100 or $window>100000")
+                    new LessThanOrEqual(100000),
                     new GreaterThan(99)
                 ),
                 'label' => "or"

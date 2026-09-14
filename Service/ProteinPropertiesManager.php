@@ -255,6 +255,13 @@ class ProteinPropertiesManager
 
     /**
      * Molecular weight calculation
+     *
+     * Deliberate deviation from the legacy minitool: legacy's molecular weight loop adds
+     * "$aminoacid_content["Z"]*99.13" for Valine, but the content array it builds only ever
+     * has a "V" key - "Z" is a typo, so legacy's sum for that undefined index is always 0
+     * and Valine's weight is silently dropped from every legacy result. This port sums
+     * every amino acid actually present, Valine included, so the weight it returns is the
+     * scientifically correct one and will differ from legacy's by 99.13 per Valine residue.
      * @param   array   $aAminoacidContent
      * @return  float
      * @throws  \Exception

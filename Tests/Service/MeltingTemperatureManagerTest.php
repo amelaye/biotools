@@ -180,6 +180,32 @@ class MeltingTemperatureManagerTest extends TestCase
         $this->assertEquals($testFunction, $aExpected);
     }
 
+    /**
+     * legacy: tm_Base_Stacking() returns the sentinel message "Non computed. The
+     * oligonucleotide contains degenerated nucleotides." instead of a Tm value when the
+     * primer holds a degenerate nucleotide, since the nearest neighbor thermodynamic
+     * table only has values for plain A/C/G/T dinucleotides.
+     */
+    public function testTmBaseStackingWithDegeneratedNucleotides()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCN";
+        $concPrimer = "200";
+        $concSalt = "50";
+        $concMg = "2";
+
+        $aExpected = [
+            "tm" => null,
+            "enthalpy" => null,
+            "entropy" => null,
+            "message" => "Non computed. The oligonucleotide contains degenerated nucleotides.",
+        ];
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+        $testFunction = $service->tmBaseStacking($primer, $concPrimer, $concSalt, $concMg);
+
+        $this->assertEquals($aExpected, $testFunction);
+    }
+
     public function testTmBaseStackingException()
     {
         $this->expectException(\Exception::class);

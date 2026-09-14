@@ -67,7 +67,7 @@ class MicroarrayAnalysisAdaptiveManager
     {
         try {
             // find data for first column and row, and remove all headings;
-            $file = substr($file, strpos($file,"1\t\t1\t"));
+            $file = substr($file, strpos($file,"1\t1\t"));
             // remove from file returns (\r) and (\")
             $file = preg_replace("/\r|\"/","",$file);
 
