@@ -29,13 +29,13 @@ class ChaosGameRepresentationType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sampleADN = "GTGCCGAGCTGAGTTCCTTATAAGAATTAATCTTAATTTTGTATTTTTTCCTGTAAGACAATAGGCCATG";
-        $sampleADN .= "TTAATTAAACTGAAGAAGGATATATTTGGCTGGGTGTTTTCAAATGTCAGCTTAAAATTGGTAATTGAAT";
-        $sampleADN .= "GGAAGCAAAATTATAAGAAGAGGAAATTAAAGTCTTCCATTGCATGTATTGTAAACAGAAGGAGATGGGT";
-        $sampleADN .= "GATTCCTTCAATTCAAAAGCTCTCTTTGGAATGAACAATGTGGGCGTTTGTAAATTCTGGAAATGTCTTT";
-        $sampleADN .= "CTATTCATAATAAACTAGATACTGTTGATCTTTTAAAAAAAAAAAA";
+        $sSampleADN = "GTGCCGAGCTGAGTTCCTTATAAGAATTAATCTTAATTTTGTATTTTTTCCTGTAAGACAATAGGCCATG";
+        $sSampleADN .= "TTAATTAAACTGAAGAAGGATATATTTGGCTGGGTGTTTTCAAATGTCAGCTTAAAATTGGTAATTGAAT";
+        $sSampleADN .= "GGAAGCAAAATTATAAGAAGAGGAAATTAAAGTCTTCCATTGCATGTATTGTAAACAGAAGGAGATGGGT";
+        $sSampleADN .= "GATTCCTTCAATTCAAAAGCTCTCTTTGGAATGAACAATGTGGGCGTTTGTAAATTCTGGAAATGTCTTT";
+        $sSampleADN .= "CTATTCATAATAAACTAGATACTGTTGATCTTTTAAAAAAAAAAAA";
 
-        $optionsSize = array(
+        $aOptionsSize = array(
             "Auto" => "auto",
             "1024 X 1024" => "1024",
             "512 x 512" => "512",
@@ -57,7 +57,7 @@ class ChaosGameRepresentationType extends AbstractType
             'size',
             ChoiceType::class,
             [
-                'choices' => $optionsSize,
+                'choices' => $aOptionsSize,
                 'label' => "Sequence size",
                 'attr' => [
                     'class' => "form-control",
@@ -110,7 +110,7 @@ class ChaosGameRepresentationType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Sequence : ",
-                'data'  => $sampleADN,
+                'data'  => $sSampleADN,
                 'constraints' => array(
                     // legacy: $input_min=50; $input_max=5000000 (chaos_game_representation.php:23-24)
                     new Length([
@@ -157,14 +157,14 @@ class ChaosGameRepresentationType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['seq'])) {
-                $sSequence = strtoupper($data['seq']);
+            if (isset($aData['seq'])) {
+                $sSequence = strtoupper($aData['seq']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
 
-                $data['seq'] = $sSequence;
-                $event->setData($data);
+                $aData['seq'] = $sSequence;
+                $event->setData($aData);
             }
         });
     }

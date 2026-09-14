@@ -32,8 +32,8 @@ class SequenceAlignmentType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $dataSeq1 = "GGAGTGAGGG GAGCAGTTGG CTGAAGATGG TCCCCGCCGA GGGACCGGTG GGCGACGGCG 60\n";
-        $dataSeq1.= "AGCTGTGGCA GACCTGGCTT CCTAACCACG TCCGTGTTCT TGCGGCTCCG GGAGGGACTG 120";
+        $sDataSeq1 = "GGAGTGAGGG GAGCAGTTGG CTGAAGATGG TCCCCGCCGA GGGACCGGTG GGCGACGGCG 60\n";
+        $sDataSeq1.= "AGCTGTGGCA GACCTGGCTT CCTAACCACG TCCGTGTTCT TGCGGCTCCG GGAGGGACTG 120";
 
         $builder->add(
             'id1',
@@ -55,13 +55,13 @@ class SequenceAlignmentType extends AbstractType
                     'rows'  => 4,
                     'class' => "form-control"
                 ],
-                'data' => $dataSeq1,
+                'data' => $sDataSeq1,
                 'required' => true
             ]
         );
 
-        $dataSeq2 = "CGCATGCGGA GTGAGGGGAG CAGTTGGGAA CAGATGGTCC CCGCCGAGGG ACCGGTGGGC 60\n";
-        $dataSeq2.= "GACGGCCAGC TGTGGCAGAC CTGGCTTCCT AACCACGGAA CGTTCTTTCC GCTCCGGGAG 120";
+        $sDataSeq2 = "CGCATGCGGA GTGAGGGGAG CAGTTGGGAA CAGATGGTCC CCGCCGAGGG ACCGGTGGGC 60\n";
+        $sDataSeq2.= "GACGGCCAGC TGTGGCAGAC CTGGCTTCCT AACCACGGAA CGTTCTTTCC GCTCCGGGAG 120";
 
         $builder->add(
             'id2',
@@ -83,7 +83,7 @@ class SequenceAlignmentType extends AbstractType
                     'rows'  => 4,
                     'class' => "form-control"
                 ],
-                'data' => $dataSeq2,
+                'data' => $sDataSeq2,
                 'required' => true
             ]
         );
@@ -103,23 +103,23 @@ class SequenceAlignmentType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sequence = strtoupper($data['sequence']);
-                $sequence = preg_replace("/\W|\d/", "", $sequence); // remove useless characters
-                $sequence = preg_replace("/U/", "T", $sequence);    // from RNA to DNA
-                $sequence = preg_replace("/X/", "N", $sequence);    // substitute X -> N
-                $data['sequence'] = $sequence;
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
+                $sSequence = preg_replace("/\W|\d/", "", $sSequence); // remove useless characters
+                $sSequence = preg_replace("/U/", "T", $sSequence);    // from RNA to DNA
+                $sSequence = preg_replace("/X/", "N", $sSequence);    // substitute X -> N
+                $aData['sequence'] = $sSequence;
             }
-            if (isset($data['sequence2'])) {
-                $sequence2 = strtoupper($data['sequence2']);
-                $sequence2 = preg_replace("/\W|\d/", "", $sequence2); // remove useless characters
-                $sequence2 = preg_replace("/U/", "T", $sequence2);    // from RNA to DNA
-                $sequence2 = preg_replace("/X/", "N", $sequence2);    // substitute X -> N
-                $data['sequence2'] = $sequence2;
+            if (isset($aData['sequence2'])) {
+                $sSequence2 = strtoupper($aData['sequence2']);
+                $sSequence2 = preg_replace("/\W|\d/", "", $sSequence2); // remove useless characters
+                $sSequence2 = preg_replace("/U/", "T", $sSequence2);    // from RNA to DNA
+                $sSequence2 = preg_replace("/X/", "N", $sSequence2);    // substitute X -> N
+                $aData['sequence2'] = $sSequence2;
             }
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 
@@ -142,15 +142,15 @@ class SequenceAlignmentType extends AbstractType
      * This script creates a big array that requires a huge amount of memory
      * Do not use sequences longer than 700 bases each (1400 for both sequences)
      * In this demo, the limit has been set up to 300 bases.
-     * @param $object
+     * @param $aObject
      * @param ExecutionContextInterface $context
      * @throws \Exception
      */
-    public static function validateisReady($object, ExecutionContextInterface $context)
+    public static function validateisReady($aObject, ExecutionContextInterface $context)
     {
         $iLimit = 300;
 
-        if ((strlen($object["sequence"]) + strlen($object["sequence2"])) > $iLimit) {
+        if ((strlen($aObject["sequence"]) + strlen($aObject["sequence2"])) > $iLimit) {
             $context
                 ->buildViolation("The maximum length of code accepted for both sequences is $iLimit nucleotides")
                 ->addViolation();
