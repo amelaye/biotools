@@ -31,11 +31,11 @@ class SequenceManipulationType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $data = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGG\r";
-        $data.= "GAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGG\r";
-        $data.= "AGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGCGGA\r";
-        $data.= "GTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGAGT\r";
-        $data.= "GAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTG\r";
+        $sData = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGG\r";
+        $sData.= "GAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGG\r";
+        $sData.= "AGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGCGGA\r";
+        $sData.= "GTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGAGT\r";
+        $sData.= "GAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTG\r";
 
         $aActions = [
             "Remove non coding characters" => "remove_non_coding",
@@ -55,7 +55,7 @@ class SequenceManipulationType extends AbstractType
                     'rows'  => 4,
                     'class' => "form-control"
                 ],
-                'data' => $data,
+                'data' => $sData,
                 'required' => true
             ]
         );
@@ -126,18 +126,18 @@ class SequenceManipulationType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
             // remove non coding (works by default)
-            if (isset($data['seq'])) {
+            if (isset($aData['seq'])) {
                 // change the sequence to upper case
-                $seq = strtoupper($data['seq']);
+                $sSeq = strtoupper($aData['seq']);
                 // legacy bug fix: replace X by N before stripping non-coding characters -
                 // X isn't in the [ATGCYRWSKMDVHBN] allow-list, so doing it after (as legacy
                 // did) always strips every X before this replacement can ever see one.
-                $seq = preg_replace("/X/","N",$seq);
+                $sSeq = preg_replace("/X/","N",$sSeq);
                 // remove non-words (\W), con coding ([^ATGCYRWSKMDVHBN]) and digits (\d) from sequence
-                $data['seq'] = preg_replace("/\W|[^ATGCYRWSKMDVHBN]|\d/","",$seq);
-                $event->setData($data);
+                $aData['seq'] = preg_replace("/\W|[^ATGCYRWSKMDVHBN]|\d/","",$sSeq);
+                $event->setData($aData);
             }
         });
     }

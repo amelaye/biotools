@@ -146,19 +146,19 @@ class ReduceAlphabetType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            // porting bug fix: this used to check $data['sequence'], but the field
+            // porting bug fix: this used to check $aData['sequence'], but the field
             // built above is named 'seq', so the normalization below never ran
-            if (isset($data['seq'])) {
+            if (isset($aData['seq'])) {
                 // change the sequence to upper case
-                $sSequence = strtoupper($data['seq']);
+                $sSequence = strtoupper($aData['seq']);
                 // remove non-coding characters([^ARNDCEQGHILKMFPSTWYVX\*])
                 $sSequence = preg_replace ("([^ARNDCEQGHILKMFPSTWYVX\*])", "", $sSequence);
-                $data['seq'] = $sSequence;
+                $aData['seq'] = $sSequence;
             }
 
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 
@@ -181,12 +181,12 @@ class ReduceAlphabetType extends AbstractType
      * actually requested - legacy only validates it "for personalized reduced
      * alphabets" (reduce_protein_alphabet.php: the "else" branch reached when mode is
      * not "pre", i.e. mode is "custom")
-     * @param $object
-     * @param ExecutionContextInterface $context
+     * @param   array                       $aObject
+     * @param   ExecutionContextInterface   $context
      */
-    public static function validateCustomAlphabet($object, ExecutionContextInterface $context)
+    public static function validateCustomAlphabet($aObject, ExecutionContextInterface $context)
     {
-        if (($object["mode"] ?? null) === "custom" && strlen($object["custom_alphabet"]) != 20) {
+        if (($aObject["mode"] ?? null) === "custom" && strlen($aObject["custom_alphabet"]) != 20) {
             $context->buildViolation("The personalized alphabet is not correct")
                 ->atPath("custom_alphabet")
                 ->addViolation();

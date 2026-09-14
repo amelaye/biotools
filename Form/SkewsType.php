@@ -37,22 +37,22 @@ class SkewsType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $data = 'GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAG';
-        $data .= 'GGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGG';
-        $data .= 'GCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC';
-        $data .= 'GGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGC';
-        $data .= 'CGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAG';
-        $data .= 'TTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGAC';
-        $data .= 'GGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCC';
-        $data .= 'GCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGC';
-        $data .= 'AGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGG';
-        $data .= 'CGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGC';
-        $data .= 'GGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGG';
-        $data .= 'GAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTG';
-        $data .= 'GGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATG';
-        $data .= 'GCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAG';
-        $data .= 'GGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACC';
-        $data .= 'GGTGGGCGACGCGG';
+        $sData = 'GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAG';
+        $sData .= 'GGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGG';
+        $sData .= 'GCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC';
+        $sData .= 'GGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGC';
+        $sData .= 'CGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAG';
+        $sData .= 'TTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGAC';
+        $sData .= 'GGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCC';
+        $sData .= 'GCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGC';
+        $sData .= 'AGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGG';
+        $sData .= 'CGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGC';
+        $sData .= 'GGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGG';
+        $sData .= 'GAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTG';
+        $sData .= 'GGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATG';
+        $sData .= 'GCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAG';
+        $sData .= 'GGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACC';
+        $sData .= 'GGTGGGCGACGCGG';
 
         $builder->add(
             'name',
@@ -76,7 +76,7 @@ class SkewsType extends AbstractType
                     'rows'  => 5,
                     'class' => "form-control"
                 ],
-                'data' => $data,
+                'data' => $sData,
                 'label' => "Copy sequence in the textarea below (up to 5,000,000 bp):",
                 'constraints' => array(
                     new Length([
@@ -244,22 +244,22 @@ class SkewsType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
-            if (isset($data['seq'])) {
-                $sequence = strtoupper($data["seq"]);
-                $sequence = preg_replace("/\W|\d/","",$sequence); // remove non-coding
-                $data['seq'] = $sequence;
-                $event->setData($data);
+            $aData = $event->getData();
+            if (isset($aData['seq'])) {
+                $sSequence = strtoupper($aData["seq"]);
+                $sSequence = preg_replace("/\W|\d/","",$sSequence); // remove non-coding
+                $aData['seq'] = $sSequence;
+                $event->setData($aData);
             }
             // if name is not specified, name is "sequence"
-            if (isset($data['name']) && $data['name'] == "") {
-                $data['name'] = "sequence";
-                $event->setData($data);
+            if (isset($aData['name']) && $aData['name'] == "") {
+                $aData['name'] = "sequence";
+                $event->setData($aData);
             }
             // custom window size id not submited, use the $window value
-            if (isset($data["window2"]) && $data["window2"] != "") {
-                $data["window"] = $data["window2"];
-                $event->setData($data);
+            if (isset($aData["window2"]) && $aData["window2"] != "") {
+                $aData["window"] = $aData["window2"];
+                $event->setData($aData);
             }
         });
     }
@@ -280,13 +280,13 @@ class SkewsType extends AbstractType
 
     /**
      * If sequence is to sort to work with, display error
-     * @param $object
-     * @param ExecutionContextInterface $context
-     * @throws \Exception
+     * @param   array                       $aObject
+     * @param   ExecutionContextInterface   $context
+     * @throws  \Exception
      */
-    public static function validateisReady($object, ExecutionContextInterface $context)
+    public static function validateisReady($aObject, ExecutionContextInterface $context)
     {
-        if (strlen($object["seq"]) < ($object["window"] + 1400)) {
+        if (strlen($aObject["seq"]) < ($aObject["window"] + 1400)) {
             $context->buildViolation("Sequence is very small for the selected window size.")
                 ->addViolation();
         }
