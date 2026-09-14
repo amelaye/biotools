@@ -25,31 +25,31 @@ class RestrictionDigestManager
      * From API : list of vendor links
      * @var array
      */
-    private $vendorLinks;
+    private $aVendorLinks;
 
     /**
      * From API : list of TypeII enzymes
      * @var array
      */
-    private $type2;
+    private $aType2;
 
     /**
      * From API : list of TypeIIs enzymes
      * @var array
      */
-    private $type2s;
+    private $aType2s;
 
     /**
      * From API : list of TypeIIb enzymes
      * @var array
      */
-    private $type2b;
+    private $aType2b;
 
     /**
      * From API : list of vendors enzymes
      * @var array
      */
-    private $vendors;
+    private $aVendors;
 
     /**
      * RestrictionDigestManager constructor.
@@ -66,37 +66,37 @@ class RestrictionDigestManager
         TypeIIsEndonucleaseApiAdapter $typeIIsEndonucleaseApi,
         VendorApiAdapter $vendorApiAdapter
     ) {
-        $this->vendorLinks  = $vendorLinksApi::GetVendorLinksArray($vendorLinksApi->getVendorLinks());
-        $this->type2        = $typeIIEndonucleaseApi::GetTypeIIEndonucleasesArray($typeIIEndonucleaseApi->getTypeIIEndonucleases());
-        $this->type2b       = $typeIIbEndonucleaseApi::GetTypeIIbEndonucleasesArray($typeIIbEndonucleaseApi->getTypeIIbEndonucleases());
-        $this->type2s       = $typeIIsEndonucleaseApi::GetTypeIIsEndonucleasesArray($typeIIsEndonucleaseApi->getTypeIIsEndonucleases());
-        $this->vendors      = $vendorApiAdapter::GetVendorsArray($vendorApiAdapter->getVendors());
+        $this->aVendorLinks = $vendorLinksApi::GetVendorLinksArray($vendorLinksApi->getVendorLinks());
+        $this->aType2       = $typeIIEndonucleaseApi::GetTypeIIEndonucleasesArray($typeIIEndonucleaseApi->getTypeIIEndonucleases());
+        $this->aType2b      = $typeIIbEndonucleaseApi::GetTypeIIbEndonucleasesArray($typeIIbEndonucleaseApi->getTypeIIbEndonucleases());
+        $this->aType2s      = $typeIIsEndonucleaseApi::GetTypeIIsEndonucleasesArray($typeIIsEndonucleaseApi->getTypeIIsEndonucleases());
+        $this->aVendors     = $vendorApiAdapter::GetVendorsArray($vendorApiAdapter->getVendors());
     }
 
     /**
      * Get array of companies selling each endonuclease
-     * @param   string  $message
-     * @param   string  $enzyme
+     * @param   string  $sMessage
+     * @param   string  $sEnzyme
      * @return  array
      * @throws  \Exception
      */
-    public function getVendors(&$message, $enzyme)
+    public function getVendors(&$sMessage, $sEnzyme)
     {
         try {
-            $enzyme_array = [];
+            $aEnzymeArray = [];
             // Get array of companies selling each endonuclease
-            $vendors = $this->vendors;
+            $aVendors = $this->aVendors;
 
-            $endonuclease = preg_split("/,/", $enzyme);
-            if (strpos($enzyme,",") > 0) {
-                $message = "All endonucleases bellow are isoschizomers";
+            $aEndonuclease = preg_split("/,/", $sEnzyme);
+            if (strpos($sEnzyme,",") > 0) {
+                $sMessage = "All endonucleases bellow are isoschizomers";
             }
 
             // print vendor for each endonuclease (uses a function)
-            foreach ($endonuclease as $enzyme) {
-                $enzyme_array[$enzyme] = $this->showVendors($vendors[$enzyme], $enzyme);
+            foreach ($aEndonuclease as $sCurrentEnzyme) {
+                $aEnzymeArray[$sCurrentEnzyme] = $this->showVendors($aVendors[$sCurrentEnzyme], $sCurrentEnzyme);
             }
-            return $enzyme_array;
+            return $aEnzymeArray;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -116,21 +116,21 @@ class RestrictionDigestManager
     public function getNucleolasesInfos($bIIs, $bIIb, $bDefined, $sWre = "")
     {
         try {
-            $enzymes_array = $this->type2;
+            $aEnzymesArray = $this->aType2;
 
             // if TypeIIs endonucleases are requested, get them - or, whatever the
             // checkboxes say, when a specific enzyme was requested from the dropdown,
             // since reduceEnzymesArray() will narrow the pool down to just that one
             if (($bIIs && !$bDefined) || $sWre != "") {
-                $enzymes_array = array_merge($enzymes_array, $this->type2s);
-                asort($enzymes_array);
+                $aEnzymesArray = array_merge($aEnzymesArray, $this->aType2s);
+                asort($aEnzymesArray);
             }
             // if TypeIIb endonucleases are requested, get them - same rule as above
             if (($bIIb && !$bDefined) || $sWre != "") {
-                $enzymes_array = array_merge($enzymes_array, $this->type2b);
-                asort($enzymes_array);
+                $aEnzymesArray = array_merge($aEnzymesArray, $this->aType2b);
+                asort($aEnzymesArray);
             }
-            return $enzymes_array;
+            return $aEnzymesArray;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -153,30 +153,30 @@ class RestrictionDigestManager
             $aNewEnzymes = [];
             // if $wre not null => all endonucleases but the selected one must be removed
             if($sWre != null) {
-                foreach($aEnzymes as $key => $val) {
-                    if (strpos(" ,".$aEnzymes[$key][0].",",$sWre) > 0) {
-                        $aNewEnzymes[$sWre] = $aEnzymes[$key];
+                foreach($aEnzymes as $sKey => $aVal) {
+                    if (strpos(" ,".$aEnzymes[$sKey][0].",",$sWre) > 0) {
+                        $aNewEnzymes[$sWre] = $aEnzymes[$sKey];
                         return $aNewEnzymes;
                     }
                 }
             }
             // remove endonucleases which do not match requeriments
-            foreach($aEnzymes as $enzyme => $val) {
-                if ($iRetype == 1 && $aEnzymes[$enzyme][5] != 0) {
+            foreach($aEnzymes as $sEnzyme => $aVal) {
+                if ($iRetype == 1 && $aEnzymes[$sEnzyme][5] != 0) {
                     continue; // if retype==1 -> only Blund ends (continue for rest)
                 }
-                if ($iRetype == 2 && $aEnzymes[$enzyme][5] == 0) {
+                if ($iRetype == 2 && $aEnzymes[$sEnzyme][5] == 0) {
                     continue; // if retype==2 -> only Overhang end (continue for rest)
                 }
-                if ($iMinimun > $aEnzymes[$enzyme][6]) {
+                if ($iMinimun > $aEnzymes[$sEnzyme][6]) {
                     continue; // Only endonucleases with which recognized in template a minimum of bases (continue for rest)
                 }
                 if ($bDefinedSq == 1) {
-                    if (strpos($aEnzymes[$enzyme][2],".") > 0 || strpos($aEnzymes[$enzyme][2],"|") > 0) {
+                    if (strpos($aEnzymes[$sEnzyme][2],".") > 0 || strpos($aEnzymes[$sEnzyme][2],"|") > 0) {
                         continue; // if defined sequence selected, no N (".") or "|" in pattern
                     }
                 }
-                $aNewEnzymes[$enzyme] = $aEnzymes[$enzyme];
+                $aNewEnzymes[$sEnzyme] = $aEnzymes[$sEnzyme];
             }
             return $aNewEnzymes;
         } catch (\Exception $e) {
@@ -262,12 +262,12 @@ class RestrictionDigestManager
             } else {
                 $aExtractSequences = preg_split("/>/", $sSequence,-1,PREG_SPLIT_NO_EMPTY);
                 $iCounter = 0;
-                foreach($aExtractSequences as $key => $val) {
-                    $sSeq = substr($val,strpos($val,"\n"));
+                foreach($aExtractSequences as $sVal) {
+                    $sSeq = substr($sVal,strpos($sVal,"\n"));
                     $sSeq = preg_replace ("/\W|\d/", "", strtoupper($sSeq));
                     if (strlen($sSeq)>0){
                         $aSequence[$iCounter]["seq"] = $sSeq;
-                        $aSequence[$iCounter]["name"] = substr($val,0,strpos($val,"\n"));
+                        $aSequence[$iCounter]["name"] = substr($sVal,0,strpos($sVal,"\n"));
                         $iCounter++;
                     }
                 }
@@ -291,55 +291,55 @@ class RestrictionDigestManager
     public function enzymesForMultiSeq($aSequence, $aDigestion, $aEnzymes, $bIsOnlyDiff, $sWre)
     {
         try {
-            $digestionMulti = [];
-            $aTempData = [];
+            $aDigestionMulti = [];
+            $iTempData = 0;
 
             // Two or more sequence available
-            foreach($aEnzymes as $enzyme => $val) {
-                $checker = false;
+            foreach($aEnzymes as $sEnzyme => $aVal) {
+                $bChecker = false;
                 if ($bIsOnlyDiff == false || $sWre != ""){
                     // Show all restriction results, when endonuclease cuts at least one sequence
-                    foreach($aSequence as $number => $val2){
-                        if (isset($aDigestion[$number][$enzyme]) && sizeof($aDigestion[$number][$enzyme]["cuts"]) > 0) {
-                            $checker = true;
+                    foreach($aSequence as $iNumber => $aVal2){
+                        if (isset($aDigestion[$iNumber][$sEnzyme]) && sizeof($aDigestion[$iNumber][$sEnzyme]["cuts"]) > 0) {
+                            $bChecker = true;
                         }
                     }
                 } else {
                     $aTemp = [];
-                    if(isset($aDigestion[0][$enzyme])) {
+                    if(isset($aDigestion[0][$sEnzyme])) {
                         // Show restriction results when they are different
-                        $aTempData = sizeof($aDigestion[0][$enzyme]["cuts"]);
-                        if ($aTempData > 0){
-                            $aTemp = $aDigestion[0][$enzyme]["cuts"];
+                        $iTempData = sizeof($aDigestion[0][$sEnzyme]["cuts"]);
+                        if ($iTempData > 0){
+                            $aTemp = $aDigestion[0][$sEnzyme]["cuts"];
                         }
                     }
 
-                    foreach($aSequence as $number => $val2) {
-                        if ($number == 0) {
+                    foreach($aSequence as $iNumber => $aVal2) {
+                        if ($iNumber == 0) {
                             continue;
                         }
-                        if(isset($aDigestion[$number][$enzyme])) {
-                            $aTempData2 = sizeof($aDigestion[$number][$enzyme]["cuts"]);
-                            if ($aTempData != $aTempData2) {
-                                $checker = true;
+                        if(isset($aDigestion[$iNumber][$sEnzyme])) {
+                            $iTempData2 = sizeof($aDigestion[$iNumber][$sEnzyme]["cuts"]);
+                            if ($iTempData != $iTempData2) {
+                                $bChecker = true;
                                 break;
                             }
-                            if ($aTempData2>0){
-                                $aTemp = array_diff($aTemp, $aDigestion[$number][$enzyme]["cuts"]);
+                            if ($iTempData2>0){
+                                $aTemp = array_diff($aTemp, $aDigestion[$iNumber][$sEnzyme]["cuts"]);
                                 if (sizeof($aTemp) > 0) {
-                                    $checker = true;
+                                    $bChecker = true;
                                     break;
                                 }
                             }
                         }
                     }
                 }
-                if ($checker) {
+                if ($bChecker) {
                     // one entry per qualifying enzyme, however many sequences it cuts
-                    $digestionMulti[] = $enzyme;
+                    $aDigestionMulti[] = $sEnzyme;
                 }
             }
-            return $digestionMulti;
+            return $aDigestionMulti;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -358,9 +358,9 @@ class RestrictionDigestManager
             $aEnzymeVendors = [];
 
             $aEnzymeVendors["company"] = ["name" => $sCompany, "url" => "https://rebase.neb.com/rebase/enz/$sEnzyme.html"];
-            foreach($this->vendorLinks as $key => $data) {
-                if(strpos($sCompany, $key) !== false) {
-                    $aEnzymeVendors["links"][] = $data;
+            foreach($this->aVendorLinks as $sKey => $sData) {
+                if(strpos($sCompany, $sKey) !== false) {
+                    $aEnzymeVendors["links"][] = $sData;
                 }
             }
             return $aEnzymeVendors;
