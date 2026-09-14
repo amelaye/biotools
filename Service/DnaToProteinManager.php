@@ -19,7 +19,6 @@ use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
  * Class DnaToProteinManager
  * @package BioTools\Service
  * @author Amélie DUVERNET aka Amelaye <amelieonline@gmail.com>
- * @todo : beaucoup de fonctions de format !
  */
 class DnaToProteinManager
 {

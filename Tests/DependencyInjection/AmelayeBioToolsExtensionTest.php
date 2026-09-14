@@ -47,4 +47,17 @@ class AmelayeBioToolsExtensionTest extends TestCase
         $this->assertTrue($container->hasDefinition('Amelaye\BioTools\Service\DnaToProteinManager'));
         $this->assertTrue($container->hasDefinition('Amelaye\BioTools\Service\RestrictionDigestManager'));
     }
+
+    public function testLoadRegistersTheTwigExtension()
+    {
+        $container = new ContainerBuilder();
+        $extension = new AmelayeBioToolsExtension();
+        $extension->load([], $container);
+
+        $this->assertTrue($container->hasDefinition('Amelaye\BioTools\Twig\BioToolsExtension'));
+        $this->assertArrayHasKey(
+            'twig.extension',
+            $container->getDefinition('Amelaye\BioTools\Twig\BioToolsExtension')->getTags()
+        );
+    }
 }

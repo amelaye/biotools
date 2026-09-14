@@ -397,10 +397,11 @@ class SequenceAlignmentManager
     }
 
     /**
+     * Also exposed as the `compare_alignment` Twig filter, see
+     * Amelaye\BioTools\Twig\BioToolsExtension.
      * @param   string  $sSeqa
      * @param   string  $sSeqb
      * @return  string
-     * @todo : migrer vers fonction TWIG
      */
     public function compareAlignment($sSeqa,$sSeqb)
     {

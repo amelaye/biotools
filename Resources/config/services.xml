@@ -173,5 +173,13 @@
         <service id="Amelaye\BioTools\Validator\SequenceRecognitionValidator">
             <tag name="validator.constraint_validator" />
         </service>
+
+        <!-- Twig extension : exposes text-formatting Service methods as Twig filters/functions -->
+
+        <service id="Amelaye\BioTools\Twig\BioToolsExtension">
+            <argument type="service" id="Amelaye\BioTools\Service\SequenceAlignmentManager" />
+            <argument type="service" id="Amelaye\BioTools\Service\DnaToProteinManager" />
+            <tag name="twig.extension" />
+        </service>
     </services>
 </container>
