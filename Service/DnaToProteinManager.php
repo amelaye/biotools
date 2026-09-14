@@ -3,7 +3,7 @@
  * DNA To Protein Functions
  * Inspired by BioPHP's project biophp.org
  * Created 24 february 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -156,31 +156,31 @@ class DnaToProteinManager
             throw new \Exception('The frames must be an array.');
         }
         try {
-            foreach ($aFrames as $n => $sPeptideSequence) {
+            foreach ($aFrames as $iN => $sPeptideSequence) {
                 $sPeptideSequence = strtolower($sPeptideSequence);
                 $aOligo = preg_split('/\*/',$sPeptideSequence);
-                foreach ($aOligo as $m => $val) {
-                    if (strlen($val) >= $iProtsize) {
+                foreach ($aOligo as $iM => $sVal) {
+                    if (strlen($sVal) >= $iProtsize) {
                         if ($bTrimmed) {
-                            $aOligo[$m] = substr($val,0,strpos($val,"m")).strtoupper(substr($val,strpos($val,"m")));
+                            $aOligo[$iM] = substr($sVal,0,strpos($sVal,"m")).strtoupper(substr($sVal,strpos($sVal,"m")));
                         } else {
-                            $aOligo[$m] = strtoupper($val);
+                            $aOligo[$iM] = strtoupper($sVal);
                         }
                     }
                 }
                 $sNewPeptideSequence = "";
-                foreach ($aOligo as $m => $val) {
-                    if($m != 0){
-                        $sNewPeptideSequence .= "*".$val;
+                foreach ($aOligo as $iM => $sVal) {
+                    if($iM != 0){
+                        $sNewPeptideSequence .= "*".$sVal;
                     } else {
-                        $sNewPeptideSequence .= $val;
+                        $sNewPeptideSequence .= $sVal;
                     }
                 }
                 // To avoid showing no coding, remove them from output sequence
                 if($bOnlyCoding) {
                     $sNewPeptideSequence = preg_replace("/f|l|i|m|v|s|p|t|a|y|h|q|n|k|d|e|c|w|r|g|x]/","_",$sNewPeptideSequence);
                 }
-                $aFrames[$n] = $sNewPeptideSequence;
+                $aFrames[$iN] = $sNewPeptideSequence;
             }
             return $aFrames;
         } catch (\Exception $e) {
@@ -204,9 +204,9 @@ class DnaToProteinManager
         try {
             $aAminoAcids = ["F","L","I","M","V","S","P","T","A","Y","*","H","Q","N","K","D","E","C","W","R","G","X"];
             // place a space after each triplete in the sequence
-            $temp = chunk_split($sSequence,3,' ');
+            $sTemp = chunk_split($sSequence,3,' ');
             // replace triplets by corresponding amnoacid
-            $sPeptide = preg_replace($this->aTriplets[$sGeneticCode], $aAminoAcids, $temp);
+            $sPeptide = preg_replace($this->aTriplets[$sGeneticCode], $aAminoAcids, $sTemp);
             // return peptide sequence
             return $sPeptide;
         } catch (\Exception $e) {
@@ -224,18 +224,18 @@ class DnaToProteinManager
     public function translateDNAToProteinCustomcode($sSequence, $sGeneticCode)
     {
         try {
-            $temp = chunk_split($sSequence,3,' '); // The sequence is chopped and @ is inserted after each triplete
+            $sTemp = chunk_split($sSequence,3,' '); // The sequence is chopped and @ is inserted after each triplete
 
             // each triplete replace by corresponding amnoacid
-            foreach ($this->aTripletsCombinations as $key => $aTriplete) {
-                $temp = str_replace($aTriplete,substr($sGeneticCode, $key, 1)."  ",$temp);
+            foreach ($this->aTripletsCombinations as $iKey => $aTriplete) {
+                $sTemp = str_replace($aTriplete,substr($sGeneticCode, $iKey, 1)."  ",$sTemp);
             }
 
             // no matching triplets -> X
-            $temp = preg_replace("(\S\S\S )", "X  ", $temp);
-            $temp = substr($temp, 0, -2);
+            $sTemp = preg_replace("(\S\S\S )", "X  ", $sTemp);
+            $sTemp = substr($sTemp, 0, -2);
 
-            $sProtein = preg_replace("/ /","",$temp);
+            $sProtein = preg_replace("/ /","",$sTemp);
             return $sProtein;
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -255,8 +255,8 @@ class DnaToProteinManager
             $aResults = [];
             $aChunkedFrames = [];
 
-            foreach ($aFrame as $n => $sPeptideSequence) {
-                $aChunkedFrames[$n] = chunk_split($sPeptideSequence, 1, '  ');
+            foreach ($aFrame as $iN => $sPeptideSequence) {
+                $aChunkedFrames[$iN] = chunk_split($sPeptideSequence, 1, '  ');
             }
 
             $i = 0;
@@ -297,8 +297,8 @@ class DnaToProteinManager
             $sResults = "";
             $aChunkedFrames = [];
 
-            foreach ($aFrame as $n => $sPeptideSequence) {
-                $aChunkedFrames[$n] = chunk_split($sPeptideSequence, 1, '  ');
+            foreach ($aFrame as $iN => $sPeptideSequence) {
+                $aChunkedFrames[$iN] = chunk_split($sPeptideSequence, 1, '  ');
             }
 
             if (isset($aFrame[6])) {
