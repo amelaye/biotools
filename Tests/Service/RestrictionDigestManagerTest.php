@@ -3625,7 +3625,7 @@ class RestrictionDigestManagerTest extends TestCase
           "BfaI" => [
             "company" => [
               "name" => "N",
-              "url" => "http://rebase.neb.com/rebase/enz/BfaI.html",
+              "url" => "https://rebase.neb.com/rebase/enz/BfaI.html",
             ],
             "links" => [
               0 => [
@@ -3637,7 +3637,7 @@ class RestrictionDigestManagerTest extends TestCase
           "FspBI" => [
             "company" => [
               "name" => "F",
-              "url" => "http://rebase.neb.com/rebase/enz/FspBI.html",
+              "url" => "https://rebase.neb.com/rebase/enz/FspBI.html",
             ],
             "links" => [
               0 => [
@@ -3649,7 +3649,7 @@ class RestrictionDigestManagerTest extends TestCase
           "MaeI" => [
             "company" => [
               "name" => "M",
-              "url" => "http://rebase.neb.com/rebase/enz/MaeI.html",
+              "url" => "https://rebase.neb.com/rebase/enz/MaeI.html",
             ],
             "links" => [
               0 => [
@@ -3661,7 +3661,7 @@ class RestrictionDigestManagerTest extends TestCase
           "XspI" => [
             "company" => [
               "name" => "K",
-              "url" => "http://rebase.neb.com/rebase/enz/XspI.html",
+              "url" => "https://rebase.neb.com/rebase/enz/XspI.html",
             ],
             "links" => [
               0 => [
@@ -5783,7 +5783,7 @@ class RestrictionDigestManagerTest extends TestCase
         $aExpected = [
           "company" => [
             "name" => "CFIJMNQRSVXY",
-            "url" => "http://rebase.neb.com/rebase/enz/RsaI.html"
+            "url" => "https://rebase.neb.com/rebase/enz/RsaI.html"
           ],
           "links" =>  [
             0 => [

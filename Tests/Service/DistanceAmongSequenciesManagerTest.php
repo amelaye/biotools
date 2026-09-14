@@ -2014,4 +2014,85 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
         $service->standardFrecuencies($array, $len);
     }
+
+    public function testGetArrayCases()
+    {
+        $a = [0 => [1 => 5, 2 => 9], 1 => [2 => 7]];
+
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+        $testFunction = $service->getArrayCases($a);
+
+        $this->assertEquals(["0", "1", "2"], $testFunction);
+    }
+
+    /**
+     * minArray() finds the pair with the minimal distance and stores it (as $x/$y) for newArray()
+     * to consume next; newArray() then reduces the matrix by merging that pair into a single node.
+     * Note (legacy behavior, kept as-is): when reducing, if a node's distance to y is known only via
+     * $a[y][node] (not $a[node][y]) and its distance to x is not stored as $a[node][x], newArray()
+     * takes $a[y][node] alone rather than averaging it with $a[x][node] - here (0,1) merges with node
+     * "2", whose only stored distance is $a[1][2]=7 (since $a[0][2]=9 is stored the "wrong way round"
+     * for this code path), so the merged distance is 7, not the (9+7)/2=8 a full average would give.
+     */
+    public function testMinArrayAndNewArray()
+    {
+        $a = [0 => [1 => 5, 2 => 9], 1 => [2 => 7]];
+
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+
+        $min = $service->minArray($a);
+        $this->assertEquals(5, $min);
+
+        $reduced = $service->newArray($a);
+        $this->assertEquals([2 => ["(0,1)" => 7]], $reduced);
+    }
+
+    public function testCreateDendrogram()
+    {
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $result = $service->createDendrogram("0,1", [0 => [1 => 5]], $dendogramFile, "pearson", 4);
+
+        $this->assertEquals($dendogramFile, $result);
+        $this->assertFileExists($dendogramFile);
+
+        $content = file_get_contents($dendogramFile);
+        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="80" viewBox="0 0 720 80">', $content);
+        $this->assertStringContainsString('Pearson distance for z-scores of tetranucleotides.', $content);
+
+        unlink($dendogramFile);
+    }
+
+    public function testUpgmaClustering()
+    {
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+
+        $data = [
+            0 => [1 => 2, 2 => 8, 3 => 10],
+            1 => [2 => 9, 3 => 11],
+            2 => [3 => 3],
+        ];
+
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $result = $service->upgmaClustering($data, "euclidean", 2, $dendogramFile);
+
+        $this->assertEquals($dendogramFile, $result);
+        $this->assertFileExists($dendogramFile);
+
+        $content = file_get_contents($dendogramFile);
+        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="120" viewBox="0 0 720 120">', $content);
+        $this->assertStringContainsString('Euclidean distance for 2 bases long oligonucleotides.', $content);
+        // 4 sequences means 4 case labels are drawn on the y axis
+        $this->assertStringContainsString('preserve"> 0</text>', $content);
+        $this->assertStringContainsString('preserve"> 1</text>', $content);
+        $this->assertStringContainsString('preserve"> 2</text>', $content);
+        $this->assertStringContainsString('preserve"> 3</text>', $content);
+
+        unlink($dendogramFile);
+    }
 }
