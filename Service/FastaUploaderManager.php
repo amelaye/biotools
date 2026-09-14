@@ -3,7 +3,7 @@
  * FastaUploadManager
  * Inspired by BioPHP's project biophp.org
  * Created 18 march 2019
- * Last modified 24 august 2026
+ * Last modified 14 september 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -28,8 +28,8 @@ class FastaUploaderManager
             throw new \Exception('The sequence must be a string.');
         }
         try {
-            $length = strlen($sSequence);
-            for ($i = 0; $i < $length; ++$i) {
+            $iLength = strlen($sSequence);
+            for ($i = 0; $i < $iLength; ++$i) {
                 if(!($sSequence[$i]=='a' || $sSequence[$i]=='A'||
                     $sSequence[$i]=='t'|| $sSequence[$i]=='T' ||
                     $sSequence[$i]=='g'|| $sSequence[$i]=='G'||
@@ -45,62 +45,62 @@ class FastaUploaderManager
 
     /**
      * Copy file into the server
-     * @param  object   $file
+     * @param  object   $oFile
      * @param  string   $sBrochuresDirectory
      * @return string
      */
-    public function createFiles($file, $sBrochuresDirectory)
+    public function createFiles($oFile, $sBrochuresDirectory)
     {
-        $fileName = md5(uniqid()).'.txt';
+        $sFileName = md5(uniqid()).'.txt';
 
         try {
-            $file->move(
+            $oFile->move(
                 $sBrochuresDirectory,
-                $fileName
+                $sFileName
             );
         } catch (FileException $e) {
             throw new FileException($e);
         }
 
-        $myFile = $sBrochuresDirectory.'/'.$fileName;
-        $fh = fopen($myFile, 'r');
-        $var = fread($fh, 1000000);
-        fclose($fh);
+        $sMyFile = $sBrochuresDirectory.'/'.$sFileName;
+        $rFh = fopen($sMyFile, 'r');
+        $sVar = fread($rFh, 1000000);
+        fclose($rFh);
 
-        return $var;
+        return $sVar;
     }
 
     /**
      * Validates the sequence in the file
-     * @param $var
-     * @param $a
-     * @param $g
-     * @param $t
-     * @param $c
-     * @param $length
-     * @throws \Exception
+     * @param   string  $sVar
+     * @param   int     $iA
+     * @param   int     $iG
+     * @param   int     $iT
+     * @param   int     $iC
+     * @param   int     $iLength
+     * @throws  \Exception
      */
-    public function checkNucleotidSequence($var, &$a, &$g, &$t, &$c, $length)
+    public function checkNucleotidSequence($sVar, &$iA, &$iG, &$iT, &$iC, $iLength)
     {
-        if($length != '') {
-            if($this->isValidSequence($var)) {
-                for ($i = 0; $i < $length ; ++$i) {
-                    switch($var[$i]) {
+        if($iLength != '') {
+            if($this->isValidSequence($sVar)) {
+                for ($i = 0; $i < $iLength ; ++$i) {
+                    switch($sVar[$i]) {
                         case 'a':
                         case 'A':
-                            $a++;
+                            $iA++;
                             break;
                         case 't':
                         case 'T':
-                            $t++;
+                            $iT++;
                             break;
                         case 'c':
                         case 'C':
-                            $c++;
+                            $iC++;
                             break;
                         case 'g':
                         case 'G':
-                            $g++;
+                            $iG++;
                     }
                 }
             } else {
