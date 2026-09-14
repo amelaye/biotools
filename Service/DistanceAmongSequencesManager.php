@@ -144,11 +144,11 @@ class DistanceAmongSequencesManager
     /**
      * COMPUTE DISTANCES AMONG SEQUENCES
      * by computing Euclidean distance
-     * standarized oligonucleotide frequencies in $oligo_array are used, and distances are stored in $data array
+     * standarized oligonucleotide frequencies in $aOligoArray are used, and distances are stored in $aData array
      * Unit Test created
-     * @param   string          $seqs
-     * @param   array           $oligo_array
-     * @param   int             $len
+     * @param   array           $aSeqs
+     * @param   array           $aOligoArray
+     * @param   int             $iLen
      * @return  array
      * @throws  \Exception
      */
@@ -177,10 +177,10 @@ class DistanceAmongSequencesManager
     /**
      * COMPUTE DISTANCES AMONG SEQUENCES
      * by computing Pearson distance
-     * standarized oligonucleotide frequencies in $oligo_array are used, and distances are stored in $data array
+     * standarized oligonucleotide frequencies in $aOligoArray are used, and distances are stored in $aData array
      * Unit Test Created
-     * @param   string          $seqs
-     * @param   array           $oligo_array
+     * @param   array           $aSeqs
+     * @param   array           $aOligoArray
      * @return  mixed
      * @throws  \Exception
      */
@@ -334,11 +334,11 @@ class DistanceAmongSequencesManager
 
     /**
      * Creates the dendrogram, as an SVG drawing
-     * @param   string      $str
-     * @param   array       $comp
-     * @param   string      $dendogramFile  Path of the file to write
-     * @param   string      $method
-     * @param   int         $len
+     * @param   string      $sStr
+     * @param   array       $aComp
+     * @param   string      $sDendogramFile  Path of the file to write
+     * @param   string      $sMethod
+     * @param   int         $iLen
      * @return  string      The path written
      * @throws  \Exception
      */
@@ -453,9 +453,9 @@ class DistanceAmongSequencesManager
      * Only in case euclidian selected
      * Wang et al, Gene 2005; 346:173-185
      * Unit test created
-     * @param   array   $a      First array for comparaison
-     * @param   array   $b      Second array fo comparaison
-     * @param   int     $len    Length of the combinations
+     * @param   array   $aA     First array for comparaison
+     * @param   array   $aB     Second array fo comparaison
+     * @param   int     $iLen   Length of the combinations
      * @return  float
      * @throws \Exception
      */
@@ -486,8 +486,8 @@ class DistanceAmongSequencesManager
      * Generates the distance value from array X and array Y
      * Only in case pearson selected
      * Unit test created
-     * @param   array   $vals_x     First array for comparaison
-     * @param   array   $vals_y     Second array fo comparaison
+     * @param   array   $aValsX     First array for comparaison
+     * @param   array   $aValsY     Second array fo comparaison
      * @return  int
      * @throws  \Exception
      */
@@ -538,8 +538,8 @@ class DistanceAmongSequencesManager
     /**
      * Feeds the oligo array
      * No Unit Test : private access
-     * @param   string      $theseq
-     * @param   int         $iteration
+     * @param   string      $sTheseq
+     * @param   int         $iIteration
      * @return  array
      * @throws  \Exception
      */
@@ -618,11 +618,11 @@ class DistanceAmongSequencesManager
 
     /**
      * Perform UPGMA Clustering
-     * in each loop, array $data is reduced (one case per loop)
-     * @param $data
-     * @param $method
-     * @param $len
-     * @param $dendogramFile
+     * in each loop, array $aData is reduced (one case per loop)
+     * @param $aData
+     * @param $sMethod
+     * @param $iLen
+     * @param $sDendogramFile
      * @throws \Exception
      */
     public function upgmaClustering($aData, $sMethod, $iLen, $sDendogramFile)

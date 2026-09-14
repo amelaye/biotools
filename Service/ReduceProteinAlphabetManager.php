@@ -44,7 +44,7 @@ class ReduceProteinAlphabetManager
     }
 
     /**
-     * Reduce alphabet for $seq by using the predefined $type type of reduction
+     * Reduce alphabet for $sSequence by using the predefined $sType type of reduction
      * returns a reduced sequence
      * @param   string $sSequence
      * @param   string $sType
@@ -65,7 +65,7 @@ class ReduceProteinAlphabetManager
     }
 
     /**
-     * Reduce the alphabet for $seq by using the user defined personalized alphabet
+     * Reduce the alphabet for $sSequence by using the user defined personalized alphabet
      * returns the reduced sequence
      * @param       string          $sSequence
      * @param       string          $sCustomAlphabet
