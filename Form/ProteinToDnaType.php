@@ -25,9 +25,9 @@ class ProteinToDnaType extends AbstractType
 {
     /**
      * All the species with triplets on API
-     * @var array $geneticData
+     * @var array $aGeneticData
      */
-    private $geneticData;
+    private $aGeneticData;
 
     /**
      * ProteinToDnaType constructor.
@@ -35,7 +35,7 @@ class ProteinToDnaType extends AbstractType
      */
     public function __construct(TripletSpecieApiAdapter $tripletSpecieApi)
     {
-        $this->geneticData = $tripletSpecieApi::GetSpeciesNames($tripletSpecieApi->getTriplets());
+        $this->aGeneticData = $tripletSpecieApi::GetSpeciesNames($tripletSpecieApi->getTriplets());
     }
 
     /**
@@ -63,7 +63,7 @@ class ProteinToDnaType extends AbstractType
             'genetic_code',
             ChoiceType::class,
             [
-                'choices' => $this->geneticData,
+                'choices' => $this->aGeneticData,
                 'attr' => [
                     'class' => "custom-select d-block w-20"
                 ],
@@ -86,15 +86,15 @@ class ProteinToDnaType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = strtoupper($data['sequence']);
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
                 $sSequence = preg_replace("([^FLIMVSPTAY*HQNKDECWRGX\*])", "", $sSequence);
-                $data['sequence'] = $sSequence;
+                $aData['sequence'] = $sSequence;
             }
 
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 }

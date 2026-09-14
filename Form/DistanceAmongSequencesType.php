@@ -27,7 +27,7 @@ class DistanceAmongSequencesType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $euclidianDistance = [
+        $aEuclidianDistance = [
             "dinucleotides" => 2,
             "trinucleotides" => 3,
             "tetranucleotides" => 4,
@@ -73,7 +73,7 @@ class DistanceAmongSequencesType extends AbstractType
             'len',
             ChoiceType::class,
             [
-                'choices' => $euclidianDistance,
+                'choices' => $aEuclidianDistance,
                 'data' => 4, // legacy: "<option value=4 selected>tetranucleotides"
                 'attr' => [
                     'class' => "custom-select d-block w-20"
@@ -96,16 +96,16 @@ class DistanceAmongSequencesType extends AbstractType
          * Formatting Seq before validation
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
-            if (isset($data['seq'])) {
+            $aData = $event->getData();
+            if (isset($aData['seq'])) {
                 // remove a couple of things from sequence
                 // whatever is before ">", which is the start of the first sequence
-                $allsequences = substr($data['seq'], strpos($data['seq'],">"));
+                $sAllsequences = substr($aData['seq'], strpos($aData['seq'],">"));
                 // remove carriage returns ("\r"), but do not remove line feeds ("\n")
-                $allsequences = preg_replace("/\r/","", $allsequences);
+                $sAllsequences = preg_replace("/\r/","", $sAllsequences);
 
-                $data['seq'] = $allsequences;
-                $event->setData($data);
+                $aData['seq'] = $sAllsequences;
+                $event->setData($aData);
             }
         });
     }

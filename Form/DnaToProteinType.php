@@ -28,9 +28,9 @@ class DnaToProteinType extends AbstractType
 {
     /**
      * All the species with triplets on API
-     * @var array $geneticData
+     * @var array $aGeneticData
      */
-    private $geneticData;
+    private $aGeneticData;
 
     /**
      * ProteinToDnaType constructor.
@@ -38,7 +38,7 @@ class DnaToProteinType extends AbstractType
      */
     public function __construct(TripletSpecieApiAdapter $tripletSpecieApiAdapter)
     {
-        $this->geneticData = $tripletSpecieApiAdapter::GetSpeciesNames($tripletSpecieApiAdapter->getTriplets());
+        $this->aGeneticData = $tripletSpecieApiAdapter::GetSpeciesNames($tripletSpecieApiAdapter->getTriplets());
     }
 
     /**
@@ -51,13 +51,13 @@ class DnaToProteinType extends AbstractType
         /*
          * Sample Datas
          */
-        $optionsFrames = array("1" => "1" ,"1-3" => "3", "1-6" => "6");
+        $aOptionsFrames = array("1" => "1" ,"1-3" => "3", "1-6" => "6");
 
-        $textSequence = "GGAGTGAGGG GAGCAGTTGG GCCAAGATGG CGGCCGCCGA GGGACCGGTG GGCGACGCGG 60\r";
-        $textSequence .= "GAGTGAGGGG AGCAGTTGGG CCAAGATGGC GGCCGCCGAG GGACCGGTGG GCGACGGGGG 120\r";
-        $textSequence .= "AGTGAGGGGA GCAGTTGGGC CAAGATGGCG GCCGCCGAGG GACCGGTGGG CGACGGCGGA 180\r";
-        $textSequence .= "GTGAGGGGAG CAGTTGGGCC AAGATGGCGG CCGCCGAGGG ACCGGTGGGC GACGGGGAGT 240\r";
-        $textSequence .= "GAGGGGAGCA GTTGGGCCAA GATGGCGGCC GCCGAGGGAC CGGTGGGCGA CGCGGGAGTG 300\r";
+        $sTextSequence = "GGAGTGAGGG GAGCAGTTGG GCCAAGATGG CGGCCGCCGA GGGACCGGTG GGCGACGCGG 60\r";
+        $sTextSequence .= "GAGTGAGGGG AGCAGTTGGG CCAAGATGGC GGCCGCCGAG GGACCGGTGG GCGACGGGGG 120\r";
+        $sTextSequence .= "AGTGAGGGGA GCAGTTGGGC CAAGATGGCG GCCGCCGAGG GACCGGTGGG CGACGGCGGA 180\r";
+        $sTextSequence .= "GTGAGGGGAG CAGTTGGGCC AAGATGGCGG CCGCCGAGGG ACCGGTGGGC GACGGGGAGT 240\r";
+        $sTextSequence .= "GAGGGGAGCA GTTGGGCCAA GATGGCGGCC GCCGAGGGAC CGGTGGGCGA CGCGGGAGTG 300\r";
 
         /*
          * Form construction
@@ -66,7 +66,7 @@ class DnaToProteinType extends AbstractType
             'sequence',
             TextareaType::class,
             [
-                'data' => $textSequence,
+                'data' => $sTextSequence,
                 'attr' => [
                     'cols'  => 75,
                     'rows'  => 10,
@@ -89,7 +89,7 @@ class DnaToProteinType extends AbstractType
             'frames',
             ChoiceType::class,
             [
-                'choices' => $optionsFrames,
+                'choices' => $aOptionsFrames,
                 'data' => "3", // legacy: "<option value=3 selected>1-3"
                 'label' => "Translate frames : ",
                 'attr' => [
@@ -155,7 +155,7 @@ class DnaToProteinType extends AbstractType
             'genetic_code',
             ChoiceType::class,
             [
-                'choices' => $this->geneticData,
+                'choices' => $this->aGeneticData,
                 'label' => "Genetic code : ",
                 'attr' => [
                     'class' => "custom-select d-block w-20"
@@ -186,19 +186,19 @@ class DnaToProteinType extends AbstractType
          * Remove non word and digits from sequence
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = preg_replace("(\W|\d)", "", $data['sequence']);
-                $data['sequence'] = $sSequence;
+            if (isset($aData['sequence'])) {
+                $sSequence = preg_replace("(\W|\d)", "", $aData['sequence']);
+                $aData['sequence'] = $sSequence;
             }
 
-            if (isset($data['usemycode']) && $data["usemycode"] == 1) {
-                $mycode = preg_replace("([^FLIMVSPTAY*HQNKDECWRG\*])", "", $data["mycode"]);
-                $data["mycode"] = $mycode;
+            if (isset($aData['usemycode']) && $aData["usemycode"] == 1) {
+                $sMycode = preg_replace("([^FLIMVSPTAY*HQNKDECWRG\*])", "", $aData["mycode"]);
+                $aData["mycode"] = $sMycode;
             }
 
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 
@@ -220,12 +220,12 @@ class DnaToProteinType extends AbstractType
      * The custom code length is only checked when the custom genetic code is actually
      * requested - legacy only validates it "when usage of custom genetic code is
      * requested" (dna_to_protein.php: "if($_POST["usemycode"]==1){ ... }")
-     * @param $object
-     * @param ExecutionContextInterface $context
+     * @param   array                       $aObject
+     * @param   ExecutionContextInterface   $context
      */
-    public static function validateCustomCode($object, ExecutionContextInterface $context)
+    public static function validateCustomCode($aObject, ExecutionContextInterface $context)
     {
-        if (!empty($object["usemycode"]) && strlen($object["mycode"]) != 64) {
+        if (!empty($aObject["usemycode"]) && strlen($aObject["mycode"]) != 64) {
             $context->buildViolation("The custom code is not correct (is not 64 characters long)")
                 ->atPath("mycode")
                 ->addViolation();
