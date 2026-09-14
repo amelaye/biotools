@@ -148,12 +148,14 @@ class ReduceAlphabetType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
             $data = $event->getData();
 
-            if (isset($data['sequence'])) {
+            // porting bug fix: this used to check $data['sequence'], but the field
+            // built above is named 'seq', so the normalization below never ran
+            if (isset($data['seq'])) {
                 // change the sequence to upper case
-                $sSequence = strtoupper($data['sequence']);
+                $sSequence = strtoupper($data['seq']);
                 // remove non-coding characters([^ARNDCEQGHILKMFPSTWYVX\*])
                 $sSequence = preg_replace ("([^ARNDCEQGHILKMFPSTWYVX\*])", "", $sSequence);
-                $data['sequence'] = $sSequence;
+                $data['seq'] = $sSequence;
             }
 
             $event->setData($data);

@@ -131,10 +131,12 @@ class SequenceManipulationType extends AbstractType
             if (isset($data['seq'])) {
                 // change the sequence to upper case
                 $seq = strtoupper($data['seq']);
+                // legacy bug fix: replace X by N before stripping non-coding characters -
+                // X isn't in the [ATGCYRWSKMDVHBN] allow-list, so doing it after (as legacy
+                // did) always strips every X before this replacement can ever see one.
+                $seq = preg_replace("/X/","N",$seq);
                 // remove non-words (\W), con coding ([^ATGCYRWSKMDVHBN]) and digits (\d) from sequence
-                $seq = preg_replace("/\W|[^ATGCYRWSKMDVHBN]|\d/","",$seq);
-                // replace all X by N (to normalized sequences)
-                $data['seq'] = preg_replace("/X/","N",$seq);
+                $data['seq'] = preg_replace("/\W|[^ATGCYRWSKMDVHBN]|\d/","",$seq);
                 $event->setData($data);
             }
         });
