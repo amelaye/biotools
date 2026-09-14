@@ -262,4 +262,71 @@ class DnaToProteinManagerTest extends TestCase
         $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         $service->translateDNAToProtein($sSequence, $sGeneticCode);
     }
+
+    public function testShowAminosArrays()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $aCodes = $aLeft = $aRight = null;
+        $service->showAminosArrays($aCodes, $aLeft, $aRight);
+
+        $this->assertCount(26, $aCodes);
+        $this->assertCount(13, $aLeft);
+        $this->assertCount(13, $aRight);
+        $this->assertEquals(['Alanine', 'Aspartate or asparagine', 'Cysteine'], array_slice(array_keys($aLeft), 0, 3));
+        $this->assertEquals(['Pyrrolysine', 'Proline', 'Glutamine'], array_slice(array_keys($aRight), 0, 3));
+        $this->assertEquals(['1' => 'A', '3' => 'Ala'], $aCodes['Alanine']);
+        // left+right must recombine into the full array, in order
+        $this->assertEquals($aCodes, $aLeft + $aRight);
+    }
+
+    public function testShowTranslationsAligned()
+    {
+        $sSequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC";
+        $aFrames = [
+            1 => "GVRGAVGPRWRPPRDRWAT",
+            2 => "E*GEQLGQDGGRRGTGGRR",
+            3 => "SEGSSWAKMAAAEGPVGD",
+        ];
+
+        $sExpected = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC  100\n"
+            . "G  V  R  G  A  V  G  P  R  W  R  P  P  R  D  R  W  A  T  \n"
+            . " E  *  G  E  Q  L  G  Q  D  G  G  R  R  G  T  G  G  R  R  \n"
+            . "  S  E  G  S  S  W  A  K  M  A  A  A  E  G  P  V  G  D  \n\n";
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        $testFunction = $service->showTranslationsAligned($sSequence, $aFrames);
+
+        $this->assertEquals($sExpected, $testFunction);
+    }
+
+    public function testShowTranslationsAlignedComplementary()
+    {
+        $sSequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC";
+
+        $sExpected = "CCTCACTCCCCTCGTCAACCCGGTTCTACCGCCGGCGGCTCCCTGGCCACCCGCTGCG  100\n"
+            . "P  H  S  P  R  Q  P  G  S  T  A  G  G  S  L  A  T  R  C  \n"
+            . " L  T  P  L  V  N  P  V  L  P  P  A  A  P  W  P  P  A  A  \n"
+            . "  S  L  P  S  S  T  R  F  Y  R  R  R  L  P  G  H  P  L  \n\n";
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        // sRvSequence is only populated as a side effect of definedTreatment()/customTreatment()
+        // once 6 frames (both strands) are requested - mirrors the real controller flow
+        $aFrames = $service->definedTreatment(6, "standard", $sSequence);
+
+        $testFunction = $service->showTranslationsAlignedComplementary($aFrames);
+
+        $this->assertEquals($sExpected, $testFunction);
+    }
+
+    public function testShowTranslationsAlignedComplementaryWithoutSixFrames()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        // frame 6 absent (single strand only requested) - nothing to show
+        $aFrames = [1 => "GVRGAVGPRWRPPRDRWAT"];
+
+        $testFunction = $service->showTranslationsAlignedComplementary($aFrames);
+
+        $this->assertEquals("", $testFunction);
+    }
 }

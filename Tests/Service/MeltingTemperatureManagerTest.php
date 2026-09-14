@@ -306,4 +306,75 @@ class MeltingTemperatureManagerTest extends TestCase
 
         $this->assertEqualsWithDelta($testFunction, $fExpected, 0.0001);
     }
+
+    public function testCalculateMWT()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCC";
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $upperMwt = $lowerMwt = null;
+        $service->calculateMWT($upperMwt, $lowerMwt, $primer);
+
+        $this->assertEqualsWithDelta(6182.655, $upperMwt, 0.0001);
+        $this->assertEqualsWithDelta(6182.655, $lowerMwt, 0.0001);
+    }
+
+    public function testBasicCalculationsEnabled()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCC";
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $countATGC = $tmMin = $tmMax = null;
+        $service->basicCalculations(true, $primer, $countATGC, $tmMin, $tmMax);
+
+        $this->assertEquals(20, $countATGC);
+        $this->assertEquals(53.8, $tmMin);
+        $this->assertEquals(53.8, $tmMax);
+    }
+
+    public function testBasicCalculationsDisabled()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCC";
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $countATGC = $tmMin = $tmMax = null;
+        $service->basicCalculations(false, $primer, $countATGC, $tmMin, $tmMax);
+
+        $this->assertNull($countATGC);
+        $this->assertNull($tmMin);
+        $this->assertNull($tmMax);
+    }
+
+    public function testNeighborCalculationsEnabled()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCC";
+
+        $aExpected = [
+            "tm" => 68.6,
+            "enthalpy" => -152.6,
+            "entropy" => -414.45,
+        ];
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $aTmBaseStacking = null;
+        $service->neighborCalculations(true, $aTmBaseStacking, $primer, "200", "50", "2");
+
+        $this->assertEquals($aExpected, $aTmBaseStacking);
+    }
+
+    public function testNeighborCalculationsDisabled()
+    {
+        $primer = "AAAATTTGGGGCCCATGCCC";
+
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $aTmBaseStacking = null;
+        $service->neighborCalculations(false, $aTmBaseStacking, $primer, "200", "50", "2");
+
+        $this->assertNull($aTmBaseStacking);
+    }
 }
