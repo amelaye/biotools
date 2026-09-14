@@ -29,7 +29,7 @@ class ProteinPropertiesType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $dataSources = array(
+        $aDataSources = array(
             "EMBOSS" => "EMBOSS",
             "DTASelect" => "DTASelect",
             "Solomon" => "Solomon"
@@ -117,7 +117,7 @@ class ProteinPropertiesType extends AbstractType
             'data_source',
             ChoiceType::class,
             [
-                'choices' => $dataSources,
+                'choices' => $aDataSources,
                 'attr' => [
                     'class' => "custom-select d-block w-20"
                 ],

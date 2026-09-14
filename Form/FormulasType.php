@@ -141,15 +141,15 @@ class FormulasType extends AbstractType
          * bases, so non coding characters are removed to keep strlen() meaningful.
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = strtoupper($data['sequence']);
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
                 $sSequence = preg_replace("([^ACGTUBDHKMNRSVWY])", "", $sSequence);
-                $data['sequence'] = $sSequence;
+                $aData['sequence'] = $sSequence;
             }
 
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 }

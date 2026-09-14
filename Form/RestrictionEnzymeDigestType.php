@@ -27,7 +27,7 @@ class RestrictionEnzymeDigestType extends AbstractType
     /**
      * @var array
      */
-    private $vendors;
+    private $aVendors;
 
     /**
      * RestrictionEnzymeDigestType constructor.
@@ -35,7 +35,7 @@ class RestrictionEnzymeDigestType extends AbstractType
      */
     public function __construct(VendorApiAdapter $vendorApi)
     {
-        $this->vendors = $vendorApi::GetVendorsArray($vendorApi->getVendors());
+        $this->aVendors = $vendorApi::GetVendorsArray($vendorApi->getVendors());
     }
 
     /**
@@ -45,12 +45,12 @@ class RestrictionEnzymeDigestType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $wre["Select"] = "";
-        foreach($this->vendors as $key => $data) {
-            $wre[$key] = $key;
+        $aWre["Select"] = "";
+        foreach($this->aVendors as $sKey => $sData) {
+            $aWre[$sKey] = $sKey;
         }
 
-        $textSequence = "ACGTACGTACGTTAGCTAGCTAGCTAGC";
+        $sTextSequence = "ACGTACGTACGTTAGCTAGCTAGCTAGC";
 
         $builder->add(
             'sequence',
@@ -61,7 +61,7 @@ class RestrictionEnzymeDigestType extends AbstractType
                     'rows'  => 10,
                     'class' => "form-control"
                 ],
-                'data'  => $textSequence,
+                'data'  => $sTextSequence,
                 'label' => "Sequence :",
                 'required' => true,
                 'constraints' => [
@@ -125,7 +125,7 @@ class RestrictionEnzymeDigestType extends AbstractType
             'wre',
             ChoiceType::class,
             [
-                'choices' => $wre,
+                'choices' => $aWre,
                 'attr' => [
                     'class' => "custom-select d-block w-20"
                 ],

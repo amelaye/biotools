@@ -33,8 +33,8 @@ class OligoNucleotideFrequencyType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sequenceSample = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
-        $sequenceSample .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
+        $sSequenceSample = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
+        $sSequenceSample .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
 
         $builder->add(
             'sequence',
@@ -46,7 +46,7 @@ class OligoNucleotideFrequencyType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Sequence : ",
-                'data' => $sequenceSample,
+                'data' => $sSequenceSample,
                 'constraints' => new Length([
                     'min' => 0,
                     'max' => 1000000,
@@ -97,14 +97,14 @@ class OligoNucleotideFrequencyType extends AbstractType
          * Remove non word and digits from sequence
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = strtoupper($data['sequence']);
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
 
-                $data['sequence'] = $sSequence;
-                $event->setData($data);
+                $aData['sequence'] = $sSequence;
+                $event->setData($aData);
             }
         });
     }
@@ -125,13 +125,13 @@ class OligoNucleotideFrequencyType extends AbstractType
 
     /**
      * When length of query sequence is bellow 4^oligo_len => error (to avoid a lot of 0 frequencies);
-     * @param $object
+     * @param $aObject
      * @param ExecutionContextInterface $context
      * @throws \Exception
      */
-    public static function validateisReady($object, ExecutionContextInterface $context)
+    public static function validateisReady($aObject, ExecutionContextInterface $context)
     {
-        if (strlen($object['sequence']) < pow(4, $object['len'])) {
+        if (strlen($aObject['sequence']) < pow(4, $aObject['len'])) {
             $context->buildViolation('Query sequence must be at least 4^(length of oligo) to proceed.')
                 ->addViolation();
         }

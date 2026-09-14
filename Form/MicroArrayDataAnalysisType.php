@@ -27,7 +27,7 @@ class MicroArrayDataAnalysisType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $dataMicroarray = "
+        $sDataMicroarray = "
 Column\tRow\tName\t\tF532 Median\tB532 Median\tF635 Median\tB635 Median
 1\t\t1\tControl -\t\t1145\t\t160\t\t\t1182\t\t122
 2\t\t1\tControl -\t\t593\t\t\t218\t\t\t515\t\t\t122
@@ -134,7 +134,7 @@ Column\tRow\tName\t\tF532 Median\tB532 Median\tF635 Median\tB635 Median
             'data',
             TextareaType::class,
             [
-                'data' => $dataMicroarray,
+                'data' => $sDataMicroarray,
                 'attr' => [
                     'cols'  => 75,
                     'rows'  => 10,

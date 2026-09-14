@@ -31,10 +31,10 @@ class FindPalindromesType extends AbstractType
         /*
          * Sample Datas
          */
-        $dataSequence = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
-        $dataSequence .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
+        $sDataSequence = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
+        $sDataSequence .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
 
-        $minData = [
+        $aMinData = [
             4 => 4,
             5 => 5,
             6 => 6,
@@ -44,7 +44,7 @@ class FindPalindromesType extends AbstractType
             10 => 10
         ];
 
-        $maxData = [
+        $aMaxData = [
             5 => 5,
             6 => 6,
             7 => 7,
@@ -70,7 +70,7 @@ class FindPalindromesType extends AbstractType
             'seq',
             TextareaType::class,
             [
-                'data' => $dataSequence,
+                'data' => $sDataSequence,
                 'attr' => [
                     'cols'  => 75,
                     'rows'  => 10,
@@ -88,7 +88,7 @@ class FindPalindromesType extends AbstractType
             'min',
             ChoiceType::class,
             [
-                'choices' => $minData,
+                'choices' => $aMinData,
                 'label' => "Minimum length of palindromic sequence : ",
                 'attr' => [
                     'class' => "custom-select d-block w-20"
@@ -100,7 +100,7 @@ class FindPalindromesType extends AbstractType
             'max',
             ChoiceType::class,
             [
-                'choices' => $maxData,
+                'choices' => $aMaxData,
                 'data' => 10, // legacy: "<option selected=\"selected\">10</option>"
                 'label' => "Maximum length of palindromic sequence : ",
                 'attr' => [

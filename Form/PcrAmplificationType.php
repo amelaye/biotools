@@ -30,11 +30,11 @@ class PcrAmplificationType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sequenceSample = "GGAGTGAGGG GAGCAGTTGG GAACAGATGG TCCCCGCCGA GGGACCGGTG GGCGACGGCG 60\n";
-        $sequenceSample.= "AGCTGTGGCA GACCTGGCTT CCTAACCACG TCGTGTTCTT GCGGCTCCGG CCCCTGCGGC 120\n";
-        $sequenceSample.= "GACGCTCAGA TCCAACCGAA GCTGAGAAAC CAGCTTCTTC GTCGTTGCCT TCGTCGCCGC 180\n";
-        $sequenceSample.= "CGCCGCAGTT GCTGACGAGA GAGGAGTTGG TTGGCCTCGG CGGAGAGCTT TTCCTGTGGG 240\n";
-        $sequenceSample.= "ACGGAGAAGA CAGCTCCTTC TTAGTCGTTC GCCTTCGGGG CCCCAGCGGC GGCGGCGAAG 300\n";
+        $sSequenceSample = "GGAGTGAGGG GAGCAGTTGG GAACAGATGG TCCCCGCCGA GGGACCGGTG GGCGACGGCG 60\n";
+        $sSequenceSample.= "AGCTGTGGCA GACCTGGCTT CCTAACCACG TCGTGTTCTT GCGGCTCCGG CCCCTGCGGC 120\n";
+        $sSequenceSample.= "GACGCTCAGA TCCAACCGAA GCTGAGAAAC CAGCTTCTTC GTCGTTGCCT TCGTCGCCGC 180\n";
+        $sSequenceSample.= "CGCCGCAGTT GCTGACGAGA GAGGAGTTGG TTGGCCTCGG CGGAGAGCTT TTCCTGTGGG 240\n";
+        $sSequenceSample.= "ACGGAGAAGA CAGCTCCTTC TTAGTCGTTC GCCTTCGGGG CCCCAGCGGC GGCGGCGAAG 300\n";
 
         $builder->add(
             'sequence',
@@ -46,7 +46,7 @@ class PcrAmplificationType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Sequence : ",
-                'data' => $sequenceSample
+                'data' => $sSequenceSample
             ]
         );
         $builder->add(
@@ -112,27 +112,27 @@ class PcrAmplificationType extends AbstractType
          * All non-word characters (\\W) and digits(\\d) are remove from primers and from sequence file
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = strtoupper($data['sequence']);
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
-                $data['sequence'] = $sSequence;
+                $aData['sequence'] = $sSequence;
             }
 
-            if (isset($data['primer1'])) {
-                $sSequence = strtoupper($data['primer1']);
+            if (isset($aData['primer1'])) {
+                $sSequence = strtoupper($aData['primer1']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
-                $data['primer1'] = $sSequence;
+                $aData['primer1'] = $sSequence;
             }
 
-            if (isset($data['primer2'])) {
-                $sSequence = strtoupper($data['primer2']);
+            if (isset($aData['primer2'])) {
+                $sSequence = strtoupper($aData['primer2']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
-                $data['primer2'] = $sSequence;
+                $aData['primer2'] = $sSequence;
             }
 
-            $event->setData($data);
+            $event->setData($aData);
         });
     }
 }

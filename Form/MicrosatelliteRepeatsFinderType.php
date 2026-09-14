@@ -30,16 +30,16 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sequenceSample = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
-        $sequenceSample .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
+        $sSequenceSample = "AACAATGCCATGATGATGATTATTACGACACAACAACACCGCGCTTGACGGCGGCGGATGGATGCCG";
+        $sSequenceSample .= "CGATCAGACGTTCAACGCCCACGTAACGTAACGCAACGTAACCTAACGACACTGTTAACGGTACGAT";
 
 
-        $dataMin = [2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6];
-        $dataMax = [3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10];
-        $minRepeats = [2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6];
-        $lengthOfMR = [5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14,
+        $aDataMin = [2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6];
+        $aDataMax = [3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10];
+        $aMinRepeats = [2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6];
+        $aLengthOfMR = [5 => 5, 6 => 6, 7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12, 13 => 13, 14 => 14,
             15 => 15, 16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20];
-        $mismatch = [0 => 0, 10 => 10, 20 => 20, 30 => 30];
+        $aMismatch = [0 => 0, 10 => 10, 20 => 20, 30 => 30];
 
         $builder->add(
             'sequence',
@@ -51,7 +51,7 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Sequence : ",
-                'data' => $sequenceSample
+                'data' => $sSequenceSample
             ]
         );
 
@@ -59,7 +59,7 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
             'min',
             ChoiceType::class,
             [
-                'choices' => $dataMin,
+                'choices' => $aDataMin,
                 'label' => "Minimum length of repeated sequence :",
                 'attr' => [
                     'class' => "form-control"
@@ -71,17 +71,17 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
             'max',
             ChoiceType::class,
             [
-                'choices' => $dataMax,
+                'choices' => $aDataMax,
                 'label' => "Maximum length of repeated sequence :",
                 'attr' => [
                     'class' => "form-control"
                 ],
-                'choice_attr' => function($max) {
-                    $attr = [];
-                    if ($max === 6) {
-                        $attr['selected'] = 'selected';
+                'choice_attr' => function($iMax) {
+                    $aAttr = [];
+                    if ($iMax === 6) {
+                        $aAttr['selected'] = 'selected';
                     }
-                    return $attr;
+                    return $aAttr;
                 }
             ]
         );
@@ -90,17 +90,17 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
             'min_repeats',
             ChoiceType::class,
             [
-                'choices' => $minRepeats,
+                'choices' => $aMinRepeats,
                 'label' => "Minimum number of repeats :",
                 'attr' => [
                     'class' => "form-control"
                 ],
-                'choice_attr' => function($repeats) {
-                    $attr = [];
-                    if ($repeats === 3) {
-                        $attr['selected'] = 'selected';
+                'choice_attr' => function($iRepeats) {
+                    $aAttr = [];
+                    if ($iRepeats === 3) {
+                        $aAttr['selected'] = 'selected';
                     }
-                    return $attr;
+                    return $aAttr;
                 }
             ]
         );
@@ -109,17 +109,17 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
             'length_of_MR',
             ChoiceType::class,
             [
-                'choices' => $lengthOfMR,
+                'choices' => $aLengthOfMR,
                 'label' => "Minimum length of tandem repeat : ",
                 'attr' => [
                     'class' => "form-control"
                 ],
-                'choice_attr' => function($length) {
-                    $attr = [];
-                    if ($length === 6) {
-                        $attr['selected'] = 'selected';
+                'choice_attr' => function($iLength) {
+                    $aAttr = [];
+                    if ($iLength === 6) {
+                        $aAttr['selected'] = 'selected';
                     }
-                    return $attr;
+                    return $aAttr;
                 }
             ]
         );
@@ -128,7 +128,7 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
             'mismatch',
             ChoiceType::class,
             [
-                'choices' => $mismatch,
+                'choices' => $aMismatch,
                 'label' => "Allowed percentage of mismatches :",
                 'attr' => [
                     'class' => "form-control"
@@ -152,14 +152,14 @@ class MicrosatelliteRepeatsFinderType extends AbstractType
          * Remove non word and digits from sequence
          */
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
-            $data = $event->getData();
+            $aData = $event->getData();
 
-            if (isset($data['sequence'])) {
-                $sSequence = strtoupper($data['sequence']);
+            if (isset($aData['sequence'])) {
+                $sSequence = strtoupper($aData['sequence']);
                 $sSequence = preg_replace("/\W|\d/", "", $sSequence);
 
-                $data['sequence'] = $sSequence;
-                $event->setData($data);
+                $aData['sequence'] = $sSequence;
+                $event->setData($aData);
             }
         });
     }
