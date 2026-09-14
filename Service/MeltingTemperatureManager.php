@@ -28,12 +28,12 @@ class MeltingTemperatureManager
     /**
      * @var array
      */
-    private $enthropyValues;
+    private $aEnthropyValues;
 
     /**
      * @var array
      */
-    private $enthalpyValues;
+    private $aEnthalpyValues;
 
     /**
      * MeltingTemperatureManager constructor.
@@ -46,8 +46,8 @@ class MeltingTemperatureManager
     )
     {
         $this->sequenceManager      = $sequenceManager;
-        $this->enthropyValues       = $tmBaseStackingApi::GetEnthropyValues($tmBaseStackingApi->getTmBaseStackings());
-        $this->enthalpyValues       = $tmBaseStackingApi::GetEnthalpyValues($tmBaseStackingApi->getTmBaseStackings());
+        $this->aEnthropyValues      = $tmBaseStackingApi::GetEnthropyValues($tmBaseStackingApi->getTmBaseStackings());
+        $this->aEnthalpyValues      = $tmBaseStackingApi::GetEnthalpyValues($tmBaseStackingApi->getTmBaseStackings());
     }
 
     /**
@@ -67,31 +67,31 @@ class MeltingTemperatureManager
 
     /**
      * Gets both the upper and lower MWT
-     * @param $upperMwt
-     * @param $lowerMwt
-     * @param $primer
-     * @throws \Exception
+     * @param   float   $fUpperMwt
+     * @param   float   $fLowerMwt
+     * @param   string  $sPrimer
+     * @throws  \Exception
      */
-    public function calculateMWT(&$upperMwt, &$lowerMwt, $primer)
+    public function calculateMWT(&$fUpperMwt, &$fLowerMwt, $sPrimer)
     {
-        $upperMwt = $this->molwt($primer,"DNA","upperlimit");
-        $lowerMwt = $this->molwt($primer,"DNA","lowerlimit");
+        $fUpperMwt = $this->molwt($sPrimer,"DNA","upperlimit");
+        $fLowerMwt = $this->molwt($sPrimer,"DNA","lowerlimit");
     }
 
     /**
-     * @param $bBasic
-     * @param $primer
-     * @param $countATGC
-     * @param $tmMin
-     * @param $tmMax
-     * @throws \Exception
+     * @param   bool    $bBasic
+     * @param   string  $sPrimer
+     * @param   int     $iCountATGC
+     * @param   float   $fTmMin
+     * @param   float   $fTmMax
+     * @throws  \Exception
      */
-    public function basicCalculations($bBasic, $primer, &$countATGC, &$tmMin, &$tmMax)
+    public function basicCalculations($bBasic, $sPrimer, &$iCountATGC, &$fTmMin, &$fTmMax)
     {
         if($bBasic) {
-            $countATGC = GeneticsFunctions::CountACGT($primer);
-            $tmMin = $this->tmMin($primer);
-            $tmMax = $this->tmMax($primer);
+            $iCountATGC = GeneticsFunctions::CountACGT($sPrimer);
+            $fTmMin = $this->tmMin($sPrimer);
+            $fTmMax = $this->tmMax($sPrimer);
         }
     }
 
@@ -141,50 +141,50 @@ class MeltingTemperatureManager
                 ];
             }
 
-            $h = $s = 0;
+            $fH = $fS = 0;
 
-            $aEnthalpyValues = $this->enthalpyValues;
-            $aEnthropyValues = $this->enthropyValues;
+            $aEnthalpyValues = $this->aEnthalpyValues;
+            $aEnthropyValues = $this->aEnthropyValues;
 
             // effect on entropy by salt correction; von Ahsen et al 1999
             // Increase of stability due to presence of Mg;
             $fSaltEffect = ($iConcSalt/1000) + (($iConcMg/1000) * 140);
             // effect on entropy
-            $s += 0.368 * (strlen($sPrimer)-1) * log($fSaltEffect);
+            $fS += 0.368 * (strlen($sPrimer)-1) * log($fSaltEffect);
 
             // terminal corrections. Santalucia 1998
             $sFirstNucleotid = substr($sPrimer,0,1);
             if($sFirstNucleotid == "G" || $sFirstNucleotid == "C") {
-                $h += 0.1;
-                $s += -2.8;
+                $fH += 0.1;
+                $fS += -2.8;
             }
             if($sFirstNucleotid == "A" ||  $sFirstNucleotid == "T") {
-                $h += 2.3;
-                $s += 4.1;
+                $fH += 2.3;
+                $fS += 4.1;
             }
 
             $sLastNucleotid = substr($sPrimer,strlen($sPrimer)-1,1);
             if ($sLastNucleotid == "G" || $sLastNucleotid == "C") {
-                $h += 0.1;
-                $s += -2.8;
+                $fH += 0.1;
+                $fS += -2.8;
             }
             if ($sLastNucleotid == "A" || $sLastNucleotid == "T"){
-                $h += 2.3;
-                $s += 4.1;
+                $fH += 2.3;
+                $fS += 4.1;
             }
 
             // compute new H and s based on sequence. Santalucia 1998
             for($i = 0; $i < strlen($sPrimer)-1; $i++) {
-                $subc = substr($sPrimer, $i,2);
-                $h += $aEnthalpyValues[$subc];
-                $s += $aEnthropyValues[$subc];
+                $sSubc = substr($sPrimer, $i,2);
+                $fH += $aEnthalpyValues[$sSubc];
+                $fS += $aEnthropyValues[$sSubc];
             }
-            $tm = ((1000 * $h) / ($s + (1.987 * log($iConcPrimer / 2000000000)))) - 273.15;
+            $fTm = ((1000 * $fH) / ($fS + (1.987 * log($iConcPrimer / 2000000000)))) - 273.15;
 
             $aBaseStacking = [
-                'tm'        => round($tm, 1),
-                'enthalpy'  => round($h,2),
-                'entropy'   => round($s,2)
+                'tm'        => round($fTm, 1),
+                'enthalpy'  => round($fH,2),
+                'entropy'   => round($fS,2)
             ];
 
             return $aBaseStacking;
@@ -291,16 +291,16 @@ class MeltingTemperatureManager
 
     /**
      * Unreduces the primer
-     * @param       string      $primer     Sequence to analyze
+     * @param       string      $sPrimer     Sequence to analyze
      * @return      string
      * @throws      \Exception
      */
-    private function primerMax($primer)
+    private function primerMax($sPrimer)
     {
         try {
-            $primer = preg_replace("/A|T|W/","A",$primer);
-            $primer = preg_replace("/C|G|Y|R|S|K|M|D|V|H|B|N/","G",$primer);
-            return $primer;
+            $sPrimer = preg_replace("/A|T|W/","A",$sPrimer);
+            $sPrimer = preg_replace("/C|G|Y|R|S|K|M|D|V|H|B|N/","G",$sPrimer);
+            return $sPrimer;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -308,16 +308,16 @@ class MeltingTemperatureManager
 
     /**
      * Reduces the primer
-     * @param       string      $primer     Sequence to analyze
+     * @param       string      $sPrimer     Sequence to analyze
      * @return      string
      * @throws      \Exception
      */
-    private function primerMin($primer)
+    private function primerMin($sPrimer)
     {
         try {
-            $primer = preg_replace("/A|T|Y|R|W|K|M|D|V|H|B|N/","A",$primer);
-            $primer = preg_replace("/C|G|S/","G",$primer);
-            return $primer;
+            $sPrimer = preg_replace("/A|T|Y|R|W|K|M|D|V|H|B|N/","A",$sPrimer);
+            $sPrimer = preg_replace("/C|G|S/","G",$sPrimer);
+            return $sPrimer;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
