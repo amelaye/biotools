@@ -30,33 +30,33 @@ class ProteinPropertiesManager
     /**
      * @var PKApiAdapter
      */
-    private $pkAPI;
+    private $pkApi;
 
     /**
      * @var array
      */
-    private $pk;
+    private $aPk;
 
     /**
      * ProteinPropertiesManager constructor.
      * @param   AminoApiAdapter     $aminoApi
-     * @param   PKApiAdapter        $PKApi
+     * @param   PKApiAdapter        $pkApi
      */
     public function __construct(
-        AminoApiAdapter $aminoApi, PKApiAdapter $PKApi
+        AminoApiAdapter $aminoApi, PKApiAdapter $pkApi
     ){
         $this->aResidueWeights   = $aminoApi::GetAminoResidueWeights($aminoApi->getAminos());
         $this->aAminos           = $aminoApi::GetAminosOneToThreeLetters($aminoApi->getAminos());
-        $this->pkAPI             = $PKApi;
+        $this->pkApi             = $pkApi;
     }
 
     /**
      * Get pk values for charged aminoacids
-     * @param string $dataSource
+     * @param   string  $sDataSource
      */
-    public function setPk($dataSource)
+    public function setPk($sDataSource)
     {
-        $this->pk = $this->pkAPI->getPkValueById($dataSource);
+        $this->aPk = $this->pkApi->getPkValueById($sDataSource);
     }
 
     /**
@@ -92,9 +92,9 @@ class ProteinPropertiesManager
             $sSubsequence = "";
             // if subsequence is requested
             if ($iStart != "" || $iEnd != "") {
-                $start = ($iStart != "") ? $iStart - 1 : 0;
-                $end  = ($iEnd != "") ? $iEnd : strlen($sSequence);
-                $sSubsequence = substr($sSequence, $start,$end - $start);
+                $iStartPos = ($iStart != "") ? $iStart - 1 : 0;
+                $iEndPos  = ($iEnd != "") ? $iEnd : strlen($sSequence);
+                $sSubsequence = substr($sSequence, $iStartPos,$iEndPos - $iStartPos);
             }
             return $sSubsequence;
         } catch (\Exception $e) {
@@ -170,15 +170,15 @@ class ProteinPropertiesManager
     function proteinCharge($aAminoacidContent, $iPH)
     {
         try {
-            $iCharge = $this->partialCharge($this->pk["NTERMINUS"], $iPH);
-            $iCharge+= $this->partialCharge($this->pk["K"], $iPH) * $aAminoacidContent["K"];
-            $iCharge+= $this->partialCharge($this->pk["R"], $iPH) * $aAminoacidContent["R"];
-            $iCharge+= $this->partialCharge($this->pk["H"], $iPH) * $aAminoacidContent["H"];
-            $iCharge-= $this->partialCharge($iPH, $this->pk["D"]) * $aAminoacidContent["D"];
-            $iCharge-= $this->partialCharge($iPH, $this->pk["E"]) * $aAminoacidContent["E"];
-            $iCharge-= $this->partialCharge($iPH, $this->pk["C"]) * $aAminoacidContent["C"];
-            $iCharge-= $this->partialCharge($iPH, $this->pk["Y"]) * $aAminoacidContent["Y"];
-            $iCharge-= $this->partialCharge($iPH, $this->pk["CTERMINUS"]);
+            $iCharge = $this->partialCharge($this->aPk["NTERMINUS"], $iPH);
+            $iCharge+= $this->partialCharge($this->aPk["K"], $iPH) * $aAminoacidContent["K"];
+            $iCharge+= $this->partialCharge($this->aPk["R"], $iPH) * $aAminoacidContent["R"];
+            $iCharge+= $this->partialCharge($this->aPk["H"], $iPH) * $aAminoacidContent["H"];
+            $iCharge-= $this->partialCharge($iPH, $this->aPk["D"]) * $aAminoacidContent["D"];
+            $iCharge-= $this->partialCharge($iPH, $this->aPk["E"]) * $aAminoacidContent["E"];
+            $iCharge-= $this->partialCharge($iPH, $this->aPk["C"]) * $aAminoacidContent["C"];
+            $iCharge-= $this->partialCharge($iPH, $this->aPk["Y"]) * $aAminoacidContent["Y"];
+            $iCharge-= $this->partialCharge($iPH, $this->aPk["CTERMINUS"]);
             return $iCharge;
         } catch (\Exception $e) {
             throw new \Exception($e);
@@ -194,11 +194,11 @@ class ProteinPropertiesManager
     public function formatAminoacidContent($aAminoacidContent)
     {
         try {
-            $results = [];
-            foreach($aAminoacidContent as $aa => $count) {
-                $results[] = ["one_letter" => $aa, "three_letters" => $this->aAminos[$aa], "count" => $count];
+            $aResults = [];
+            foreach($aAminoacidContent as $sAa => $iCount) {
+                $aResults[] = ["one_letter" => $sAa, "three_letters" => $this->aAminos[$sAa], "count" => $iCount];
             }
-            return $results;
+            return $aResults;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -242,12 +242,12 @@ class ProteinPropertiesManager
     public function molarAbsorptionCoefficientOfProt($aAminoacidContent, $fMolWeight)
     {
         try {
-            $abscoef = (
+            $fAbscoef = (
                     $aAminoacidContent["A"] * 5500
                     + $aAminoacidContent["Y"] * 1490
                     + $aAminoacidContent["C"] * 125
                 ) / $fMolWeight;
-            return $abscoef;
+            return $fAbscoef;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -270,8 +270,8 @@ class ProteinPropertiesManager
     {
         try {
             $fMolWeight = 18.02;  // water
-            foreach($aAminoacidContent as $key => $sAmino) {
-                $fMolWeight += $sAmino * $this->aResidueWeights[$key];
+            foreach($aAminoacidContent as $sKey => $sAmino) {
+                $fMolWeight += $sAmino * $this->aResidueWeights[$sKey];
             }
             return $fMolWeight;
         } catch (\Exception $e) {

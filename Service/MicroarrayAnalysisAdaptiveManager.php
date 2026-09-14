@@ -19,19 +19,19 @@ class MicroarrayAnalysisAdaptiveManager
 {
     /**
      * Processes the Microarray data
-     * @param       string      $file
+     * @param       string      $sFile
      * @return      array
      * @throws      Exception
      */
-    public function processMicroarrayDataAdaptiveQuantificationMethod($file)
+    public function processMicroarrayDataAdaptiveQuantificationMethod($sFile)
     {
-        if (!is_string($file)) {
+        if (!is_string($sFile)) {
             throw new \Exception('The microarray data must be a string.');
         }
         try {
             $aResults = [];
 
-            $aData = $this->fileToArray($file);
+            $aData = $this->fileToArray($sFile);
 
             $iSumCh1 = 0;
             $iSumCh2 = 0;
@@ -42,12 +42,12 @@ class MicroarrayAnalysisAdaptiveManager
             ksort($aData4);
 
             if(!empty($aData4)) {
-                foreach($aData4 as $key => $val) {
-                    $aResults[$key]["n_data"] = count($aData4[$key][1]);
-                    $aResults[$key]["median1"] = MathematicsFunctions::Median($aData4[$key][1]);
-                    $aResults[$key]["medlog1"] = round(log10($aResults[$key]["median1"]),3);
-                    $aResults[$key]["median2"] = MathematicsFunctions::Median($aData4[$key][2]);
-                    $aResults[$key]["medlog2"] = round(log10($aResults[$key]["median2"]),3);
+                foreach($aData4 as $sKey => $aVal) {
+                    $aResults[$sKey]["n_data"] = count($aData4[$sKey][1]);
+                    $aResults[$sKey]["median1"] = MathematicsFunctions::Median($aData4[$sKey][1]);
+                    $aResults[$sKey]["medlog1"] = round(log10($aResults[$sKey]["median1"]),3);
+                    $aResults[$sKey]["median2"] = MathematicsFunctions::Median($aData4[$sKey][2]);
+                    $aResults[$sKey]["medlog2"] = round(log10($aResults[$sKey]["median2"]),3);
                 }
             }
 
@@ -59,20 +59,20 @@ class MicroarrayAnalysisAdaptiveManager
 
     /**
      * Parses the data and return array
-     * @param       string      $file
+     * @param       string      $sFile
      * @return      array
      * @throws      Exception
      */
-    private function fileToArray($file)
+    private function fileToArray($sFile)
     {
         try {
             // find data for first column and row, and remove all headings;
-            $file = substr($file, strpos($file,"1\t1\t"));
+            $sFile = substr($sFile, strpos($sFile,"1\t1\t"));
             // remove from file returns (\r) and (\")
-            $file = preg_replace("/\r|\"/","",$file);
+            $sFile = preg_replace("/\r|\"/","",$sFile);
 
             // split file into lines ($data_array)
-            $aData = preg_split("/\n/",$file, -1, PREG_SPLIT_NO_EMPTY);
+            $aData = preg_split("/\n/",$sFile, -1, PREG_SPLIT_NO_EMPTY);
 
             return $aData;
         } catch (Exception $e) {
@@ -100,8 +100,8 @@ class MicroarrayAnalysisAdaptiveManager
         try {
             $aData2 = [];
             if(!empty($aData)) {
-                foreach($aData as $key => $val) {
-                    $aLineElement = preg_split("/\t/",$val, -1, PREG_SPLIT_NO_EMPTY);
+                foreach($aData as $sKey => $aVal) {
+                    $aLineElement = preg_split("/\t/",$aVal, -1, PREG_SPLIT_NO_EMPTY);
                     if (sizeof ($aLineElement) < 7) {
                         continue;
                     }
@@ -143,17 +143,17 @@ class MicroarrayAnalysisAdaptiveManager
         try {
             $aData3 = [];
             if(!empty($aData2)) {
-                foreach($aData2 as $key => $val) {
+                foreach($aData2 as $sKey => $aVal) {
                     // split data separated by comma (chanel 1)
-                    foreach($aData2[$key][1] as $key2 => $value) {
-                        $ratio = $value * 100 / $iSumCh1; // compute ratios
-                        $aData3[$key][1][] = $ratio; // save result
+                    foreach($aData2[$sKey][1] as $sKey2 => $fValue) {
+                        $fRatio = $fValue * 100 / $iSumCh1; // compute ratios
+                        $aData3[$sKey][1][] = $fRatio; // save result
                     }
 
                     // split data separated by comma (chanel 2)
-                    foreach($aData2[$key][2] as $key2 => $value) {
-                        $ratio = $value * 100 / $iSumCh2; // compute ratios
-                        $aData3[$key][2][] = $ratio; // save result
+                    foreach($aData2[$sKey][2] as $sKey2 => $fValue) {
+                        $fRatio = $fValue * 100 / $iSumCh2; // compute ratios
+                        $aData3[$sKey][2][] = $fRatio; // save result
                     }
                 }
             }
@@ -175,12 +175,12 @@ class MicroarrayAnalysisAdaptiveManager
     {
         try {
             $aData4 = [];
-            foreach($aData3 as $key => $val) {
-                foreach ($aData3[$key][1] as $key2 => $value) {
-                    $ratio = $aData3[$key][1][$key2] / $aData3[$key][2][$key2]; //compute ch1 / ch2
-                    $aData4[$key][1][] = $ratio; // and save
-                    $ratio = $aData3[$key][2][$key2] / $aData3[$key][1][$key2]; //compute ch2 / ch1
-                    $aData4[$key][2][] = $ratio; // and save
+            foreach($aData3 as $sKey => $aVal) {
+                foreach ($aData3[$sKey][1] as $sKey2 => $fValue) {
+                    $fRatio = $aData3[$sKey][1][$sKey2] / $aData3[$sKey][2][$sKey2]; //compute ch1 / ch2
+                    $aData4[$sKey][1][] = $fRatio; // and save
+                    $fRatio = $aData3[$sKey][2][$sKey2] / $aData3[$sKey][1][$sKey2]; //compute ch2 / ch1
+                    $aData4[$sKey][2][] = $fRatio; // and save
                 }
             }
             return $aData4;

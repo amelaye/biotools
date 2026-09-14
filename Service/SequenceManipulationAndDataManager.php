@@ -21,29 +21,29 @@ class SequenceManipulationAndDataManager
     use SequenceTrait;
 
     /**
-     * @param $seq
-     * @return string
-     * @throws \Exception
+     * @param   string  $sSeq
+     * @return  string
+     * @throws  \Exception
      */
-    public function displayBothStrands($seq)
+    public function displayBothStrands($sSeq)
     {
         try {
             // get the complementary sequence, base for base under the forward strand
-            $revcomp = $this->compDNA($seq);
-            $result = "";
+            $sRevcomp = $this->compDNA($sSeq);
+            $sResult = "";
             $i = 0;
-            while ($i < strlen($seq)) {
-                if(strlen($seq) < ($i+70)) {
-                    $j = strlen($seq);
+            while ($i < strlen($sSeq)) {
+                if(strlen($sSeq) < ($i+70)) {
+                    $iJ = strlen($sSeq);
                 } else {
-                    $j = $i;
+                    $iJ = $i;
                 }
-                $result .= substr($seq,$i,70)."\t$j\n";
-                $result .= substr($revcomp,$i,70)."\t$j\n";
-                $result .= "\n"; //line break
+                $sResult .= substr($sSeq,$i,70)."\t$iJ\n";
+                $sResult .= substr($sRevcomp,$i,70)."\t$iJ\n";
+                $sResult .= "\n"; //line break
                 $i+=70;
             }
-            return $result;
+            return $sResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -51,17 +51,17 @@ class SequenceManipulationAndDataManager
 
     /**
      * Displays the content of G and C
-     * @param   string      $seq
+     * @param   string      $sSeq
      * @return  string
      * @throws  \Exception
      */
-    public function gcContent($seq)
+    public function gcContent($sSeq)
     {
         try {
-            $number_of_G = substr_count($seq,"G");
-            $number_of_C = substr_count($seq,"C");
-            $gc_percent = round(100*($number_of_G + $number_of_C)/strlen($seq),2);
-            return $gc_percent;
+            $iNumberOfG = substr_count($sSeq,"G");
+            $iNumberOfC = substr_count($sSeq,"C");
+            $fGcPercent = round(100*($iNumberOfG + $iNumberOfC)/strlen($sSeq),2);
+            return $fGcPercent;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -69,45 +69,45 @@ class SequenceManipulationAndDataManager
 
     /**
      * Replaces T by U
-     * @param $seq
-     * @return string|string[]|null
-     * @throws \Exception
+     * @param   string  $sSeq
+     * @return  string|string[]|null
+     * @throws  \Exception
      */
-    public function toRNA($seq)
+    public function toRNA($sSeq)
     {
         try {
-            $seq = preg_replace("/T/","U",$seq);
-            $seq = chunk_split($seq, 70);
-            return $seq;
+            $sSeq = preg_replace("/T/","U",$sSeq);
+            $sSeq = chunk_split($sSeq, 70);
+            return $sSeq;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
     }
 
     /**
-     * @param $seq
-     * @return string
-     * @throws \Exception
+     * @param   string  $sSeq
+     * @return  string
+     * @throws  \Exception
      */
-    public function acgtContent($seq)
+    public function acgtContent($sSeq)
     {
         try {
-            $result = "Nucleotide composition";
-            $result.="\nA: ".substr_count($seq,"A");
-            $result.="\nC: ".substr_count($seq,"C");
-            $result.="\nG: ".substr_count($seq,"G");
-            $result.="\nT: ".substr_count($seq,"T");
+            $sResult = "Nucleotide composition";
+            $sResult.="\nA: ".substr_count($sSeq,"A");
+            $sResult.="\nC: ".substr_count($sSeq,"C");
+            $sResult.="\nG: ".substr_count($sSeq,"G");
+            $sResult.="\nT: ".substr_count($sSeq,"T");
 
-            $nucleoNonDNA = ["Y", "R", "W", "S", "K", "M", "D", "V", "H", "B", "N"];
+            $aNucleoNonDNA = ["Y", "R", "W", "S", "K", "M", "D", "V", "H", "B", "N"];
 
-            foreach($nucleoNonDNA as $letter) {
-                if (substr_count($seq,$letter) > 0) {
-                    $result .= "\n$letter: ".substr_count($seq, $letter);
+            foreach($aNucleoNonDNA as $sLetter) {
+                if (substr_count($sSeq,$sLetter) > 0) {
+                    $sResult .= "\n$sLetter: ".substr_count($sSeq, $sLetter);
                 }
             }
 
-            $result.="\n\n";
-            return $result;
+            $sResult.="\n\n";
+            return $sResult;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
