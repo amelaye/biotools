@@ -10,6 +10,7 @@ namespace Tests\Service;
 
 use Amelaye\BioPHP\Api\NucleotidApi;
 use Amelaye\BioTools\Service\ChaosGameRepresentationManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 
@@ -651,9 +652,7 @@ class ChaosGameRepresentationManagerTest extends TestCase
         unlink($path);
     }
 
-    /**
-     * @dataProvider provideCGRComputeAutoSizes
-     */
+    #[DataProvider('provideCGRComputeAutoSizes')]
     public function testCGRComputeAutoSizing($iSeqLen, $iExpectedWidth)
     {
         // a sequence over 1,000,000 bp needs more than PHP's default 128M memory_limit
