@@ -658,9 +658,12 @@ class ChaosGameRepresentationManagerTest extends TestCase
         // a sequence over 1,000,000 bp needs more than PHP's default 128M memory_limit
         // to draw every point, just like the legacy script would in production; raising
         // it here is one-way for the rest of the test run, since PHP cannot shrink the
-        // limit back below memory already in use
-        if ((int) ini_get('memory_limit') < 256) {
-            ini_set('memory_limit', '256M');
+        // limit back below memory already in use. Peak usage measured at ~248M on PHP
+        // 8.2 (a lower version needs more headroom than 8.3+, whose array/hashtable
+        // overhead per element is smaller), so 512M is used to keep margin across the
+        // whole supported PHP range rather than tuning to the thinnest observed case.
+        if ((int) ini_get('memory_limit') < 512) {
+            ini_set('memory_limit', '512M');
         }
 
         $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
