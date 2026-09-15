@@ -64,6 +64,10 @@ class FormulasType extends AbstractType
                         "Molar conversions for proteins (pmol to µg)" => "pmol_to_microg_protein",
                         "Protein to DNA coding length (kDa to bp)"    => "kda_to_bp",
                     ],
+                    "Centrifugation" => [
+                        "RPM to RCF (x g)"                          => "rpm_to_rcf",
+                        "RCF (x g) to RPM"                          => "rcf_to_rpm",
+                    ],
                 ],
                 'label' => "Formula to apply :",
                 'multiple' => false,
@@ -108,7 +112,7 @@ class FormulasType extends AbstractType
                 'attr' => [
                     'class' => "form-control"
                 ],
-                'label' => "Value to convert (degrees or millibars) :",
+                'label' => "Value to convert (degrees, millibars, RPM or RCF) :",
                 'required' => false
             ]
         );
@@ -121,6 +125,18 @@ class FormulasType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Protein molecular weight (kDa) :",
+                'required' => false
+            ]
+        );
+
+        $builder->add(
+            'radius',
+            TextType::class,
+            [
+                'attr' => [
+                    'class' => "form-control"
+                ],
+                'label' => "Rotor radius (centrifugation formulas only, in millimeters) :",
                 'required' => false
             ]
         );
