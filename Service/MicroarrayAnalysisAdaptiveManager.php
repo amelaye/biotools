@@ -18,6 +18,14 @@ use Exception;
 class MicroarrayAnalysisAdaptiveManager
 {
     /**
+     * A weak or failed spot can legitimately have a background reading greater than or equal
+     * to its raw signal, making (signal - background) zero or negative. Such a value is not an
+     * error to reject, but it must not reach a division or a log10() unguarded, where it would
+     * silently turn into NAN/INF/-INF. It is floored to this small positive epsilon instead.
+     */
+    private const MIN_BACKGROUND_CORRECTED_INTENSITY = 0.0001;
+
+    /**
      * Processes the Microarray data
      * @param       string      $sFile
      * @return      array
@@ -109,14 +117,14 @@ class MicroarrayAnalysisAdaptiveManager
 
                     // For chanel 1
                     // calculate data obtained in chanel 1 minus background
-                    $iCh1Bg = $aLineElement[3] - $aLineElement[4];
+                    $iCh1Bg = max($aLineElement[3] - $aLineElement[4], self::MIN_BACKGROUND_CORRECTED_INTENSITY);
                     // save data to a element in $aData2 (separate different calculations from the same gene with commas)
                     $aData2[$sName][1][] = $iCh1Bg;
                     $iSumCh1 += $iCh1Bg; // $sum_ch1 will record the sum of all (chanel 1 - background) values
 
                     // For chanel 2
                     // calculate data obtained in chanel 2 minus background
-                    $iCh2Bg = $aLineElement[5] - $aLineElement[6];
+                    $iCh2Bg = max($aLineElement[5] - $aLineElement[6], self::MIN_BACKGROUND_CORRECTED_INTENSITY);
                     // save data to a element in $data_array2 (separate different calculations from the same gene with commas)
                     $aData2[$sName][2][] = $iCh2Bg;
                     $iSumCh2 += $iCh2Bg; // $sum_ch1 will record the sum of all (chanel 2 - background) values

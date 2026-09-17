@@ -1346,6 +1346,29 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * OligosManager::findZScore() must not take a sqrt() of a variance that is zero or
+     * negative (the Markov model it approximates only holds for a positive variance) - it
+     * must instead leave that tetranucleotide position out of the returned z-scores rather
+     * than emit a NaN. Unlike testComputeZscoresForTetranucleotides() above, which mocks
+     * findZScore() away entirely, this exercises the real OligosManager with synthetic
+     * dinucleotide/trinucleotide/tetranucleotide counts chosen so that the "ACGT" position's
+     * variance is provably negative (worked out by hand: exp=2.5, dtemp=-0.75, var=-1.875),
+     * and every other position's variance is exactly 0 because no other oligo was observed.
+     */
+    public function testFindZScoreOmitsPositionsWithNonPositiveVariance()
+    {
+        $oligoManager = new OligosManager($this->apiNucleoMock);
+
+        $aOligos2 = ["CG" => 2];
+        $aOligos3 = ["ACG" => 5, "CGT" => 1];
+        $aOligos4 = ["ACGT" => 10];
+
+        $aZscore = $oligoManager->findZScore($aOligos2, $aOligos3, $aOligos4);
+
+        $this->assertSame([], $aZscore);
+    }
+
     public function testPearsonDistance()
     {
         $valsx = [

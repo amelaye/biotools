@@ -81,6 +81,21 @@ class DnaToProteinManagerTest extends TestCase
         $this->assertEquals($aFrames, $testFunction);
     }
 
+    public function testCustomTreatmentOneFrameLowercaseInput()
+    {
+        // A soft-masked/lowercase DNA sequence must translate the same as its uppercase form.
+        $iFrames = "1";
+        $sSequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCC";
+        $sMycode = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG";
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $aUppercaseResult = $service->customTreatment($iFrames, strtoupper($sSequence), $sMycode);
+        $aLowercaseResult = $service->customTreatment($iFrames, strtolower($sSequence), $sMycode);
+
+        $this->assertEquals($aUppercaseResult, $aLowercaseResult);
+    }
+
     public function testCustomTreatmentLess3Frames()
     {
         $iFrames = "3";
@@ -148,6 +163,21 @@ class DnaToProteinManagerTest extends TestCase
         $this->assertEquals($aFrames, $testFunction);
     }
 
+    public function testDefinedTreatmentOneFrameLowercaseInput()
+    {
+        // A soft-masked/lowercase DNA sequence must translate the same as its uppercase form.
+        $iFrames = "1";
+        $sSequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCC";
+        $sGeneticCode = "standard";
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $aUppercaseResult = $service->definedTreatment($iFrames, $sGeneticCode, strtoupper($sSequence));
+        $aLowercaseResult = $service->definedTreatment($iFrames, $sGeneticCode, strtolower($sSequence));
+
+        $this->assertEquals($aUppercaseResult, $aLowercaseResult);
+    }
+
     public function testDefinedTreatmentLess3Frames()
     {
         $iFrames = "3";
@@ -212,9 +242,9 @@ class DnaToProteinManagerTest extends TestCase
         $bTrimmed = true;
 
         $aExpected = [
-          1 => "_____________________*____x__xx_________________MAAAEGPVXDXGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVXDAGV",
-          2 => "_*____x__xx_________________MAAAEGPVXDGGVRGAVGPRWRPPRDRWATAE*____x__xx_____________________________",
-          3 => "________________x_______________________*____x__xx_________________________x___*____x__xx__________",
+          1 => "_____________________*__________________________MAAAEGPVXDXGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVXDAGV",
+          2 => "_*__________________________MAAAEGPVXDGGVRGAVGPRWRPPRDRWATAE*______________________________________",
+          3 => "________________________________________*______________________________________*___________________",
         ];
 
         $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
@@ -250,6 +280,22 @@ class DnaToProteinManagerTest extends TestCase
         $testFunction = $service->translateDNAToProtein($sSequence, $sGeneticCode);
 
         $this->assertEquals($sPeptide, $testFunction);
+    }
+
+    public function testTranslateDNAToProteinLowercaseInput()
+    {
+        // Soft-masked / lowercase DNA (e.g. genomic sequence, pasted FASTA) must translate
+        // identically to the same sequence in uppercase, not pass through untranslated.
+        $sSequence = "cctcactccc";
+        $sGeneticCode = "euplotid_nuclear";
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $sUppercaseResult = $service->translateDNAToProtein(strtoupper($sSequence), $sGeneticCode);
+        $sLowercaseResult = $service->translateDNAToProtein($sSequence, $sGeneticCode);
+
+        $this->assertEquals($sUppercaseResult, $sLowercaseResult);
+        $this->assertDoesNotMatchRegularExpression('/[acgt]/', $sLowercaseResult);
     }
 
     public function testTranslateDNAToProteinException()

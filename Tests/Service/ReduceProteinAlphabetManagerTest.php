@@ -325,6 +325,21 @@ class ReduceProteinAlphabetManagerTest extends TestCase
     }
 
     /**
+     * The substitution patterns are the fixed uppercase amino acid letters: a lowercase
+     * residue in the input sequence must be uppercased first, or it never matches any
+     * pattern and passes through un-reduced instead of being mapped to its reduced code.
+     */
+    public function testReduceAlphabetCustomWithLowercaseSequence()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals(
+            "AAAAAAAAAAAAAAAAAAAAX*",
+            $service->reduceAlphabetCustom("arndceqghilkmfpstwyvx*", str_repeat("A", 20))
+        );
+    }
+
+    /**
      * The custom alphabet is lower cased before being applied, so a letter that has just
      * been substituted is not substituted again by a later amino acid: mapping A onto R
      * and R onto A swaps them instead of collapsing both onto one letter

@@ -177,7 +177,7 @@ class DnaToProteinManager
                 }
                 // To avoid showing no coding, remove them from output sequence
                 if($bOnlyCoding) {
-                    $sNewPeptideSequence = preg_replace("/f|l|i|m|v|s|p|t|a|y|h|q|n|k|d|e|c|w|r|g|x]/","_",$sNewPeptideSequence);
+                    $sNewPeptideSequence = preg_replace("/[flimvsptayhqnkdecwrgx]/","_",$sNewPeptideSequence);
                 }
                 $aFrames[$iN] = $sNewPeptideSequence;
             }
@@ -203,7 +203,7 @@ class DnaToProteinManager
         try {
             $aAminoAcids = ["F","L","I","M","V","S","P","T","A","Y","*","H","Q","N","K","D","E","C","W","R","G","X"];
             // place a space after each triplete in the sequence
-            $sTemp = chunk_split($sSequence,3,' ');
+            $sTemp = chunk_split(strtoupper($sSequence),3,' ');
             // replace triplets by corresponding amnoacid
             $sPeptide = preg_replace($this->aTriplets[$sGeneticCode], $aAminoAcids, $sTemp);
             // return peptide sequence
@@ -223,7 +223,7 @@ class DnaToProteinManager
     public function translateDNAToProteinCustomcode($sSequence, $sGeneticCode)
     {
         try {
-            $sTemp = chunk_split($sSequence,3,' '); // The sequence is chopped and @ is inserted after each triplete
+            $sTemp = chunk_split(strtoupper($sSequence),3,' '); // The sequence is chopped and @ is inserted after each triplete
 
             // each triplete replace by corresponding amnoacid
             foreach ($this->aTripletsCombinations as $iKey => $aTriplete) {

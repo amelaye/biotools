@@ -269,9 +269,16 @@ class ProteinPropertiesManager
     public function proteinMolecularWeight($aAminoacidContent)
     {
         try {
-            $fMolWeight = 18.02;  // water
+            $fMolWeight = 0;
+            $iResidueCount = 0;
             foreach($aAminoacidContent as $sKey => $sAmino) {
                 $fMolWeight += $sAmino * $this->aResidueWeights[$sKey];
+                $iResidueCount += $sAmino;
+            }
+            // An empty chain has zero residues and zero mass: it must not gain a spurious
+            // free water molecule.
+            if ($iResidueCount > 0) {
+                $fMolWeight += 18.02;  // water
             }
             return $fMolWeight;
         } catch (\Exception $e) {

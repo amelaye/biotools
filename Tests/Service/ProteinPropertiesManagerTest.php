@@ -491,6 +491,24 @@ class ProteinPropertiesManagerTest extends TestCase
         $this->assertEqualsWithDelta($fExpected, $testFunction, 0.0001);
     }
 
+    /**
+     * An empty chain has zero residues and zero mass: it must not gain a spurious free
+     * water molecule (a "phantom" 18.02 for a sequence that has nothing in it).
+     */
+    public function testProteinMolecularWeightOfEmptySequence()
+    {
+        $aminoacid_content = [
+            "*" => 0, "A" => 0, "C" => 0, "D" => 0, "E" => 0, "F" => 0, "G" => 0, "H" => 0,
+            "I" => 0, "K" => 0, "L" => 0, "M" => 0, "N" => 0, "O" => 0, "P" => 0, "Q" => 0,
+            "R" => 0, "S" => 0, "T" => 0, "U" => 0, "V" => 0, "W" => 0, "X" => 0, "Y" => 0,
+        ];
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $testFunction = $service->proteinMolecularWeight($aminoacid_content);
+
+        $this->assertEqualsWithDelta(0.0, $testFunction, 0.0001);
+    }
+
     public function testProteinAminoacidNature1()
     {
         $sSequence = "ARNDCEQGHILKMFPST";

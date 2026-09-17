@@ -76,6 +76,10 @@ class ReduceProteinAlphabetManager
     {
         try {
             $sCustomAlphabet = strtolower($sCustomAlphabet);
+            // The substitution patterns below are the fixed uppercase amino acid letters, so
+            // the input must be uppercased first or a lowercase residue would never match and
+            // would pass through un-reduced.
+            $sSequence = strtoupper($sSequence);
             // array with reduced code
             $aA = preg_split("//",$sCustomAlphabet,-1,PREG_SPLIT_NO_EMPTY);
             // array with aminoacids

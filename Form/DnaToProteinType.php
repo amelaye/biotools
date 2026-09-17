@@ -189,7 +189,8 @@ class DnaToProteinType extends AbstractType
             $aData = $event->getData();
 
             if (isset($aData['sequence'])) {
-                $sSequence = preg_replace("(\W|\d)", "", $aData['sequence']);
+                $sSequence = strtoupper($aData['sequence']);
+                $sSequence = preg_replace("(\W|\d)", "", $sSequence);
                 $aData['sequence'] = $sSequence;
             }
 
