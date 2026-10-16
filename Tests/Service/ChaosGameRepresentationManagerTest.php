@@ -662,6 +662,68 @@ class ChaosGameRepresentationManagerTest extends TestCase
         $this->assertEqualsWithDelta($fX0 + 224, $aPositions["TTT"][0], 0.01);
     }
 
+    /**
+     * Chaos game on a 256 px picture, from the centre (128, 128), half way to the corner of each base
+     * (C top left, G top right, A bottom left, T bottom right). Worked out by hand:
+     * A -> (64, 192), then T -> (160, 224), then G -> (208, 112), then C -> (104, 56).
+     * Symbols other than A, C, G, T (N, a space) and the case of the letters do not matter.
+     */
+    public function testCGRImagePlaysTheChaosGameFromTheCentre()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $path = $service->createCGRImage("Seq", "aT N gC", 256);
+        $content = file_get_contents($path);
+        unlink($path);
+
+        $this->assertStringContainsString('d="M64 192.5h1M160 224.5h1M208 112.5h1M104 56.5h1"', $content);
+        $this->assertStringContainsString('Seq (7 bp)', $content);
+    }
+
+    /**
+     * Every oligonucleotide is the same count: max - min is 0, there was no contrast to draw
+     * and the shading divided by it
+     */
+    public function testCreateFCGRImageWithEqualCountsDoesNotDivideByZero()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $aOligos = [];
+        foreach (["AA", "AC", "CA", "TT"] as $sOligo) {
+            $aOligos[$sOligo] = 3;
+        }
+
+        $aResult = $service->createFCGRImage($aOligos, "flat", ["A" => 1, "C" => 1, "G" => 1, "T" => 1], 10, 1, "2");
+
+        $this->assertCount(4, $aResult["map"]);
+        $this->assertFileExists($aResult["file"]);
+        unlink($aResult["file"]);
+    }
+
+    public function testOligoCountsDelegatesToTheCalculator()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+
+        $aOne = $service->oligoCounts("acgNtt", 2, 1);
+        $this->assertCount(16, $aOne);
+        $this->assertSame(1, $aOne["AC"]);
+        $this->assertSame(1, $aOne["CG"]);
+        $this->assertSame(1, $aOne["GT"]);   // "N" is dropped, so G and T are neighbours
+        $this->assertSame(1, $aOne["TT"]);
+
+        // both strands: the reverse complement of ACGTT is AACGT, adding AA, AC, CG, GT
+        $aTwo = $service->oligoCounts("ACGTT", 2, 2);
+        $this->assertSame(2, $aTwo["AC"]);
+        $this->assertSame(1, $aTwo["AA"]);
+        $this->assertSame(2, $aTwo["GT"]);
+    }
+
+    public function testOligoCountsRefusesALengthBioPhpDoesNotHandle()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->oligoCounts("ACGT", 9, 1);
+    }
+
     public function testFCGRComputeSingleStrand()
     {
         $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);

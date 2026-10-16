@@ -13,6 +13,7 @@
         <service id="Amelaye\BioTools\Service\ChaosGameRepresentationManager">
             <argument>%amelaye_biotools.nucleotids_graphs%</argument>
             <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter" />
+            <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\ChaosGameRepresentationInterface" />
         </service>
 
         <service id="Amelaye\BioTools\Service\DistanceAmongSequencesManager">

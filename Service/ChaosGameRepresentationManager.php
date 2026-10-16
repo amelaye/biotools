@@ -10,6 +10,8 @@ namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
+use Amelaye\BioPHP\Domain\Sequence\ValueObject\DnaSequence;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\ChaosGameRepresentationInterface;
 use Amelaye\BioPHP\Domain\Tools\Service\ChaosGameRepresentationCalculator;
 use Amelaye\BioTools\Service\Graphics\SvgCanvas;
 
@@ -33,14 +35,48 @@ class ChaosGameRepresentationManager
     private $aDnaComplements;
 
     /**
-     * ChaosGameRepresentationManager constructor.
-     * @param   array                        $aNucleotidsGraphs
-     * @param   NucleotidApiAdapter          $nucleotidApi
+     * @var ChaosGameRepresentationInterface
      */
-    public function __construct(array $aNucleotidsGraphs, NucleotidApiAdapter $nucleotidApi)
-    {
+    private $chaosGame;
+
+    /**
+     * ChaosGameRepresentationManager constructor.
+     * @param   array                                   $aNucleotidsGraphs
+     * @param   NucleotidApiAdapter                     $nucleotidApi
+     * @param   ChaosGameRepresentationInterface|null   $chaosGame  The chaos game computation, BioPHP's calculator by default
+     */
+    public function __construct(
+        array $aNucleotidsGraphs,
+        NucleotidApiAdapter $nucleotidApi,
+        ?ChaosGameRepresentationInterface $chaosGame = null
+    ) {
         $this->aNucleotidsGraphs = $aNucleotidsGraphs;
         $this->aDnaComplements   = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
+        $this->chaosGame         = $chaosGame ?? new ChaosGameRepresentationCalculator();
+    }
+
+    /**
+     * The A, C, G and T of a text, in upper case: BioPHP's DnaSequence refuses any other symbol,
+     * where the drawing only ever ignored them
+     * @param   string  $sSequence
+     * @return  DnaSequence
+     */
+    private function toDnaSequence(string $sSequence) : DnaSequence
+    {
+        return new DnaSequence(preg_replace('/[^ACGT]/', '', strtoupper($sSequence)));
+    }
+
+    /**
+     * Counts of every oligonucleotide of a given length, 0 included, on one or both strands
+     * (BioPHP's chaos game calculator). Any character other than A, C, G, T is ignored.
+     * @param   string  $sSequence
+     * @param   int     $iOligoLen      1 to 8 (the drawings handle 2 to 7)
+     * @param   int     $iStrand        1 or 2
+     * @return  array<string,int>
+     */
+    public function oligoCounts($sSequence, $iOligoLen, $iStrand = 1) : array
+    {
+        return $this->chaosGame->oligoCounts($this->toDnaSequence((string) $sSequence), (int) $iOligoLen, $iStrand == 2);
     }
 
     /**
@@ -157,28 +193,11 @@ class ChaosGameRepresentationManager
             $sWhite = SvgCanvas::rgb(255, 255, 255);
             $sBlack = SvgCanvas::rgb(0, 0, 0);
             $oIm->background($sWhite);
-            $fX = round($iSize / 2);
-            $fY = $fX;
+            // the chaos game is played in the unit square (C top left, G top right, A bottom left,
+            // T bottom right), then scaled to the size of the picture
             $aPoints = [];
-            for ($i = 0; $i < strlen($sSequence); $i++) {
-                $sW = substr($sSequence, $i, 1);
-                if ($sW == "A") {
-                    $fX -= $fX / 2;
-                    $fY += ($iSize - $fY) / 2;
-                }
-                if ($sW == "C") {
-                    $fX -= $fX / 2;
-                    $fY -= $fY / 2;
-                }
-                if ($sW == "G") {
-                    $fX += ($iSize - $fX) / 2;
-                    $fY -= $fY / 2;
-                }
-                if ($sW == "T") {
-                    $fX += ($iSize - $fX) / 2;
-                    $fY += ($iSize - $fY) / 2;
-                }
-                $aPoints[] = [floor($fX), floor($fY)];
+            foreach ($this->chaosGame->points($this->toDnaSequence($sSequence)) as $aPoint) {
+                $aPoints[] = [floor($aPoint[0] * $iSize), floor($aPoint[1] * $iSize)];
             }
             $oIm->pixelCloud($aPoints, $sBlack);
 
@@ -216,8 +235,10 @@ class ChaosGameRepresentationManager
             $fMaxVal = max($aOligos);
             $fMinVal = min($aOligos);
 
+            // equal counts everywhere: no contrast to draw, every cell gets the lightest shade
+            $fSpread = $fMaxVal - $fMinVal;
             foreach($aOligos as $sKey => $fVal) {
-                $aRatio[$sKey] = floor(255 - ((255 * ($fVal - $fMinVal)) / ($fMaxVal - $fMinVal)));
+                $aRatio[$sKey] = $fSpread == 0 ? 255 : floor(255 - ((255 * ($fVal - $fMinVal)) / $fSpread));
             }
 
             $oIm = new SvgCanvas(552, 370);
@@ -480,54 +501,18 @@ class ChaosGameRepresentationManager
     {
         try {
             $aAreas = [];
-            $iFrameLength = null;
+            $iHPos = $this->aNucleotidsGraphs["startx_2"];
+            $iVPos = $this->aNucleotidsGraphs["starty_2"];
 
             foreach($aRatio as $sSeq => $fVal) {
-                $iLen = strlen($sSeq);
-                switch($iLen) {
-                    case 7:
-                        $iFrameLength = 1;
-                        break;
-                    case 6:
-                        $iFrameLength = 3;
-                        break;
-                    case 5:
-                        $iFrameLength = 7;
-                        break;
-                    case 4:
-                        $iFrameLength = 15;
-                        break;
-                    case 3:
-                        $iFrameLength = 31;
-                        break;
-                    case 2:
-                        $iFrameLength = 63;
-                        break;
-                }
+                // the 256 px grid holds 2^k cells per side; a cell is drawn one pixel short of its size
+                $iCellSize = 256 >> strlen($sSeq);
+                $iFrameLength = $iCellSize - 1;
 
-                $iHPos = $this->aNucleotidsGraphs["startx_2"];
-                $iVPos = $this->aNucleotidsGraphs["starty_2"];
-
-                // each position
-                $fX = 0;
-                $fY = 0;
-                $iTt = 0;
-                $iLen2 = $iLen;
-                while($iLen2 > 0) {
-                    $iLen2 --;
-                    $fTtt = pow(2, $iTt);
-                    $iTt ++;
-                    $sSubseq1 = substr($sSeq, $iLen2, 1);
-                    if($sSubseq1 == "A" || $sSubseq1 == "T") {
-                        $fY += 128 / $fTtt;
-                    }
-                    if($sSubseq1 == "G" || $sSubseq1 == "T") {
-                        $fX += 128 / $fTtt;
-                    }
-                }
-                $fX += $iHPos;
+                list($iColumn, $iRow) = $this->chaosGame->cell($sSeq);
+                $fX = $iHPos + $iColumn * $iCellSize;
                 $fX2 = $fX + $iFrameLength;
-                $fY += $iVPos;
+                $fY = $iVPos + $iRow * $iCellSize;
                 $fY2 = $fY + $iFrameLength;
 
                 $oIm->rect($fX,$fY,$fX2,$fY2,$aThecolor[$fVal]);
