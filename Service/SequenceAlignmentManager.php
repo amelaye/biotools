@@ -62,7 +62,8 @@ class SequenceAlignmentManager
      * Local alignment of two DNA sequences
      * @param       string      $sSequenceA     First sequence to analyse
      * @param       string      $sSequenceB     Second sequence to analyse
-     * @return      array       ["seqa" => ..., "seqb" => ...], the unaligned ends being shown against gaps
+     * @return      array       seqa and seqb, the unaligned ends being shown in lower case against gaps, with the score
+     *                          and the 1-based positions of the aligned region (see showWithFlanks)
      * @throws      \Exception
      */
     public function alignDNA($sSequenceA, $sSequenceB)
@@ -79,7 +80,8 @@ class SequenceAlignmentManager
      * Local alignment of two proteins, scored with the PAM250 matrix
      * @param       string      $sSequenceA
      * @param       string      $sSequenceB
-     * @return      array       ["seqa" => ..., "seqb" => ...], the unaligned ends being shown against gaps
+     * @return      array       seqa and seqb, the unaligned ends being shown in lower case against gaps, with the score
+     *                          and the 1-based positions of the aligned region (see showWithFlanks)
      * @throws      \Exception
      */
     public function alignProteins($sSequenceA, $sSequenceB)
@@ -125,18 +127,21 @@ class SequenceAlignmentManager
 
     /**
      * A local alignment only covers the best matching region: the sequence parts before and
-     * after it are written around it, facing gaps, so that the whole sequences stay readable
+     * after it are written around it, facing gaps, so that the whole sequences stay readable.
+     * They are written in lower case, to tell them from the aligned region (upper case): they
+     * are not aligned, and the "-" facing them are padding, not indels.
      * @param   PairwiseAlignmentResult     $oResult
      * @param   string                      $sSequenceA
      * @param   string                      $sSequenceB
-     * @return  array
+     * @return  array       seqa, seqb, the score, and the start and end of the aligned region
+     *                      in each sequence (1-based, end included)
      */
     private function showWithFlanks(PairwiseAlignmentResult $oResult, string $sSequenceA, string $sSequenceB) : array
     {
-        $sLeftA  = substr($sSequenceA, 0, $oResult->getFirstStart());
-        $sLeftB  = substr($sSequenceB, 0, $oResult->getSecondStart());
-        $sRightA = substr($sSequenceA, $oResult->getFirstEnd() + 1);
-        $sRightB = substr($sSequenceB, $oResult->getSecondEnd() + 1);
+        $sLeftA  = strtolower(substr($sSequenceA, 0, $oResult->getFirstStart()));
+        $sLeftB  = strtolower(substr($sSequenceB, 0, $oResult->getSecondStart()));
+        $sRightA = strtolower(substr($sSequenceA, $oResult->getFirstEnd() + 1));
+        $sRightB = strtolower(substr($sSequenceB, $oResult->getSecondEnd() + 1));
 
         $iLeft  = max(strlen($sLeftA), strlen($sLeftB));
         $iRight = max(strlen($sRightA), strlen($sRightB));
@@ -146,6 +151,11 @@ class SequenceAlignmentManager
                 . str_pad($sRightA, $iRight, "-", STR_PAD_RIGHT),
             "seqb" => str_pad($sLeftB, $iLeft, "-", STR_PAD_LEFT) . $oResult->getAlignedSecond()
                 . str_pad($sRightB, $iRight, "-", STR_PAD_RIGHT),
+            "score"  => $oResult->getScore(),
+            "startA" => $oResult->getFirstStart() + 1,
+            "endA"   => $oResult->getFirstEnd() + 1,
+            "startB" => $oResult->getSecondStart() + 1,
+            "endB"   => $oResult->getSecondEnd() + 1,
         ];
     }
 
@@ -160,7 +170,9 @@ class SequenceAlignmentManager
     {
         $sCompare = "";
         for($i = 0; $i < strlen($sSeqa); $i++) {
-            if(substr($sSeqa,$i,1) == substr($sSeqb,$i,1)) {
+            $sBaseA = substr($sSeqa, $i, 1);
+            // the lower case flanks of a local alignment are not aligned: no bar under them
+            if($sBaseA == substr($sSeqb,$i,1) && !ctype_lower($sBaseA)) {
                 $sCompare .= "|";
             } else {
                 $sCompare.=" ";

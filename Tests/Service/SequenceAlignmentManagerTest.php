@@ -72,7 +72,10 @@ class SequenceAlignmentManagerTest extends TestCase
     {
         $service = new SequenceAlignmentManager($this->matrixMock);
 
-        $this->assertEquals(["seqa" => "ACGTACGT", "seqb" => "ACGTACGT"], $service->alignDNA("acgtacgt", "ACGTACGT"));
+        $this->assertEquals(
+            ["seqa" => "ACGTACGT", "seqb" => "ACGTACGT", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8],
+            $service->alignDNA("acgtacgt", "ACGTACGT")
+        );
     }
 
     /**
@@ -85,12 +88,12 @@ class SequenceAlignmentManagerTest extends TestCase
 
         // best local region: the whole of the shorter sequence (8 matches x 2 = 16)
         $this->assertEquals(
-            ["seqa" => "ACGTACGTACGT", "seqb" => "ACGTACGT----"],
+            ["seqa" => "ACGTACGTacgt", "seqb" => "ACGTACGT----", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8],
             $service->alignDNA("ACGTACGTACGT", "ACGTACGT")
         );
         // the 7 leading bases of B have no counterpart in A, as in the legacy minitool output
         $this->assertEquals(
-            ["seqa" => "-------GGAGTGAGGGGAGC", "seqb" => "CGCATGCGGAGTGAGGGGAGC"],
+            ["seqa" => "-------GGAGTGAGGGGAGC", "seqb" => "cgcatgcGGAGTGAGGGGAGC", "score" => 28, "startA" => 1, "endA" => 14, "startB" => 8, "endB" => 21],
             $service->alignDNA("GGAGTGAGGGGAGC", "CGCATGCGGAGTGAGGGGAGC")
         );
     }
@@ -114,7 +117,12 @@ class SequenceAlignmentManagerTest extends TestCase
         $service = new SequenceAlignmentManager($this->matrixMock, $oAligner);
 
         // both sides have a 2-base flank before and after the aligned region
-        $this->assertEquals(["seqa" => "TTACGTAA", "seqb" => "GGACGTCC"], $service->alignDNA("ttacgtaa", "ggacgtcc"));
+        $aResult = $service->alignDNA("ttacgtaa", "ggacgtcc");
+        $this->assertSame("ttACGTaa", $aResult["seqa"]);
+        $this->assertSame("ggACGTcc", $aResult["seqb"]);
+        $this->assertSame(8, $aResult["score"]);
+        // the aligned region is bases 3 to 6 of each sequence
+        $this->assertSame([3, 6, 3, 6], [$aResult["startA"], $aResult["endA"], $aResult["startB"], $aResult["endB"]]);
     }
 
     public function testAlignDNAPadsFlanksOfDifferentLengths()
@@ -126,7 +134,9 @@ class SequenceAlignmentManagerTest extends TestCase
         $service = new SequenceAlignmentManager($this->matrixMock, $oAligner);
 
         // left: "T" vs "GGG" (right-aligned), right: "AA" vs "" (left-aligned)
-        $this->assertEquals(["seqa" => "--TACGTAA", "seqb" => "GGGACGT--"], $service->alignDNA("TACGTAA", "GGGACGT"));
+        $aResult = $service->alignDNA("TACGTAA", "GGGACGT");
+        $this->assertSame("--tACGTaa", $aResult["seqa"]);
+        $this->assertSame("gggACGT--", $aResult["seqb"]);
     }
 
     public function testAlignDNARejectsNonDnaSequence()
@@ -144,7 +154,11 @@ class SequenceAlignmentManagerTest extends TestCase
     {
         $service = new SequenceAlignmentManager($this->matrixMock);
 
-        $this->assertEquals(["seqa" => "MKVL", "seqb" => "MKVL"], $service->alignProteins("MKVL", "mkvl"));
+        $aResult = $service->alignProteins("MKVL", "mkvl");
+        $this->assertSame("MKVL", $aResult["seqa"]);
+        $this->assertSame("MKVL", $aResult["seqb"]);
+        $this->assertSame(1, $aResult["startA"]);
+        $this->assertSame(4, $aResult["endA"]);
     }
 
     public function testAlignProteinsDelegatesWithPam250AndGapPenalty()
@@ -157,7 +171,9 @@ class SequenceAlignmentManagerTest extends TestCase
 
         $service = new SequenceAlignmentManager($this->matrixMock, $oAligner);
 
-        $this->assertEquals(["seqa" => "MK", "seqb" => "MK"], $service->alignProteins("MK", "MK"));
+        $aResult = $service->alignProteins("MK", "MK");
+        $this->assertSame("MK", $aResult["seqa"]);
+        $this->assertSame(14, $aResult["score"]);
     }
 
     public function testCompareAlignment()
@@ -171,6 +187,18 @@ class SequenceAlignmentManagerTest extends TestCase
         $testFunction = $service->compareAlignment($seqa, $seqb);
 
         $this->assertEquals($aExpected, $testFunction);
+    }
+
+    /**
+     * "TTACGTAA" / "GGACGTCC" only aligns ACGT: the lower case flanks are neither aligned nor
+     * compared, even where they hold the same base (the two "a" on the right)
+     */
+    public function testCompareAlignmentIgnoresTheFlanks()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+
+        $this->assertSame("  ||||  ", $service->compareAlignment("ttACGTaa", "ttACGTaa"));
+        $this->assertSame("  ||||  ", $service->compareAlignment("ttACGTaa", "ggACGTaa"));
     }
 
     public function testCompareAlignmentIdentical()
