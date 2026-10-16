@@ -597,6 +597,32 @@ class ProteinPropertiesManagerTest extends TestCase
     }
 
     /**
+     * A residue the weight table does not hold is named in the message, which is not wrapped in a trace
+     */
+    public function testProteinMolecularWeightNamesTheSymbolWithoutWeight()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), ["A" => 1, "J" => 2]);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The protein holds a symbol with no molecular weight (J).');
+        $service->proteinMolecularWeight($aContent);
+    }
+
+    /**
+     * The errors of the isoelectric point keep their type and their message
+     */
+    public function testProteinIsoelectricPointOfAnEmptyProteinKeepsTheMessage()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service->setPk("EMBOSS");
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The protein is empty.');
+        $service->proteinIsoelectricPoint(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0));
+    }
+
+    /**
      * An empty chain has zero residues and zero mass: it must not gain a spurious free
      * water molecule (a "phantom" 18.02 for a sequence that has nothing in it).
      */
@@ -712,6 +738,29 @@ class ProteinPropertiesManagerTest extends TestCase
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
 
         $this->assertSame([["N", "P"], ["Q", "P"], ["H", "P"], ["D", "-"], ["E", "-"]], $service->proteinAminoacidNature2("NQHDE", $aColors));
+    }
+
+    /**
+     * B, Z, J, X, U, O, the stop and lower case letters are not dropped: unclassified residues keep their
+     * place with the "other" colour (black when the colours have none), lower case ones are classified
+     */
+    public function testAminoacidNaturesKeepEveryResidue()
+    {
+        $aColors = [
+            "polar" => "P", "nonpolar" => "n", "charged" => "c", "hydrophobic" => "h",
+            "positively_charged" => "+", "negatively_charged" => "-", "other" => "?",
+        ];
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $aNature1 = $service->proteinAminoacidNature1("aXk*U", $aColors);
+        $this->assertSame([["a", "n"], ["X", "?"], ["k", "c"], ["*", "?"], ["U", "?"]], $aNature1);
+
+        $aNature2 = $service->proteinAminoacidNature2("aXk*U", $aColors);
+        $this->assertSame([["a", "n"], ["X", "?"], ["k", "+"], ["*", "?"], ["U", "?"]], $aNature2);
+
+        unset($aColors["other"]);
+        $this->assertSame([["Z", "black"]], $service->proteinAminoacidNature1("Z", $aColors));
+        $this->assertSame([["Z", "black"]], $service->proteinAminoacidNature2("Z", $aColors));
     }
 
     public function testProteinAminoacidNature2()

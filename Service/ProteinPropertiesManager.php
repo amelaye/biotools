@@ -3,7 +3,7 @@
  * Proteins properties Functions
  * Inspired by BioPHP's project biophp.org
  * Created 24 february 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -134,18 +134,14 @@ class ProteinPropertiesManager
      * pK set chosen with setPk(), with two decimals.
      * @param       array       $aAminoacidContent
      * @return      float
-     * @throws      \Exception
+     * @throws      \InvalidArgumentException  When the protein is empty or the pK set lacks a group
      */
     public function proteinIsoelectricPoint($aAminoacidContent)
     {
-        try {
-            return round(
-                $this->proteinProperties->isoelectricPoint($this->sequenceFromContent($aAminoacidContent), $this->aPk),
-                2
-            );
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return round(
+            $this->proteinProperties->isoelectricPoint($this->sequenceFromContent($aAminoacidContent), $this->aPk),
+            2
+        );
     }
 
     /**
@@ -187,17 +183,13 @@ class ProteinPropertiesManager
      * @param       array       $aAminoacidContent
      * @param       int|float   $iPH
      * @return      float
-     * @throws      \Exception
+     * @throws      \InvalidArgumentException  When the protein is empty or the pK set lacks a group
      */
     public function proteinCharge($aAminoacidContent, $iPH)
     {
-        try {
-            return $this->proteinProperties->netCharge(
-                $this->sequenceFromContent($aAminoacidContent), (float) $iPH, $this->aPk
-            );
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return $this->proteinProperties->netCharge(
+            $this->sequenceFromContent($aAminoacidContent), (float) $iPH, $this->aPk
+        );
     }
 
 
@@ -320,41 +312,53 @@ class ProteinPropertiesManager
             $this->proteinManager->setProtein($oProtein);
             $aWeights = $this->proteinManager->molwt();
             if ($aWeights === false) {
-                throw new \InvalidArgumentException("The protein holds a symbol with no molecular weight.");
+                $aUnknown = [];
+                foreach ($aAminoacidContent as $sAminoAcid => $iCount) {
+                    if ($iCount > 0 && $sAminoAcid !== "*" && !isset($this->aAminos[$sAminoAcid])) {
+                        $aUnknown[] = $sAminoAcid;
+                    }
+                }
+                throw new \InvalidArgumentException(sprintf(
+                    'The protein holds a symbol with no molecular weight%s.',
+                    $aUnknown === [] ? '' : ' (' . implode(', ', $aUnknown) . ')'
+                ));
             }
 
             return $aWeights[1];
+        } catch (\InvalidArgumentException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
     }
 
     /**
-     * Displays the colored aminoacids
-     * @param       string      $sSequence
-     * @param       array       $aColors
-     * @return      array
-     * @throws      \Exception
+     * Displays the colored aminoacids (type 1): the classes of the original minitool.
+     * Nonpolar (G A P V I L F M), polar (S C T N Q H Y W), charged (D E K R); the usual textbook
+     * tables differ on a few residues (Cys and Trp are often listed as nonpolar, His as basic).
+     * A residue outside these classes (B, Z, J, X, U, O, the stop, any other symbol) is not left out:
+     * it keeps its place with the colour $aColors["other"] ("black" when it is missing). The
+     * residues are classified whatever their case.
+     * @param   string      $sSequence
+     * @param   array       $aColors
+     * @return  array       [residue, colour] for every residue
+     * @throws  \Exception
      */
     public function proteinAminoacidNature1($sSequence, $aColors)
     {
         try {
             $aResult = [];
             for($i = 0; $i < strlen($sSequence); $i++) {
-                // non-polar aminoacids, yellow
-                if (strpos(" GAPVILFM", substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["nonpolar"]];
-                    continue;
-                }
-                // polar aminoacids, magenta
-                if (strpos(" SCTNQHYW", substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["polar"]];
-                    continue;
-                }
-                // charged aminoacids, red
-                if (strpos(" DEKR", substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["charged"]];
-                    continue;
+                $sResidue = substr($sSequence, $i, 1);
+                $sUpper = strtoupper($sResidue);
+                if (strpos(" GAPVILFM", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["nonpolar"]];
+                } elseif (strpos(" SCTNQHYW", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["polar"]];
+                } elseif (strpos(" DEKR", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["charged"]];
+                } else {
+                    $aResult[] = [$sResidue, $aColors["other"] ?? "black"];
                 }
             }
             return $aResult;
@@ -364,10 +368,16 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Displays the colored aminoacids (tyoe 2)
+     * Displays the colored aminoacids (type 2): groups in the style of Taylor's Venn diagram.
+     * G A S T (small: the key "nonpolar" of the colours), C V I L P F Y M W (hydrophobic or aromatic:
+     * the key "hydrophobic"; Y and W are only weakly hydrophobic), N Q H (polar), D E (negatively
+     * charged acids; Asp is the acid and Asn the neutral amide), K R (positively charged). S and T
+     * are polar hydroxyl residues that this grouping lists with the small ones.
+     * A residue outside these groups keeps its place with the colour $aColors["other"] ("black" when
+     * it is missing). The residues are classified whatever their case.
      * @param   string      $sSequence
      * @param   array       $aColors
-     * @return  array
+     * @return  array       [residue, colour] for every residue
      * @throws  \Exception
      */
     public function proteinAminoacidNature2($sSequence, $aColors)
@@ -375,30 +385,20 @@ class ProteinPropertiesManager
         try {
             $aResult = [];
             for ($i = 0; $i < strlen($sSequence); $i++) {
-                // Small nonpolar (yellow)
-                if (strpos(" GAST",substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["nonpolar"]];
-                    continue;
-                }
-                // Small hydrophobic (green)
-                if (strpos(" CVILPFYMW",substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["hydrophobic"]];
-                    continue;
-                }
-                // Polar
-                if (strpos(" NQH",substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["polar"]];
-                    continue;
-                }
-                // Negatively charged
-                if (strpos(" DE",substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["negatively_charged"]];
-                    continue;
-                }
-                // Positively charged
-                if (strpos(" KR",substr($sSequence,$i,1)) > 0) {
-                    $aResult[] = [substr($sSequence,$i,1), $aColors["positively_charged"]];
-                    continue;
+                $sResidue = substr($sSequence, $i, 1);
+                $sUpper = strtoupper($sResidue);
+                if (strpos(" GAST", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["nonpolar"]];
+                } elseif (strpos(" CVILPFYMW", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["hydrophobic"]];
+                } elseif (strpos(" NQH", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["polar"]];
+                } elseif (strpos(" DE", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["negatively_charged"]];
+                } elseif (strpos(" KR", $sUpper) > 0) {
+                    $aResult[] = [$sResidue, $aColors["positively_charged"]];
+                } else {
+                    $aResult[] = [$sResidue, $aColors["other"] ?? "black"];
                 }
             }
             return $aResult;
