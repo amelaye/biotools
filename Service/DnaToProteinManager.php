@@ -105,10 +105,10 @@ class DnaToProteinManager
                 $aFrames[2] = $this->translateDNAToProteinCustomcode(substr($sSequence, 1,floor((strlen($sSequence)-1)/3)*3),$sMycode);
                 $aFrames[3] = $this->translateDNAToProteinCustomcode(substr($sSequence, 2,floor((strlen($sSequence)-2)/3)*3),$sMycode);
             }
-            // Translate the complementary sequence
+            // Translate the opposite strand (reverse complement)
             if ($iFrames > 3) {
-                // Get complementary
-                $this->sRvSequence = $this->compDNA($sSequence);
+                // Get the reverse complement : the opposite strand is read 5' to 3', i.e. backwards
+                $this->sRvSequence = $this->revCompDNA($sSequence);
                 $aFrames[4] = $this->translateDNAToProteinCustomcode(substr($this->sRvSequence, 0, floor(strlen($this->sRvSequence)/3)*3),$sMycode);
                 $aFrames[5] = $this->translateDNAToProteinCustomcode(substr($this->sRvSequence, 1,floor((strlen($this->sRvSequence)-1)/3)*3),$sMycode);
                 $aFrames[6] = $this->translateDNAToProteinCustomcode(substr($this->sRvSequence, 2,floor((strlen($this->sRvSequence)-2)/3)*3),$sMycode);
@@ -137,10 +137,10 @@ class DnaToProteinManager
                 $aFrames[2] = $this->translateDNAToProtein(substr($sSequence, 1,floor((strlen($sSequence)-1)/3)*3), $sGeneticCode);
                 $aFrames[3] = $this->translateDNAToProtein(substr($sSequence, 2,floor((strlen($sSequence)-2)/3)*3), $sGeneticCode);
             }
-            // Translate the complementary sequence
+            // Translate the opposite strand (reverse complement)
             if ($iFrames > 3){
-                // Get complementary
-                $this->sRvSequence = $this->compDNA($sSequence);
+                // Get the reverse complement : the opposite strand is read 5' to 3', i.e. backwards
+                $this->sRvSequence = $this->revCompDNA($sSequence);
                 //calculate frames 4-6
                 $aFrames[4] = $this->translateDNAToProtein(substr($this->sRvSequence, 0,floor(strlen($this->sRvSequence)/3)*3), $sGeneticCode);
                 $aFrames[5] = $this->translateDNAToProtein(substr($this->sRvSequence, 1,floor((strlen($this->sRvSequence)-1)/3)*3), $sGeneticCode);

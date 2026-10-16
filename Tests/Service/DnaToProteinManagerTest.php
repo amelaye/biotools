@@ -132,9 +132,9 @@ class DnaToProteinManagerTest extends TestCase
             1 => "GVRGAVGPRWRPPRDRWATRE*GEQLXQDXXRRGTGGRRGSEGSSWAKMAAAEGPVXDXGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVXDAGV",
             2 => "E*GEQLXQDXXRRGTGGRRGSEGSSWAKMAAAEGPVXDGGVRGAVGPRWRPPRDRWATAE*GEQLXQDXXRRGTGGRRGVRGAVGPRWRPPRDRWATRE",
             3 => "SEGSSWAKMAAAEGPVXDAGVRGAVGPRWRPPRDRWATGE*GEQLXQDXXRRGTGGRRRSEGSSWAKMAAAEGPVXDGE*GEQLXQDXXRRGTGGRRGS",
-            4 => "PHSPRQPGSTAXXSLATRCALTPLVNPVLPPAAPWPPAAPSLPSSTRFYRRRLPXHPLPPHSPRQPGSTAXXSLATRCPSLPSSTRFYRRRLPXHPLRPH",
-            5 => "LTPLVNPVLPPAAPWPPAAPSLPSSTRFYRRRLPXHPLPPHSPRQPGSTAXXSLATRCRLTPLVNPVLPPAAPWPPAAPHSPRQPGSTAXXSLATRCAL",
-            6 => "SLPSSTRFYRRRLPXHPLRPHSPRQPGSTAXXSLATRCPLTPLVNPVLPPAAPWPPAAASLPSSTRFYRRRLPXHPLPLTPLVNPVLPPAAPWPPAAPS",
+            4 => "HSRVAHRSLXXRHLXPTAPLTPRRPPVPRRPPSWPNCSPHSAVAHRSLXXRHLXPTAPLTPPSPTGPSAAAILAQLLPSLPRRPPVPRRPPSWPNCSPHS",
+            5 => "TPASPTGPSAAAILAQLLPSLPVAHRSLXXRHLXPTAPLTPPSPTGPSAAAILAQLLPSLPRRPPVPRRPPSWPNCSPHSRVAHRSLXXRHLXPTAPLT",
+            6 => "LPRRPPVPRRPPSWPNCSPHSPSPTGPSAAAILAQLLPSLRRRPPVPRRPPSWPNCSPHSPVAHRSLXXRHLXPTAPLTPASPTGPSAAAILAQLLPSL",
         ];
 
         $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
@@ -200,6 +200,23 @@ class DnaToProteinManagerTest extends TestCase
         $this->assertEquals($aFrames, $testFunction);
     }
 
+    /**
+     * The opposite strand is read 5' to 3' : frames 4 to 6 translate the REVERSE complement.
+     * ATGAAATAG -> reverse complement CTATTTCAT : CTA TTT CAT = L F H (frame 4),
+     * TAT TTC = Y F (frame 5), ATT TCA = I S (frame 6). The complement alone (TACTTTATC)
+     * would give Y F I, which no ribosome reads.
+     */
+    public function testDefinedTreatmentReadsTheOppositeStrandBackwards()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        $aFrames = $service->definedTreatment(6, "standard", "ATGAAATAG");
+
+        $this->assertSame("MK*", $aFrames[1]);
+        $this->assertSame("LFH", $aFrames[4]);
+        $this->assertSame("YF", $aFrames[5]);
+        $this->assertSame("IS", $aFrames[6]);
+    }
+
     public function testDefinedTreatmentMore3Frames()
     {
         $iFrames = "6";
@@ -217,9 +234,9 @@ class DnaToProteinManagerTest extends TestCase
           1 => "GVRGAVGPRWRPPRDRWATRECGEQLGQDGGRRGTGGRRGSEGSSWAKMAAAEGPVGDGGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVGDAGV",
           2 => "ECGEQLGQDGGRRGTGGRRGSEGSSWAKMAAAEGPVGDGGVRGAVGPRWRPPRDRWATAECGEQLGQDGGRRGTGGRRGVRGAVGPRWRPPRDRWATRE",
           3 => "SEGSSWAKMAAAEGPVGDAGVRGAVGPRWRPPRDRWATGECGEQLGQDGGRRGTGGRRRSEGSSWAKMAAAEGPVGDGECGEQLGQDGGRRGTGGRRGS",
-          4 => "PHSPRQPGSTAGGSLATRCALTPLVNPVLPPAAPWPPAAPSLPSSTRFYRRRLPGHPLPPHSPRQPGSTAGGSLATRCPSLPSSTRFYRRRLPGHPLRPH",
-          5 => "LTPLVNPVLPPAAPWPPAAPSLPSSTRFYRRRLPGHPLPPHSPRQPGSTAGGSLATRCRLTPLVNPVLPPAAPWPPAAPHSPRQPGSTAGGSLATRCAL",
-          6 => "SLPSSTRFYRRRLPGHPLRPHSPRQPGSTAGGSLATRCPLTPLVNPVLPPAAPWPPAAASLPSSTRFYRRRLPGHPLPLTPLVNPVLPPAAPWPPAAPS",
+          4 => "HSRVAHRSLGGRHLGPTAPLTPRRPPVPRRPPSWPNCSPHSAVAHRSLGGRHLGPTAPLTPPSPTGPSAAAILAQLLPSLPRRPPVPRRPPSWPNCSPHS",
+          5 => "TPASPTGPSAAAILAQLLPSLPVAHRSLGGRHLGPTAPLTPPSPTGPSAAAILAQLLPSLPRRPPVPRRPPSWPNCSPHSRVAHRSLGGRHLGPTAPLT",
+          6 => "LPRRPPVPRRPPSWPNCSPHSPSPTGPSAAAILAQLLPSLRRRPPVPRRPPSWPNCSPHSPVAHRSLGGRHLGPTAPLTPASPTGPSAAAILAQLLPSL",
         ];
 
         $this->assertEquals($aFrames, $testFunction);
@@ -350,10 +367,11 @@ class DnaToProteinManagerTest extends TestCase
     {
         $sSequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGC";
 
-        $sExpected = "CCTCACTCCCCTCGTCAACCCGGTTCTACCGCCGGCGGCTCCCTGGCCACCCGCTGCG  100\n"
-            . "P  H  S  P  R  Q  P  G  S  T  A  G  G  S  L  A  T  R  C  \n"
-            . " L  T  P  L  V  N  P  V  L  P  P  A  A  P  W  P  P  A  A  \n"
-            . "  S  L  P  S  S  T  R  F  Y  R  R  R  L  P  G  H  P  L  \n\n";
+        // the opposite strand is shown read 5' to 3' : the reverse complement, translated frame by frame
+        $sExpected = "GCGTCGCCCACCGGTCCCTCGGCGGCCGCCATCTTGGCCCAACTGCTCCCCTCACTCC  100\n"
+            . "A  S  P  T  G  P  S  A  A  A  I  L  A  Q  L  L  P  S  L  \n"
+            . " R  R  P  P  V  P  R  R  P  P  S  W  P  N  C  S  P  H  S  \n"
+            . "  V  A  H  R  S  L  G  G  R  H  L  G  P  T  A  P  L  T  \n\n";
 
         $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
         // sRvSequence is only populated as a side effect of definedTreatment()/customTreatment()
