@@ -434,7 +434,8 @@ class DistanceAmongSequencesManager
                     }
                     $fMax = max($fXKey1,$fXKey2);
                     $fMin = min($fXKey1,$fXKey2);
-                    $fXmax = $fMax+(($fVal2-($fMax))/2);
+                    // UPGMA: a node sits at half the distance of the merge, whatever the height of its children
+                    $fXmax = $fVal2 / 2;
                     $fVal4 = log($fXmax+1)*$iF;
                     $fVal4max = log($fMax+1)*$iF;
                     $fVal4min = log($fMin+1)*$iF;

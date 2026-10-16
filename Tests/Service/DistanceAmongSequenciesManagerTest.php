@@ -2165,6 +2165,28 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $this->assertEquals([2 => ["(0,1)" => 7]], $reduced);
     }
 
+    /**
+     * UPGMA is ultrametric: d(0,1) = 0.2 and d(0,2) = d(1,2) = 1.0 give a root at 1.0 / 2 = 0.5,
+     * not at the 0.55 of (0.1 + 1.0) / 2. Horizontal position of a node = ln(height + 1) * 600 + 20,
+     * 263.28 for 0.5 and 77.19 for the node (0,1) at 0.1, worked out by hand.
+     */
+    public function testCreateDendrogramRootIsAtHalfTheMergeDistance()
+    {
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $service->createDendrogram("0,1,2", [0 => [1 => 0.2], "(0,1)" => [2 => 1.0]], $dendogramFile, "pearson", 4);
+        $content = file_get_contents($dendogramFile);
+        unlink($dendogramFile);
+
+        // the vertical bar joining (0,1) and 2 sits at the root height
+        $this->assertMatchesRegularExpression('/<line x1="263\.28" y1="[\d.]+" x2="263\.28" y2="[\d.]+"/', $content);
+        $this->assertStringNotContainsString('x1="282.95"', $content);
+        // the vertical bar joining 0 and 1 sits at 0.1
+        $this->assertMatchesRegularExpression('/<line x1="77\.19" y1="[\d.]+" x2="77\.19" y2="[\d.]+"/', $content);
+    }
+
     public function testCreateDendrogram()
     {
         $oligoMock = new OligosManager($this->apiNucleoMock);
