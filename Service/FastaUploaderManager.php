@@ -63,7 +63,22 @@ class FastaUploaderManager
     }
 
     /**
-     * Validates the sequence in the file
+     * Keeps the bases of a FASTA text: the header lines (">...") and all the white space,
+     * line breaks included, are removed. Several records are concatenated.
+     * @param   string  $sText
+     * @return  string
+     */
+    private function cleanFastaSequence(string $sText) : string
+    {
+        $sText = preg_replace('/^>.*$/m', '', $sText);
+
+        return preg_replace('/\s+/', '', $sText);
+    }
+
+    /**
+     * Validates the sequence in the file, once cleaned of its header and white space, then counts
+     * the bases in its first $iLength characters. A N is an unknown base: it is accepted, and not
+     * counted as A, C, G or T.
      * @param   string  $sVar
      * @param   int     $iA
      * @param   int     $iG
@@ -75,8 +90,9 @@ class FastaUploaderManager
     public function checkNucleotidSequence($sVar, &$iA, &$iG, &$iT, &$iC, $iLength)
     {
         if($iLength != '') {
-            if($this->isValidSequence($sVar)) {
-                $sUpper = strtoupper(substr($sVar, 0, (int) $iLength));
+            $sClean = $this->cleanFastaSequence((string) $sVar);
+            if(preg_match('/^[ACGTN]*$/i', $sClean) === 1) {
+                $sUpper = strtoupper(substr($sClean, 0, (int) $iLength));
                 $iA += substr_count($sUpper, 'A');
                 $iT += substr_count($sUpper, 'T');
                 $iC += substr_count($sUpper, 'C');

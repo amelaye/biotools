@@ -82,6 +82,34 @@ class FastaUploaderManagerTest extends TestCase
         $this->assertEquals(2, $c);
     }
 
+    /**
+     * The header, the line breaks and the white space do not make the file invalid, and the
+     * count covers the first characters of the bases, not of the raw text
+     */
+    public function testCheckNucleotidSequenceIgnoresHeaderAndLineBreaks()
+    {
+        $a = $g = $t = $c = 0;
+
+        $service = new FastaUploaderManager();
+        $service->checkNucleotidSequence(">seq1 test\nATGC\r\nATGC \n", $a, $g, $t, $c, 6);
+
+        // the first 6 bases are ATGCAT
+        $this->assertSame([2, 1, 2, 1], [$a, $g, $t, $c]);
+    }
+
+    /**
+     * An unknown base N is accepted and counted as none of A, C, G, T
+     */
+    public function testCheckNucleotidSequenceAcceptsAnN()
+    {
+        $a = $g = $t = $c = 0;
+
+        $service = new FastaUploaderManager();
+        $service->checkNucleotidSequence("ACGTNNAC", $a, $g, $t, $c, 8);
+
+        $this->assertSame([2, 1, 1, 2], [$a, $g, $t, $c]);
+    }
+
     public function testCheckNucleotidSequenceEmptyLength()
     {
         $var = "ATGCX";
