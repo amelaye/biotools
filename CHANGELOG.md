@@ -93,6 +93,15 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
 - **Absorption molaire.** Passer encore la masse moléculaire à `molarAbsorptionCoefficientOfProt()`
   déclenche un avertissement d'obsolescence, car la valeur reçue est désormais le coefficient molaire.
 
+- **Distance de Pearson entre séquences.** Des séries constantes (même de décimaux égaux, pour lesquels
+  BioPHP renvoie un nombre proche de 1 au lieu de lever une erreur) sont refusées par une
+  `DomainException`, comme tout résultat non fini. Il faut au moins 3 mots communs, couvrant au moins
+  la moitié du plus court des deux vecteurs (`MINIMUM_COMMON_WORDS`, `MINIMUM_COMMON_COVERAGE`).
+- **Axe du dendrogramme.** Les graduations sont placées à la hauteur D/2 où les nœuds sont tracés :
+  une fusion à la distance D tombe sur la graduation D. Une légende précise l'échelle (logarithmique).
+- **G+C% de la manipulation de séquence.** Un tiret ou un chiffre est écarté du dénominateur comme un
+  N ; sans aucune base informative (séquence vide, seulement des N), le résultat est `null` et non 0 %.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min

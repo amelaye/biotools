@@ -60,7 +60,7 @@ Cases : `[ ]` à faire, `[x]` fait.
 
 ## Groupe 2 — distances, axe, G+C%
 
-### [ ] J4. Axe du dendrogramme trompeur — Agent
+### [x] J4. Axe du dendrogramme trompeur — Agent
 - **Fichier :** `Service/DistanceAmongSequencesManager.php` (graduations ~l. 387, nœuds ~l. 438).
 - **Problème :** un nœud est tracé à `D/2` (correct pour un UPGMA ultramétrique) mais les graduations
   0,1 à 2,0 se lisent comme des distances : une fusion à D = 1,0 tombe sur la graduation « 0,5 ». D de
@@ -69,7 +69,7 @@ Cases : `[ ]` à faire, `[x]` fait.
   est logarithmique (`log(h+1)`). C'est la note sur l'axe que le plan demandait au point 3.3.
 - **Test :** graduation et position du trait pour la convention choisie.
 
-### [ ] J5. Distance de Pearson sur des vecteurs constants — Vérifié (exécuté)
+### [x] J5. Distance de Pearson sur des vecteurs constants — Vérifié (exécuté)
 - **Fichier :** `Service/DistanceAmongSequencesManager.php` — `pearsonDistance()` (~l. 532).
 - **Problème :** seule `DivisionByZeroError` est interceptée. Mesuré :
   - `[0.1, 0.1, 0.1]` contre `[1, 2, 4]` lève bien l'erreur ;
@@ -86,7 +86,7 @@ Cases : `[ ]` à faire, `[x]` fait.
   tolérance relative dans `PearsonDistance`.
 - **Test :** vecteurs constants non entiers (`[0.7,0.7,0.7]`) ⇒ `DomainException`.
 
-### [ ] J6. Seuil « au moins 2 mots communs » trop faible — Agent
+### [x] J6. Seuil « au moins 2 mots communs » trop faible — Agent
 - **Fichier :** `Service/DistanceAmongSequencesManager.php`.
 - **Problème :** avec 2 mots communs, r vaut toujours ±1 (d = 0 ou 2) : « identiques » sur presque
   aucune information. Les paires sont aussi comparées sur des sous-ensembles de mots différents
@@ -95,7 +95,7 @@ Cases : `[ ]` à faire, `[x]` fait.
 - **Correction :** seuil plus sévère (une fraction des 256 mots, ou un minimum fixe, à choisir et à
   justifier), `DomainException` en dessous ; documenter la limite de comparabilité.
 
-### [ ] J7. G+C% : dénominateur et docblock — Agent
+### [x] J7. G+C% : dénominateur et docblock — Agent
 - **Fichier :** `Service/SequenceManipulationAndDataManager.php`.
 - **Problèmes :**
   - un tiret ou un chiffre change maintenant le dénominateur (`AC-GT` : 40 % devient 50 %), non
