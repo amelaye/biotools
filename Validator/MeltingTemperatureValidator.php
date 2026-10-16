@@ -8,6 +8,7 @@
  */
 namespace Amelaye\BioTools\Validator;
 
+use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
@@ -40,19 +41,10 @@ class MeltingTemperatureValidator extends ConstraintValidator
      * Will count number of A, C, G and T bases in the sequence
      * @param   string  $sSequence  is the sequence
      * @return  int
-     * @throws \Exception
      */
     public function countACGT($sSequence)
     {
-        try {
-            $iCg = substr_count($sSequence,"A")
-                + substr_count($sSequence,"T")
-                + substr_count($sSequence,"G")
-                + substr_count($sSequence,"C");
-            return $iCg;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return GeneticsFunctions::CountACGT((string) $sSequence);
     }
 
     /**
@@ -60,24 +52,9 @@ class MeltingTemperatureValidator extends ConstraintValidator
      * the sequence
      * @param   string  $sSequence
      * @return  int
-     * @throws \Exception
      */
     public function countYRWSKMDVHB($sSequence)
     {
-        try {
-            $iCg = substr_count($sSequence,"Y")
-                + substr_count($sSequence,"R")
-                + substr_count($sSequence,"W")
-                + substr_count($sSequence,"S")
-                + substr_count($sSequence,"K")
-                + substr_count($sSequence,"M")
-                + substr_count($sSequence,"D")
-                + substr_count($sSequence,"V")
-                + substr_count($sSequence,"H")
-                + substr_count($sSequence,"B");
-            return $iCg;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return (new GeneticsFunctions())->CountYRWSKMDVHB((string) $sSequence);
     }
 }

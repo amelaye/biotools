@@ -56,4 +56,15 @@ class MeltingTemperatureTypeTest extends AbstractFormTypeTestCase
     {
         $this->assertTrue($this->submit(['nearestNeighbor' => null, 'basic' => '1', 'cs' => '0', 'cmg' => '0'])->isValid());
     }
+
+    /**
+     * A lower case primer is read as the same primer in upper case
+     */
+    public function testLowerCasePrimerIsAccepted()
+    {
+        $form = $this->submit(['primer' => ' acgtacgtac ']);
+
+        $this->assertTrue($form->isValid());
+        $this->assertSame('ACGTACGTAC', $form->getData()['primer']);
+    }
 }

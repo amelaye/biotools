@@ -12,6 +12,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Amelaye\BioTools\Validator\MeltingTemperature;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -65,7 +67,7 @@ class MeltingTemperatureType extends AbstractType
             CheckboxType::class,
             [
                 'required' => false,
-                'label' => "Basic Tm (Degenerated nucleotides are NOT allowed) : ",
+                'label' => "Nearest-neighbor Tm (SantaLucia 1998), no degenerated nucleotides : ",
             ]
         );
 
@@ -109,11 +111,20 @@ class MeltingTemperatureType extends AbstractType
                     'class' => "form-control"
                 ],
                 'data' => 0,
-                'label' => "Mg2+ concentration (mM) : ",
+                'label' => "Free Mg2+ concentration (mM), not bound to dNTPs : ",
                 'constraints' => [new NotBlank(), new Type('numeric'), new PositiveOrZero()]
             ]
         );
 
+
+        // The validator and BioPHP read upper case bases only: "acgtacgt" is a valid primer
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $aData = $event->getData();
+            if (isset($aData['primer']) && is_string($aData['primer'])) {
+                $aData['primer'] = strtoupper(trim($aData['primer']));
+                $event->setData($aData);
+            }
+        });
 
         $builder->add(
             'submit',

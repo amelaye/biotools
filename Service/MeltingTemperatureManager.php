@@ -73,7 +73,7 @@ class MeltingTemperatureManager
     }
 
     /**
-     * Gets both the upper and lower MWT
+     * Gets both the upper and lower MWT, of a 5'-phosphate strand (see molwt())
      * @param   float   $fUpperMwt
      * @param   float   $fLowerMwt
      * @param   string  $sPrimer
@@ -202,7 +202,8 @@ class MeltingTemperatureManager
     }
 
     /**
-     * Gets the weight of the sequence
+     * Gets the weight of the sequence. BioPHP's convention is a strand with a 5'-phosphate: it is
+     * about 79.98 Da (HPO3) above a synthetic primer, which has a 5'-OH.
      * @param   string      $sSequence       Sequence to analyse
      * @param   string      $sMoltype        DNA or RNA
      * @param   string      $sLimit          "Upperlimit" or "lowerlimit" (string)
