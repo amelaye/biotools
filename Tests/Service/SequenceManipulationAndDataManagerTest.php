@@ -34,8 +34,8 @@ class SequenceManipulationAndDataManagerTest extends TestCase
     }
 
     /**
-     * Over several lines, every line but the last is labelled with the offset of the base
-     * it starts on (0, then 70), and the last one carries the total length.
+     * Over several lines, every line is labelled with the 1-based position of its last base
+     * (70, 140, then the total length on the last one).
      */
     public function testDisplayBothStrandsWrapsEverySeventyBases()
     {
@@ -46,10 +46,10 @@ class SequenceManipulationAndDataManagerTest extends TestCase
 
         // 3 lines per block (forward, second strand, blank) for 3 blocks, plus the final ""
         $this->assertCount(10, $aLines);
-        $this->assertSame("0", substr($aLines[0], strpos($aLines[0], "\t") + 1));
-        $this->assertSame("0", substr($aLines[1], strpos($aLines[1], "\t") + 1));
+        $this->assertSame("70", substr($aLines[0], strpos($aLines[0], "\t") + 1));
+        $this->assertSame("70", substr($aLines[1], strpos($aLines[1], "\t") + 1));
         $this->assertSame("", $aLines[2]);
-        $this->assertSame("70", substr($aLines[3], strpos($aLines[3], "\t") + 1));
+        $this->assertSame("140", substr($aLines[3], strpos($aLines[3], "\t") + 1));
         $this->assertSame("150", substr($aLines[6], strpos($aLines[6], "\t") + 1));
 
         // the two full lines hold exactly 70 bases, the last one the 10 remaining ones
@@ -88,6 +88,18 @@ class SequenceManipulationAndDataManagerTest extends TestCase
     public function testGcContent()
     {
         $this->assertEquals(40, $this->service->gcContent("ATGGCCATTA"));
+    }
+
+    /**
+     * One definition for the whole application: the bases that tell G/C from A/T count, an N does not.
+     * ACGTNNNNNN is 2 G/C out of 4 informative bases (50 %), not 2 out of 10 (20 %); S counts as strong,
+     * W as weak: SSSSAAAAAA is 4 out of 10 (40 %).
+     */
+    public function testGcContentLeavesAmbiguousBasesOut()
+    {
+        $this->assertEquals(50, $this->service->gcContent("ACGTNNNNNN"));
+        $this->assertEquals(40, $this->service->gcContent("SSSSAAAAAA"));
+        $this->assertEquals(0, $this->service->gcContent("NNNN"));
     }
 
     public function testGcContentOfAFullyGcSequence()

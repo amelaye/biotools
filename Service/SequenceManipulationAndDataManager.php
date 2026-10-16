@@ -9,7 +9,7 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
-use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
+use Amelaye\BioPHP\Domain\Sequence\ValueObject\AbstractNucleicSequence;
 
 /**
  * Sequence Manipulation and DATA Functions
@@ -34,11 +34,8 @@ class SequenceManipulationAndDataManager
             $sResult = "";
             $i = 0;
             while ($i < strlen($sSeq)) {
-                if(strlen($sSeq) < ($i+70)) {
-                    $iJ = strlen($sSeq);
-                } else {
-                    $iJ = $i;
-                }
+                // 1-based position of the last base of the line, on every line
+                $iJ = min($i + 70, strlen($sSeq));
                 $sResult .= substr($sSeq,$i,70)."\t$iJ\n";
                 $sResult .= substr($sRevcomp,$i,70)."\t$iJ\n";
                 $sResult .= "\n"; //line break
@@ -51,7 +48,10 @@ class SequenceManipulationAndDataManager
     }
 
     /**
-     * Displays the content of G and C
+     * Displays the content of G and C, as a percentage of the bases that tell G/C from A/T/U
+     * (BioPHP's AbstractNucleicSequence::gcFraction): an N or any ambiguity code mixing both
+     * says nothing about it and is left out, so "ACGTNNNNNN" is 50 %, not 20 %. The Tm and the
+     * skews of biotools use the same definition.
      * An empty sequence has no G+C at all, so it scores 0. Legacy divided by
      * strlen() unguarded: under PHP 5 that warned and yielded INF, but since PHP 8
      * it is a fatal DivisionByZeroError, and the sequence field is emptied by the
@@ -67,7 +67,7 @@ class SequenceManipulationAndDataManager
             if ($iLenSeq === 0) {
                 return 0;
             }
-            $fGcPercent = round(100 * GeneticsFunctions::CountCG($sSeq) / $iLenSeq,2);
+            $fGcPercent = round(100 * AbstractNucleicSequence::gcFraction((string) $sSeq), 2);
             return $fGcPercent;
         } catch (\Exception $e) {
             throw new \Exception($e);
