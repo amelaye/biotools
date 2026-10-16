@@ -204,6 +204,9 @@ class DnaToProteinManager
 
     /**
      * Find ORFs in sequence
+     * In trimmed mode an ORF starts at the first Met of the translated frame: the alternative initiation
+     * codons (GTG, TTG, CTG...), which bacteria also read as Met at the start, are not recognised, so an
+     * ORF beginning with one is trimmed to its first internal Met, or not found.
      * Unit tests OK
      * @param   array       $aFrames
      * @param   int         $iProtsize
@@ -332,6 +335,8 @@ class DnaToProteinManager
      * Translates codon by codon under an NCBI table. An ambiguous codon stands for an amino acid when
      * all the codons it covers read the same (AGR is Arg, YTR is Leu in the standard code), X otherwise;
      * a symbol that is no IUPAC nucleotide gives X. A last incomplete codon is not translated.
+     * Information is lost on purpose: a codon covering Asp and Asn (RAY) or Glu and Gln (SAR) gives X, not
+     * B or Z, and one covering Leu and Ile gives X, not J. The result is never wrong, only less precise.
      * @param   string  $sSequence
      * @param   int     $iTableId
      * @return  string

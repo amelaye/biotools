@@ -76,7 +76,12 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   BioPHP (masses moyennes des acides aminés libres moins 18,0153 par liaison peptidique) :
   la sélénocystéine (U) et la pyrrolysine (O) comptent au lieu de valoir 0, et le stop n'est pas un
   résidu. Les valeurs changent légèrement (+0,17 Da sur un peptide de 17 résidus). Pour B, Z et X,
-  qui couvrent plusieurs acides aminés, la borne haute est renvoyée.
+  qui couvrent plusieurs acides aminés, `proteinMolecularWeight()` renvoie la borne haute et la nouvelle
+  `proteinMolecularWeightRange()` renvoie l'intervalle `["min", "max"]`.
+
+- **Absorption molaire à Cys réduites.** Nouvelle méthode `molarAbsorptionCoefficientOfReducedProt()` :
+  ε = W×5500 + Y×1490, la valeur « toutes les Cys réduites » de ProtParam, borne basse de l'absorption
+  mesurable ; `molarAbsorptionCoefficientOfProt()` reste la valeur à cystines formées.
 
 - **Distance de l'oligo-skew au choix.** `SkewsManager::oligoSkewArrayCalculation()` prend un
   cinquième argument facultatif, `SkewsManager::DISTANCE_PEARSON` (par défaut, comme le legacy) ou
@@ -114,6 +119,10 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   la masse nomme le symbole sans poids. L'étiquette « bp » du CGR ne compte plus les espaces. Une amorce
   en minuscules passée directement au service n'est plus jugée dégénérée ; au moins une méthode de Tm doit
   être cochée dans le formulaire.
+
+- **Score des codes ambigus en alignement d'ADN.** Un N (ou R, Y, S...) en face d'une base qu'il peut
+  représenter vaut 0 au lieu d'une correspondance pleine (+2), grâce à `NucleotideAmbiguityScoring` de
+  BioPHP : deux plages de 50 N ne valent plus 50 vrais appariements, et ne s'alignent plus.
 
 ### Corrigé — plantages (erreur 500)
 

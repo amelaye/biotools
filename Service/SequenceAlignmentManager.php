@@ -13,7 +13,7 @@ use Amelaye\BioPHP\Domain\Alignment\Interfaces\SmithWatermanAlignerInterface;
 use Amelaye\BioPHP\Domain\Alignment\Interfaces\SubstitutionScoringInterface;
 use Amelaye\BioPHP\Domain\Alignment\Result\PairwiseAlignmentResult;
 use Amelaye\BioPHP\Domain\Alignment\Service\Pam250Scoring;
-use Amelaye\BioPHP\Domain\Alignment\Service\SimpleMatchMismatchScoring;
+use Amelaye\BioPHP\Domain\Alignment\Service\NucleotideAmbiguityScoring;
 use Amelaye\BioPHP\Domain\Alignment\Service\SmithWatermanAligner;
 use Amelaye\BioPHP\Domain\Sequence\ValueObject\AminoAcidSequence;
 use Amelaye\BioPHP\Domain\Sequence\ValueObject\DnaSequence;
@@ -27,10 +27,13 @@ class SequenceAlignmentManager
 {
     /**
      * Scores of the legacy minitool: +2 for a match, -1 for a mismatch, -4 per gap in DNA,
-     * PAM250 and -50 per gap in proteins
+     * PAM250 and -50 per gap in proteins. An ambiguity code (N, R, Y...) facing a base it may stand for
+     * scores 0: it neither confirms nor refutes it (the legacy scored N against N as a full match, so
+     * two stretches of 50 N scored as well as 50 real matches).
      */
-    private const DNA_MATCH    = 2;
-    private const DNA_MISMATCH = -1;
+    private const DNA_MATCH     = 2;
+    private const DNA_MISMATCH  = -1;
+    private const DNA_AMBIGUOUS = 0;
     private const DNA_GAP      = -4;
     private const PROTEIN_GAP  = -50;
 
@@ -71,7 +74,7 @@ class SequenceAlignmentManager
         return $this->alignLocally(
             new DnaSequence(strtoupper($sSequenceA)),
             new DnaSequence(strtoupper($sSequenceB)),
-            new SimpleMatchMismatchScoring(self::DNA_MATCH, self::DNA_MISMATCH),
+            new NucleotideAmbiguityScoring(self::DNA_MATCH, self::DNA_MISMATCH, self::DNA_AMBIGUOUS),
             self::DNA_GAP
         );
     }

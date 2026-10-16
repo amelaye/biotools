@@ -445,6 +445,19 @@ class ProteinPropertiesManagerTest extends TestCase
     }
 
     /**
+     * Reduced Cys: W*5500 + Y*1490, whatever the Cys count (hand computed: 5500 + 1490 = 6990)
+     */
+    public function testMolarAbsorptionCoefficientOfReducedProtIgnoresCysteines()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), ["W" => 1, "Y" => 1, "C" => 4]);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEqualsWithDelta(6990, $service->molarAbsorptionCoefficientOfReducedProt($aContent), 0.0001);
+        // two cystines make the oxidised value 250 higher
+        $this->assertEqualsWithDelta(7240, $service->molarAbsorptionCoefficientOfProt($aContent), 0.0001);
+    }
+
+    /**
      * A caller of the former signature (content, molecular weight) is told that the value it gets is
      * now the molar one; the result itself does not depend on the weight
      */
@@ -582,6 +595,36 @@ class ProteinPropertiesManagerTest extends TestCase
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
 
         $this->assertEqualsWithDelta(239.1247, $service->proteinMolecularWeight($aContent), 0.0001);
+    }
+
+    /**
+     * The range hands over both limits BioPHP computes: B, Z and X weigh from the lightest to the
+     * heaviest amino acid they stand for. proteinMolecularWeight() keeps returning the upper one.
+     */
+    public function testProteinMolecularWeightRangeExposesBothLimits()
+    {
+        $oProteinManager = $this->createMock(\Amelaye\BioPHP\Domain\Sequence\Interfaces\ProteinInterface::class);
+        $oProteinManager->method("molwt")->willReturn([1000.5, 1058.25]);
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), ["A" => 1, "X" => 1]);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, null, null, $oProteinManager);
+
+        $this->assertSame(["min" => 1000.5, "max" => 1058.25], $service->proteinMolecularWeightRange($aContent));
+        $this->assertSame(1058.25, $service->proteinMolecularWeight($aContent));
+    }
+
+    /**
+     * Without ambiguity code the two limits are the same number: A + C + D = 89.09 + 121.16 + 133.11 - 2 waters
+     */
+    public function testProteinMolecularWeightRangeIsAPointWithoutAmbiguityCode()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWYUO"), 0), ["*" => 0, "A" => 1, "U" => 1]);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $aRange = $service->proteinMolecularWeightRange($aContent);
+
+        $this->assertEqualsWithDelta(239.1247, $aRange["min"], 0.0001);
+        $this->assertEqualsWithDelta(239.1247, $aRange["max"], 0.0001);
     }
 
     /**

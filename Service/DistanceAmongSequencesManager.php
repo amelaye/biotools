@@ -34,7 +34,10 @@ class DistanceAmongSequencesManager
     public const MINIMUM_COMMON_WORDS = 3;
 
     /**
-     * Part of the shorter vector that the common words must make up for the Pearson distance to be defined
+     * Part of the shorter vector that the common words must make up for the Pearson distance to be defined.
+     * Like MINIMUM_COMMON_WORDS, this threshold is a heuristic without published source: it only keeps a
+     * correlation from being computed on a handful of words. A stricter floor (about 10 words) would be
+     * more demanding; sequences below either threshold raise a DomainException.
      */
     public const MINIMUM_COMMON_COVERAGE = 0.5;
 

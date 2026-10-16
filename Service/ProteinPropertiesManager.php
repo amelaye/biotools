@@ -270,6 +270,18 @@ class ProteinPropertiesManager
     }
 
     /**
+     * Molar absorption coefficient at 280 nm with every Cys reduced (no disulfide bridge), in M-1.cm-1:
+     * epsilon = W*5500 + Y*1490, ProtParam's "assuming all Cys residues are reduced" value. It is the
+     * lower value of the two; the measured one lies between it and molarAbsorptionCoefficientOfProt().
+     * @param   array       $aAminoacidContent
+     * @return  float
+     */
+    public function molarAbsorptionCoefficientOfReducedProt($aAminoacidContent)
+    {
+        return $aAminoacidContent["W"] * 5500 + $aAminoacidContent["Y"] * 1490;
+    }
+
+    /**
      * Mass absorption coefficient at 280 nm: A280 of a 1 g/L solution (epsilon / molecular weight)
      * @param   float       $fMolarAbsorptionCoefficient    In M-1.cm-1
      * @param   float       $fMolWeight                     In Da
@@ -291,13 +303,28 @@ class ProteinPropertiesManager
      * the amino acid table counts, selenocysteine (U) and pyrrolysine (O) included, and Valine too:
      * legacy's loop added "$aminoacid_content["Z"]*99.13" for it, a typo for the "V" key, so legacy
      * dropped Valine from every result. The stop "*" is no residue. B, Z and X stand for several amino
-     * acids, so they span a range: the upper limit is returned.
+     * acids, so they span a range: this method returns the upper limit, kept for the callers that
+     * expect one number; proteinMolecularWeightRange() gives both limits.
      * An empty chain weighs 0.
      * @param   array   $aAminoacidContent      Letter => count
      * @return  float
      * @throws  \Exception
      */
     public function proteinMolecularWeight($aAminoacidContent)
+    {
+        return $this->proteinMolecularWeightRange($aAminoacidContent)["max"];
+    }
+
+    /**
+     * Molecular weight as an interval [min, max], in Da. B (Asp or Asn), Z (Glu or Gln) and X (any
+     * amino acid) stand for several residues: min weighs each of them as the lightest amino acid it can
+     * be, max as the heaviest, so the true mass lies between. Without B, Z or X the two limits are equal.
+     * Same residues, same exceptions as proteinMolecularWeight().
+     * @param   array   $aAminoacidContent      Letter => count
+     * @return  array   ["min" => float, "max" => float]
+     * @throws  \Exception
+     */
+    public function proteinMolecularWeightRange($aAminoacidContent)
     {
         try {
             $sSequence = "";
@@ -324,7 +351,7 @@ class ProteinPropertiesManager
                 ));
             }
 
-            return $aWeights[1];
+            return ["min" => $aWeights[0], "max" => $aWeights[1]];
         } catch (\InvalidArgumentException $e) {
             throw $e;
         } catch (\Exception $e) {

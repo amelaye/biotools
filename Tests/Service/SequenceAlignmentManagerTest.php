@@ -140,6 +140,53 @@ class SequenceAlignmentManagerTest extends TestCase
         $this->assertSame([3, 6, 3, 6], [$aResult["startA"], $aResult["endA"], $aResult["startB"], $aResult["endB"]]);
     }
 
+    /**
+     * An ambiguity code facing a base it may stand for scores 0, not a match: it neither confirms nor
+     * refutes. N/N and R/A are 0, R/C (A or G against C) and A/C are -1, A/A is +2
+     */
+    public function testAlignDNAScoresAmbiguityCodesNeutrally()
+    {
+        $oAligner = $this->createMock(\Amelaye\BioPHP\Domain\Alignment\Interfaces\SmithWatermanAlignerInterface::class);
+        $oAligner->expects($this->once())
+            ->method('align')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                $this->callback(fn($o) => $o->score("A", "A") === 2 && $o->score("A", "C") === -1
+                    && $o->score("N", "N") === 0 && $o->score("N", "A") === 0
+                    && $o->score("R", "A") === 0 && $o->score("R", "C") === -1),
+                -4
+            )
+            ->willReturn(new \Amelaye\BioPHP\Domain\Alignment\Result\PairwiseAlignmentResult("ACGT", "ACGT", 8, 0, 3, 0, 3));
+
+        (new SequenceAlignmentManager($this->matrixMock, $oAligner))->alignDNA("ACGT", "ACGT");
+    }
+
+    /**
+     * Two stretches of N are not an alignment: with N/N at +2 they scored as well as real matches
+     */
+    public function testAlignDNAOfTwoStretchesOfNHasNoSimilarity()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $aResult = $service->alignDNA("NNNNNNNN", "NNNNNNNN");
+
+        $this->assertNull($aResult["score"]);
+        $this->assertStringContainsString("No local similarity", $aResult["message"]);
+    }
+
+    /**
+     * ACNGT against ACAGT: A/A +2, C/C +2, N/A 0, G/G +2, T/T +2 = 8 (with N/A as a mismatch, 7)
+     */
+    public function testAlignDNAKeepsAnAmbiguousBaseInsideAMatchingRegion()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $aResult = $service->alignDNA("ACNGT", "ACAGT");
+
+        $this->assertSame("ACNGT", $aResult["seqa"]);
+        $this->assertSame("ACAGT", $aResult["seqb"]);
+        $this->assertSame(8, $aResult["score"]);
+    }
+
     public function testAlignDNAPadsFlanksOfDifferentLengths()
     {
         $oAligner = $this->createMock(\Amelaye\BioPHP\Domain\Alignment\Interfaces\SmithWatermanAlignerInterface::class);

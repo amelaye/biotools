@@ -68,9 +68,6 @@ tests). `CHANGELOG.md` résume l'ensemble. Ce qui reste ouvert est listé en fin
 - **4.3, 4.4 :** les valeurs changent légèrement (pI par bissection ; masse : +0,17 Da sur 17 résidus).
 
 **Reste ouvert :**
-- Les tables NCBI 24, 25, 26, 29, 30, 32 et 33 manquent peut-être dans les données que bioapi sert à
-  biotools (le chemin par défaut de traduction ne les utilise plus depuis 4.2, mais la liste des codes
-  du formulaire vient de bioapi).
 - Les gabarits et contrôleurs qui consomment les nouvelles clés (`score`, positions, `message` de
   l'alignement ; `oligoCounts()`) sont hors de ce dépôt.
 
@@ -310,9 +307,9 @@ Chaque cas reçoit son test de non-régression.
 | 4.3 | pI (`proteinIsoelectricPoint`, `proteinCharge`) | `ProteinPropertiesCalculator::isoelectricPoint()` et `netCharge()` | Même modèle et mêmes jeux de pK ; la recherche par bisection est plus robuste |
 | 4.4 | Masse moléculaire des protéines (table biotools + 18,02) | `ProteinManager::molwt()` (masses moyennes, eau 18,0153) | Une seule référence ; la sélénocystéine compte aujourd'hui pour 0 dans biotools |
 
-**À vérifier (données bioapi, pas le code) :** il manque peut-être les tables NCBI 24, 25, 26, 29,
-30, 32 et 33 dans les codes génétiques que bioapi sert à biotools. Les relecteurs n'ont lu que la
-fixture de test. La délégation 4.2 rend la question caduque.
+**Données bioapi :** bioapi et BioPHP sont considérés comme stables et ne sont pas modifiés ; la
+question des tables NCBI absentes des codes servis par bioapi est donc retirée du plan (la délégation
+4.2 traduit déjà par les tables NCBI de BioPHP).
 
 ---
 

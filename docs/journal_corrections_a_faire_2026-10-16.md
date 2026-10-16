@@ -82,8 +82,8 @@ Cases : `[ ]` à faire, `[x]` fait.
 - **Correction dans biotools :** vérifier que les deux séries ne sont pas constantes (tolérance
   relative) avant d'appeler BioPHP, sinon `DomainException` comme pour les autres distances indéfinies ;
   refuser aussi tout résultat non fini.
-- **À signaler côté BioPHP (décision de l'auteur, hors périmètre ici) :** variance en deux passages ou
-  tolérance relative dans `PearsonDistance`.
+- **Limite de BioPHP, prise en charge dans biotools :** BioPHP est stable et n'est pas modifié ; les
+  séries constantes sont donc refusées avant l'appel.
 - **Test :** vecteurs constants non entiers (`[0.7,0.7,0.7]`) ⇒ `DomainException`.
 
 ### [x] J6. Seuil « au moins 2 mots communs » trop faible — Agent
@@ -148,15 +148,14 @@ Cases : `[ ]` à faire, `[x]` fait.
 ### [x] J11. Fixture du ver plat — Agent
 - **Fichier :** `Tests/Service/samples/TripletsSpecies.php:521-522` : le 14ᵉ triplet est `ATH` au lieu
   de `AAH` (Asn). Sans effet sur la traduction avec traducteur ; seul le chemin de secours est faussé.
-- **Fait :** fixture corrigée (la fixture de BioPHP avait déjà `AAH`). **À vérifier :** la copie dans bioapi
-  (hors de ce dépôt).
+- **Fait :** fixture corrigée (la fixture de BioPHP avait déjà `AAH`).
 
 ---
 
 ## Mineur et tests manquants
 
-Laissés tels quels, volontairement : N contre N compte comme un match (+2) en ADN et `findORF()` non trimmed
-surligne les segments sans Met (comportements du legacy, documentés) ; l'échelle de l'axe de l'oligo-skew
+Laissés tels quels, volontairement : `findORF()` non trimmed surligne les segments sans Met (comportement du
+legacy, documenté) ; l'échelle de l'axe de l'oligo-skew
 varie d'un graphe à l'autre (les graduations suivent l'échelle). `displayBothStrands()` : seule la
 docblock précise 3'→5' (la sortie n'est pas modifiée).
 
@@ -166,7 +165,7 @@ docblock précise 3'→5' (la sortie n'est pas modifiée).
 - [x] « 7 bp » du CGR compte aussi les espaces et les N (`strlen`).
 - [x] `createGraphForTrinucleo()` instancie son propre calculateur au lieu d'utiliser celui qui est
   injecté.
-- [ ] N contre N compte comme un match (+2) en ADN (héritage legacy, discutable).
+- [x] N contre N compte comme un match (+2) en ADN : corrigé après le débat des agents (`NucleotideAmbiguityScoring`).
 - [x] `compareAlignment()` traite toute minuscule comme un flanc : à documenter (n'alimenter qu'avec la
   sortie de `alignDNA()` / `alignProteins()`).
 - [ ] `findORF()` non trimmed surligne encore les segments sans Met (comportement legacy documenté).
@@ -199,5 +198,5 @@ et nearest-neighbor coché.
 
 - Gabarits et contrôleurs qui consomment les nouvelles clés (`score`, positions, `message`,
   `oligoCounts()`, choix de la distance de l'oligo-skew) et l'appel de l'absorption.
-- Données bioapi : tables NCBI 24, 25, 26, 29, 30, 32, 33, et le triplet du ver plat (J11).
-- Variance de `PearsonDistance` dans BioPHP (J5), décision de l'auteur de BioPHP.
+
+BioPHP et bioapi sont stables et hors périmètre : rien n'y est à faire ni à vérifier.

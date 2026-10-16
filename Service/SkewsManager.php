@@ -380,7 +380,9 @@ class SkewsManager
     }
 
     /**
-     * How many times the default 0 to 0.8 axis of the oligo-skew has to be stretched to hold its values
+     * How many times the default 0 to 0.8 axis of the oligo-skew has to be stretched to hold its values.
+     * The axis therefore changes scale from one graph to another (0.8, 1.6, 2.4...): two graphs are not
+     * comparable by eye, read the tick labels.
      * @param       array       $aOligoSkew     Distances, null where undefined
      * @return      int         1 when everything is under 0.8, else 2, 3...
      */
