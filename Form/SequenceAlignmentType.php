@@ -105,22 +105,34 @@ class SequenceAlignmentType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
             $aData = $event->getData();
 
-            if (isset($aData['sequence'])) {
-                $sSequence = strtoupper($aData['sequence']);
-                $sSequence = preg_replace("/\W|\d/", "", $sSequence); // remove useless characters
-                $sSequence = preg_replace("/U/", "T", $sSequence);    // from RNA to DNA
-                $sSequence = preg_replace("/X/", "N", $sSequence);    // substitute X -> N
-                $aData['sequence'] = $sSequence;
+            foreach (['sequence', 'sequence2'] as $sField) {
+                if (isset($aData[$sField])) {
+                    $aData[$sField] = preg_replace("/\W|\d/", "", strtoupper($aData[$sField])); // remove useless characters
+                }
             }
-            if (isset($aData['sequence2'])) {
-                $sSequence2 = strtoupper($aData['sequence2']);
-                $sSequence2 = preg_replace("/\W|\d/", "", $sSequence2); // remove useless characters
-                $sSequence2 = preg_replace("/U/", "T", $sSequence2);    // from RNA to DNA
-                $sSequence2 = preg_replace("/X/", "N", $sSequence2);    // substitute X -> N
-                $aData['sequence2'] = $sSequence2;
+            // U -> T and X -> N only make sense for nucleic acids: in a protein, U is selenocysteine
+            // and X an unknown residue. Both sequences are aligned together, so one protein is enough
+            // to keep both untouched.
+            if (isset($aData['sequence'], $aData['sequence2'])
+                && self::isNucleic($aData['sequence'])
+                && self::isNucleic($aData['sequence2'])
+            ) {
+                foreach (['sequence', 'sequence2'] as $sField) {
+                    $aData[$sField] = strtr($aData[$sField], ["U" => "T", "X" => "N"]);
+                }
             }
             $event->setData($aData);
         });
+    }
+
+    /**
+     * A sequence is read as a nucleic acid when it only holds ACGTUN and X
+     * @param   string  $sSequence
+     * @return  bool
+     */
+    private static function isNucleic(string $sSequence) : bool
+    {
+        return preg_match('/^[ACGTUNX]*$/', $sSequence) === 1;
     }
 
     /**
