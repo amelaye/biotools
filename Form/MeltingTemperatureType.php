@@ -3,7 +3,7 @@
  * Entity MeltingTemperature for Form
  * Freely inspired by BioPHP's project biophp.org
  * Created 23 february 2019
- * Last modified 24 august 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Form;
@@ -146,8 +146,24 @@ class MeltingTemperatureType extends AbstractType
         $resolver->setDefaults([
             'constraints' => [
                 new Callback(['callback' => [$this, 'validateSaltOrMagnesium']]),
+                new Callback(['callback' => [$this, 'validateAMethodIsChosen']]),
             ]
         ]);
+    }
+
+    /**
+     * Ticking neither Tm method would compute nothing and show an empty page
+     * @param   mixed                       $aObject
+     * @param   ExecutionContextInterface   $context
+     */
+    public static function validateAMethodIsChosen($aObject, ExecutionContextInterface $context)
+    {
+        if (empty($aObject['basic']) && empty($aObject['nearestNeighbor'])) {
+            $context
+                ->buildViolation("Tick at least one of the two Tm methods.")
+                ->atPath('basic')
+                ->addViolation();
+        }
     }
 
     /**

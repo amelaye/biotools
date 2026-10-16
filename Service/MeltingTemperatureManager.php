@@ -3,7 +3,7 @@
  * MeltingTemperatureManager
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -96,7 +96,7 @@ class MeltingTemperatureManager
     public function basicCalculations($bBasic, $sPrimer, &$iCountATGC, &$fTmMin, &$fTmMax)
     {
         if($bBasic) {
-            $iCountATGC = GeneticsFunctions::CountACGT($sPrimer);
+            $iCountATGC = GeneticsFunctions::CountACGT(strtoupper($sPrimer));
             $fTmMin = $this->tmMin($sPrimer);
             $fTmMax = $this->tmMax($sPrimer);
         }
@@ -139,7 +139,7 @@ class MeltingTemperatureManager
             // oligonucleotide contains degenerated nucleotides.";}" - the nearest
             // neighbor / base stacking method has no defined thermodynamic values for
             // degenerate nucleotides, unlike the basic Tm methods which tolerate them
-            if (GeneticsFunctions::CountACGT($sPrimer) != strlen($sPrimer)) {
+            if (GeneticsFunctions::CountACGT(strtoupper($sPrimer)) != strlen($sPrimer)) {
                 return [
                     'tm'        => null,
                     'enthalpy'  => null,

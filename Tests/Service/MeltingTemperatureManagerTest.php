@@ -208,6 +208,20 @@ class MeltingTemperatureManagerTest extends TestCase
      * primer holds a degenerate nucleotide, since the nearest neighbor thermodynamic
      * table only has values for plain A/C/G/T dinucleotides.
      */
+    /**
+     * A lower case primer handed straight to the service (not through the form, which upper-cases it)
+     * is not "degenerated": it gives the result of the same primer in upper case
+     */
+    public function testTmBaseStackingOfALowerCasePrimer()
+    {
+        $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
+
+        $this->assertEquals(
+            $service->tmBaseStacking("AAAATTTGGGGCCCATGCCC", "200", "50", "2"),
+            $service->tmBaseStacking("aaaatttggggcccatgccc", "200", "50", "2")
+        );
+    }
+
     public function testTmBaseStackingWithDegeneratedNucleotides()
     {
         $primer = "AAAATTTGGGGCCCATGCCN";

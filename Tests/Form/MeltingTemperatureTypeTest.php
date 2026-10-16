@@ -57,6 +57,13 @@ class MeltingTemperatureTypeTest extends AbstractFormTypeTestCase
         $this->assertTrue($this->submit(['nearestNeighbor' => null, 'basic' => '1', 'cs' => '0', 'cmg' => '0'])->isValid());
     }
 
+    public function testAtLeastOneTmMethodMustBeTicked()
+    {
+        $this->assertFalse($this->submit(['nearestNeighbor' => null])->isValid());
+        $this->assertTrue($this->submit(['nearestNeighbor' => null, 'basic' => '1'])->isValid());
+        $this->assertTrue($this->submit(['nearestNeighbor' => '1', 'basic' => null])->isValid());
+    }
+
     /**
      * A lower case primer is read as the same primer in upper case
      */
