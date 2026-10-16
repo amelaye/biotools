@@ -11,6 +11,7 @@ namespace Tests\MinitoolsBundle\Service;
 use Amelaye\BioPHP\Api\NucleotidApi;
 use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
 use Amelaye\BioTools\Service\DistanceAmongSequencesManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 
@@ -1897,6 +1898,98 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $testFunction = $service->pearsonDistance($valsx, $valsy);
 
         $this->assertEqualsWithDelta($expected, $testFunction, 0.0001);
+    }
+
+    /**
+     * The z-scores of a sequence leave out the words whose variance is null : two vectors with
+     * the same number of words but not the same words are compared on the words they share
+     */
+    public function testPearsonDistanceComparesTheCommonWordsOnly()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        // common words 0, 1, 2 hold the same values : r = 1, distance 1 - 1 = 0
+        $this->assertEqualsWithDelta(
+            0.0,
+            $service->pearsonDistance([0 => 1, 1 => 2, 2 => 3, 5 => 9], [0 => 1, 1 => 2, 2 => 3, 7 => 4]),
+            1e-12
+        );
+    }
+
+    /**
+     * Common words 0..3 : x = 1,2,3,4 and y = 1,3,2,4. Sxy - SxSy/n = 29 - 25 = 4,
+     * Sxx = Syy = 30 - 25 = 5, so r = 4/5 and the distance is 0.2
+     */
+    public function testPearsonDistanceOnPartiallyOverlappingVectors()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $this->assertEqualsWithDelta(
+            0.2,
+            $service->pearsonDistance([0 => 1, 1 => 2, 2 => 3, 3 => 4, 9 => 7], [0 => 1, 1 => 3, 2 => 2, 3 => 4, 8 => 5]),
+            1e-12
+        );
+    }
+
+    /**
+     * An undefined distance is never reported as 0, which would mean "identical"
+     */
+    #[DataProvider('providerUndefinedPearsonDistance')]
+    public function testPearsonDistanceRefusesAnUndefinedDistance(array $aValsX, array $aValsY)
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessageMatches('/Pearson distance is undefined/');
+        $service->pearsonDistance($aValsX, $aValsY);
+    }
+
+    public static function providerUndefinedPearsonDistance(): array
+    {
+        return [
+            "two empty vectors"            => [[], []],
+            "one empty vector"             => [[], [0 => 1, 1 => 2, 2 => 3]],
+            "a single common word"         => [[0 => 1, 1 => 2], [1 => 5, 7 => 3]],
+            "no common word, same size"    => [[0 => 1, 1 => 2], [5 => 1, 6 => 2]],
+            "constant common values"       => [[0 => 1, 1 => 1, 2 => 1], [0 => 1, 1 => 2, 2 => 3]],
+        ];
+    }
+
+    /**
+     * A repetitive sequence has no tetranucleotide z-score at all : it must not come out as
+     * "identical" (distance 0) to a sequence that has some
+     */
+    public function testPearsonDistanceOfASequenceWithoutZScoreIsNotZero()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $aRepetitive = $service->computeZscoresForTetranucleotides("ACGTACGTACGT");
+        $aLong = $service->computeZscoresForTetranucleotides(
+            "GGAGTGAGGGGAGCAGTTGGCTGAAGATGGTCCCCGCCGAGGGACCGGTGGGCGACGGCGAGCTGTGGCAGACCTGGCTTCCTAACCACGTCCGTGTTCTTGCGGCTCCGGGAGGGACTG"
+        );
+        $this->assertSame([], $aRepetitive);
+        $this->assertNotEmpty($aLong);
+
+        $this->expectException(\DomainException::class);
+        $service->pearsonDistance($aRepetitive, $aLong);
+    }
+
+    /**
+     * The exception names the two sequences that could not be compared
+     */
+    public function testComputeDistancesAmongFrequenciesNamesTheSequencesOfAnUndefinedPair()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $aSeqs = ["seqA" => "ACGT", "seqB" => "ACGT"];
+        $aOligoArray = [
+            "seqA" => [0 => 1, 1 => 2, 2 => 3, 3 => 4],
+            "seqB" => [],
+        ];
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessageMatches('/Sequences seqA and seqB cannot be compared/');
+        $service->computeDistancesAmongFrequencies($aSeqs, $aOligoArray);
     }
 
     public function testPearsonDistanceException()

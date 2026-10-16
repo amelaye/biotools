@@ -204,13 +204,23 @@ class DistanceAmongSequencesManager
                     if ($iKey >= $iKey2) {
                         continue;
                     }
-                    $aData[$iKey][$iKey2]= $this->pearsonDistance(
-                        $aOligoArray[$iKey],
-                        $aOligoArray[$iKey2]
-                    );
+                    try {
+                        $aData[$iKey][$iKey2] = $this->pearsonDistance(
+                            $aOligoArray[$iKey],
+                            $aOligoArray[$iKey2]
+                        );
+                    } catch (\DomainException $e) {
+                        throw new \DomainException(
+                            sprintf('Sequences %s and %s cannot be compared : %s', $iKey, $iKey2, $e->getMessage()),
+                            0,
+                            $e
+                        );
+                    }
                 }
             }
             return $aData;
+        } catch (\DomainException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -485,9 +495,14 @@ class DistanceAmongSequencesManager
      * Generates the distance value from array X and array Y
      * Only in case pearson selected
      * Unit test created
+     * The z-scores of a sequence leave out the words whose variance is null, so two vectors rarely
+     * hold the same words : they are compared on the words they have in common. When that leaves
+     * no correlation to compute, the distance is undefined, and it is never reported as 0
+     * (which would mean "identical").
      * @param   array   $aValsX     First array for comparaison
      * @param   array   $aValsY     Second array fo comparaison
-     * @return  int
+     * @return  float
+     * @throws  \DomainException    When the distance is undefined
      * @throws  \Exception
      */
     public function pearsonDistance($aValsX, $aValsY)
@@ -498,12 +513,26 @@ class DistanceAmongSequencesManager
         if (!is_array($aValsY)) {
             throw new \Exception('The Y values must be an array.');
         }
-        // series of different sizes cannot be correlated
-        if (sizeof($aValsX) != sizeof($aValsY)) {
-            return 0;
+
+        $aCommonKeys = array_keys(array_intersect_key($aValsX, $aValsY));
+        if (count($aCommonKeys) < 2) {
+            throw new \DomainException(sprintf(
+                'Pearson distance is undefined : %d common z-score(s), 2 at least are needed.',
+                count($aCommonKeys)
+            ));
         }
 
-        return MathematicsFunctions::PearsonDistance($aValsX, $aValsY);
+        $aCommonX = $aCommonY = [];
+        foreach ($aCommonKeys as $mKey) {
+            $aCommonX[$mKey] = $aValsX[$mKey];
+            $aCommonY[$mKey] = $aValsY[$mKey];
+        }
+
+        try {
+            return MathematicsFunctions::PearsonDistance($aCommonX, $aCommonY);
+        } catch (\DivisionByZeroError $e) {
+            throw new \DomainException('Pearson distance is undefined : the common z-scores of a sequence are all equal.');
+        }
     }
 
     /**
