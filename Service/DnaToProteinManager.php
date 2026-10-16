@@ -13,6 +13,9 @@ use Amelaye\BioPHP\Api\Interfaces\TripletApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
+use Amelaye\BioPHP\Domain\Sequence\ValueObject\DnaSequence;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface;
+use Amelaye\BioPHP\Domain\Tools\ValueObject\OpenReadingFrame;
 
 
 /**
@@ -44,15 +47,25 @@ class DnaToProteinManager
      */
     private $sRvSequence;
 
+    /**
+     * @var OrfFinderInterface|null
+     */
+    private $orfFinder;
 
     /**
      * DnaToProteinManager constructor.
      * @param AminoApiAdapter            $aminoApi
      * @param TripletApiAdapter          $tripletApi
      * @param TripletSpecieApiAdapter    $tripletSpecieApi
+     * @param OrfFinderInterface|null    $orfFinder          Needed by findOrfRegions() only
      */
-    public function __construct(AminoApiAdapter $aminoApi, TripletApiAdapter $tripletApi, TripletSpecieApiAdapter $tripletSpecieApi)
-    {
+    public function __construct(
+        AminoApiAdapter $aminoApi,
+        TripletApiAdapter $tripletApi,
+        TripletSpecieApiAdapter $tripletSpecieApi,
+        ?OrfFinderInterface $orfFinder = null
+    ) {
+        $this->orfFinder                  = $orfFinder;
         $this->aAminos                    = $aminoApi::GetAminosOnlyLetters($aminoApi->getAminos());
         $this->aTriplets                  = $tripletSpecieApi::GetTripletsGroups($tripletSpecieApi->getTriplets());
         $this->aTripletsCombinations      = $tripletApi::GetTripletsArray($tripletApi->getTriplets());
@@ -185,6 +198,25 @@ class DnaToProteinManager
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Finds the ORFs of a DNA sequence with their coordinates, on both strands, with BioPHP's OrfFinder.
+     * Unlike findORF(), which only formats already translated frames for display, this returns
+     * the regions themselves (frame, 1-based start/end on the original sequence, peptide).
+     * It uses the standard genetic code only.
+     * @param   string  $sDna                   DNA sequence
+     * @param   int     $iMinimumProteinLength  Minimum length of the peptide, in amino acids
+     * @return  OpenReadingFrame[]
+     * @throws  \LogicException                 When no OrfFinder was injected
+     */
+    public function findOrfRegions(string $sDna, int $iMinimumProteinLength = 1): array
+    {
+        if ($this->orfFinder === null) {
+            throw new \LogicException('No OrfFinderInterface was injected into DnaToProteinManager.');
+        }
+
+        return $this->orfFinder->findOrfs(new DnaSequence(strtoupper($sDna)), $iMinimumProteinLength);
     }
 
     /**

@@ -23,11 +23,10 @@ class SequenceAlignmentManagerIntegrationTest extends TestCase
             $this->buildRealListApi(Pam250MatrixDigitApi::class, $pam250Data)
         );
 
-        $aMatrix = [];
-        $mj = $mi = 0;
-        $oManager->step1Protein($aMatrix, $mj, $mi, 2, 2, ["A", "A"], ["A", "A"]);
-
-        // real PAM250 "AA" substitution score is 2 - cumulative match brings [1][1] to 4
-        $this->assertEquals([[2, 2], [2, 4]], $aMatrix);
+        // real PAM250 scores: M/K/V/L all match themselves, so identical proteins align end to end
+        $this->assertEquals(
+            ["seqa" => "MKVLAG", "seqb" => "MKVLAG"],
+            $oManager->alignProteins("MKVLAG", "MKVLAG")
+        );
     }
 }

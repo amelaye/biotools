@@ -9,6 +9,7 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
+use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 use Amelaye\BioTools\Service\Graphics\SvgCanvas;
 
 /**
@@ -18,6 +19,8 @@ use Amelaye\BioTools\Service\Graphics\SvgCanvas;
  */
 class ChaosGameRepresentationManager
 {
+    use SequenceTrait;
+
     /**
      * @var array
      */
@@ -124,11 +127,7 @@ class ChaosGameRepresentationManager
         try {
             // If double strand is requested to be computed...
             if ($iStrand == 2) {
-                $sSeqRevert = strrev($sSequence);
-                foreach ($this->aDnaComplements as $sNucleotide => $sComplement) {
-                    $sSeqRevert = str_replace($sNucleotide, strtolower($sComplement), $sSeqRevert);
-                }
-                $sSequence .= " ".strtoupper($sSeqRevert);
+                $sSequence .= " ".$this->revCompDNA($sSequence);
             }
 
             $aDataSeq = array(

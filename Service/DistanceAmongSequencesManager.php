@@ -9,7 +9,12 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
+use Amelaye\BioPHP\Domain\Phylogenetics\Interfaces\UpgmaTreeBuilderInterface;
+use Amelaye\BioPHP\Domain\Phylogenetics\Service\UpgmaTreeBuilder;
+use Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\DistanceMatrix;
+use Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode;
 use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
+use Amelaye\BioPHP\Domain\Tools\Service\MathematicsFunctions;
 use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 use Amelaye\BioTools\Service\Graphics\SvgCanvas;
@@ -49,14 +54,24 @@ class DistanceAmongSequencesManager
     private $oligosManager;
 
     /**
-     * DistanceAmongSequencesManager constructor.
-     * @param   OligosInterface        $oligosManager
-     * @param   NucleotidApiAdapter    $nucleotidApi
+     * @var UpgmaTreeBuilderInterface
      */
-    public function __construct(OligosInterface $oligosManager, NucleotidApiAdapter $nucleotidApi)
-    {
+    private $upgmaTreeBuilder;
+
+    /**
+     * DistanceAmongSequencesManager constructor.
+     * @param   OligosInterface                 $oligosManager
+     * @param   NucleotidApiAdapter             $nucleotidApi
+     * @param   UpgmaTreeBuilderInterface|null  $upgmaTreeBuilder   Defaults to BioPHP's UpgmaTreeBuilder
+     */
+    public function __construct(
+        OligosInterface $oligosManager,
+        NucleotidApiAdapter $nucleotidApi,
+        ?UpgmaTreeBuilderInterface $upgmaTreeBuilder = null
+    ) {
         $this->aDnaComplements = $nucleotidApi::GetDNAComplement($nucleotidApi->getNucleotids());
         $this->oligosManager = $oligosManager;
+        $this->upgmaTreeBuilder = $upgmaTreeBuilder ?? new UpgmaTreeBuilder();
     }
 
     /**
@@ -99,11 +114,7 @@ class DistanceAmongSequencesManager
             $aOligoArray = [];
             foreach ($aSeqs as $iKey => $sVal) {
                 // to compute oligonucleotide frequencies, both strands are used
-                $sValRevert = strrev($sVal);
-                foreach ($this->aDnaComplements as $sNucleotide => $sComplement) {
-                    $sValRevert = str_replace($sNucleotide, strtolower($sComplement), $sValRevert);
-                }
-                $sSeqAndRevseq = $sVal." ".strtoupper($sValRevert);
+                $sSeqAndRevseq = $sVal." ".$this->revCompDNA($sVal);
 
                 $aOligos = $this->oligosManager->findOligos(
                     $sSeqAndRevseq,
@@ -467,20 +478,8 @@ class DistanceAmongSequencesManager
         if (!is_array($aB)) {
             throw new \Exception('The Y values must be an array.');
         }
-        try {
-            $fC = sqrt(pow(2, $iLen))
-                / pow(4, $iLen);   // content
-            $fSum = 0;
-            foreach($aA as $sKey => $fVal) {
-                $fSum += pow($fVal-$aB[$sKey],2);
-            }
-            $fResult = $fC * sqrt($fSum);
-            return $fResult;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return MathematicsFunctions::EuclideanDistance($aA, $aB, (int) $iLen);
     }
-
 
     /**
      * Generates the distance value from array X and array Y
@@ -499,69 +498,12 @@ class DistanceAmongSequencesManager
         if (!is_array($aValsY)) {
             throw new \Exception('The Y values must be an array.');
         }
-        try {
-            $fValue = 0;
-            // normal correlation
-            if (sizeof($aValsX) != sizeof($aValsY)) {
-                return $fValue;
-            }
-            $fSumX = 0;
-            $fSumX2 = 0;
-            $fSumY = 0;
-            $fSumY2 = 0;
-            $fSumXY = 0;
-            $iN = sizeof($aValsX);
-            foreach($aValsX as $sKey => $fVal){
-                $fValX = $fVal;
-                $fValY = $aValsY[$sKey];
-                $fSumX += $fValX;
-                $fSumX2 += $fValX * $fValX;
-                $fSumY += $fValY;
-                $fSumY2 += $fValY * $fValY;
-                $fSumXY += $fValX * $fValY;
-            }
-            // calculate regression
-            $fTempA = sqrt($fSumY2 - (1 / $iN) * $fSumY * $fSumY);
-            $fTempB = sqrt($fSumX2 - (1 / $iN) * $fSumX * $fSumX);
-            $fTempC = $fSumXY - (1 / $iN) * $fSumX * $fSumY;
-            $fRegresion = $fTempC / ($fTempB * $fTempA);
-            if ($fRegresion > 0.999999999) {
-                $fRegresion = 1;
-            }      // round data
-            $fValue = 1 - $fRegresion;
-            return $fValue;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
+        // series of different sizes cannot be correlated
+        if (sizeof($aValsX) != sizeof($aValsY)) {
+            return 0;
         }
-    }
 
-    /**
-     * Feeds the oligo array
-     * No Unit Test : private access
-     * @param   string      $sTheseq
-     * @param   int         $iIteration
-     * @return  array
-     * @throws  \Exception
-     */
-    private function iterateOligo($sTheseq, $iIteration)
-    {
-        try {
-            $aOligos = [];
-            $i = 0;
-            $iLen = strlen($sTheseq) - $iIteration + 1;
-            while($i < $iLen) {
-                $sSeq = substr($sTheseq, $i,$iIteration);
-                if(isset($aOligos[$sSeq])) {
-                    $aOligos[$sSeq]++;
-                } else {
-                    $aOligos[$sSeq] = 1;
-                }
-                $i++;
-            }
-            return $aOligos;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
+        return MathematicsFunctions::PearsonDistance($aValsX, $aValsY);
     }
 
     /**
@@ -576,9 +518,9 @@ class DistanceAmongSequencesManager
         try {
             $sTheseq .= " ".$this->revCompDNA($sTheseq);
 
-            $aOligos2 = $this->iterateOligo($sTheseq, 2);
-            $aOligos3 = $this->iterateOligo($sTheseq, 3);
-            $aOligos4 = $this->iterateOligo($sTheseq, 4);
+            $aOligos2 = $this->oligosManager->findOligos($sTheseq, 2);
+            $aOligos3 = $this->oligosManager->findOligos($sTheseq, 3);
+            $aOligos4 = $this->oligosManager->findOligos($sTheseq, 4);
 
             $aZscore = $this->oligosManager->findZScore($aOligos2, $aOligos3, $aOligos4);
 
@@ -618,44 +560,110 @@ class DistanceAmongSequencesManager
 
     /**
      * Perform UPGMA Clustering
-     * in each loop, array $aData is reduced (one case per loop)
-     * @param $aData
-     * @param $sMethod
-     * @param $iLen
-     * @param $sDendogramFile
-     * @throws \Exception
+     * The clustering is done by BioPHP's UpgmaTreeBuilder, which weights each merge by the
+     * size of the clusters (true UPGMA). The former loop over newArray()/minArray() averaged
+     * the two merged distances 50/50 whatever the cluster sizes, i.e. WPGMA; both helpers
+     * are kept for compatibility but are no longer used here.
+     * @param   array   $aData              Triangular matrix of distances, [$x][$y] => distance
+     * @param   string  $sMethod
+     * @param   int     $iLen
+     * @param   string  $sDendogramFile
+     * @return  string  The path written
+     * @throws  \Exception
      */
     public function upgmaClustering($aData, $sMethod, $iLen, $sDendogramFile)
     {
         try {
-            while (sizeof($aData) > 1) {
-                $fMin = $this->minArray($aData);
-                $aComp[$this->sX][$this->sY] = $fMin;
-                $aData = $this->newArray($aData);
-            }
-
-            $fMin = $this->minArray($aData);
-
-            $sX = $this->sX;
-            $sY = $this->sY;
+            $oRoot = $this->upgmaTreeBuilder->build($this->buildDistanceMatrix($aData));
 
             /*
-             * end of clustering
-             * array $aComp stores the important data
-             */
-            $aComp[$sX][$sY] = $fMin;
-
-            /*
-             * $sTextcluster is the results of the cluster as text.
+             * $aComp stores the merges, $aComp[left cluster][right cluster] = distance, children
+             * before their parents. $sTextcluster is the result of the cluster as text,
              * p.e.:  ((3,4),7),(((5,6),1),2)
              */
-            $sTextcluster = $sX.",".$sY;
-
+            $aComp = [];
+            $this->collectMerges($oRoot, $aComp);
+            $aChildren = $oRoot->getChildren();
+            $sTextcluster = $this->clusterName($aChildren[0]).",".$this->clusterName($aChildren[1]);
 
             // CREATE THE IMAGE WITH THE DENDROGRAM
             return $this->createDendrogram($sTextcluster, $aComp, $sDendogramFile, $sMethod, $iLen);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Turns the triangular array of distances into a symmetric DistanceMatrix
+     * @param   array   $aData
+     * @return  DistanceMatrix
+     * @throws  \Exception     When a pair of sequences has no distance
+     */
+    private function buildDistanceMatrix(array $aData) : DistanceMatrix
+    {
+        $aLabels = array_map('strval', $this->getArrayCases($aData));
+        $aMatrix = [];
+        foreach ($aLabels as $iRow => $sRow) {
+            foreach ($aLabels as $iColumn => $sColumn) {
+                if ($iRow === $iColumn) {
+                    $aMatrix[$iRow][$iColumn] = 0.0;
+                    continue;
+                }
+                $mDistance = $aData[$sRow][$sColumn] ?? $aData[$sColumn][$sRow] ?? null;
+                if (!is_numeric($mDistance)) {
+                    throw new \Exception("No distance between sequences $sRow and $sColumn.");
+                }
+                // a Pearson distance can fall a few ulps under zero
+                $aMatrix[$iRow][$iColumn] = max(0.0, (float) $mDistance);
+            }
+        }
+
+        return new DistanceMatrix($aLabels, $aMatrix);
+    }
+
+    /**
+     * Name of a cluster as the dendrogram expects it: a leaf label, or "(left,right)"
+     * @param   PhylogeneticNode    $oNode
+     * @return  string
+     */
+    private function clusterName(PhylogeneticNode $oNode) : string
+    {
+        if ($oNode->isLeaf()) {
+            return (string) $oNode->getName();
+        }
+        $aChildren = $oNode->getChildren();
+
+        return "(".$this->clusterName($aChildren[0]).",".$this->clusterName($aChildren[1]).")";
+    }
+
+    /**
+     * Height of a node, i.e. half of the distance at which its children merged
+     * @param   PhylogeneticNode    $oNode
+     * @return  float
+     */
+    private function nodeHeight(PhylogeneticNode $oNode) : float
+    {
+        if ($oNode->isLeaf()) {
+            return 0.0;
+        }
+        $oChild = $oNode->getChildren()[0];
+
+        return $this->nodeHeight($oChild) + (float) $oChild->getBranchLength();
+    }
+
+    /**
+     * Records each merge of the tree, children before parents
+     * @param   PhylogeneticNode    $oNode
+     * @param   array               $aComp
+     */
+    private function collectMerges(PhylogeneticNode $oNode, array &$aComp) : void
+    {
+        if ($oNode->isLeaf()) {
+            return;
+        }
+        $aChildren = $oNode->getChildren();
+        $this->collectMerges($aChildren[0], $aComp);
+        $this->collectMerges($aChildren[1], $aComp);
+        $aComp[$this->clusterName($aChildren[0])][$this->clusterName($aChildren[1])] = 2 * $this->nodeHeight($oNode);
     }
 }

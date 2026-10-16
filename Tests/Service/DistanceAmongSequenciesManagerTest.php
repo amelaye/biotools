@@ -2118,4 +2118,59 @@ class DistanceAmongSequenciesManagerTest extends TestCase
 
         unlink($dendogramFile);
     }
+
+    /**
+     * The clustering is delegated to the injected BioPHP UPGMA builder, which receives a
+     * symmetric matrix built from the triangular array of distances
+     */
+    public function testUpgmaClusteringDelegatesToUpgmaTreeBuilder()
+    {
+        $oBuilder = $this->createMock(\Amelaye\BioPHP\Domain\Phylogenetics\Interfaces\UpgmaTreeBuilderInterface::class);
+        $oBuilder->expects($this->once())
+            ->method('build')
+            ->with($this->callback(function (\Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\DistanceMatrix $oMatrix) {
+                return $oMatrix->getLabels() === ['0', '1', '2']
+                    && $oMatrix->getMatrix() === [[0.0, 2.0, 8.0], [2.0, 0.0, 9.0], [8.0, 9.0, 0.0]];
+            }))
+            ->willReturn(new \Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode(null, null, [
+                new \Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode(null, 3.5, [
+                    new \Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode('0', 1.0, []),
+                    new \Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode('1', 1.0, []),
+                ]),
+                new \Amelaye\BioPHP\Domain\Phylogenetics\ValueObject\PhylogeneticNode('2', 4.5, []),
+            ]));
+
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock, $oBuilder);
+
+        $data = [0 => [1 => 2, 2 => 8], 1 => [2 => 9]];
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $this->assertEquals($dendogramFile, $service->upgmaClustering($data, "euclidean", 2, $dendogramFile));
+
+        $content = file_get_contents($dendogramFile);
+        $this->assertStringContainsString('preserve"> 0</text>', $content);
+        $this->assertStringContainsString('preserve"> 2</text>', $content);
+        unlink($dendogramFile);
+    }
+
+    /**
+     * End to end with the real BioPHP builder on a 5-taxa matrix: the dendrogram is drawn
+     * with one row per sequence
+     */
+    public function testUpgmaClusteringWithRealTreeBuilder()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $data = [
+            0 => [1 => 17, 2 => 21, 3 => 31, 4 => 23],
+            1 => [2 => 30, 3 => 34, 4 => 21],
+            2 => [3 => 28, 4 => 39],
+            3 => [4 => 43],
+        ];
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $service->upgmaClustering($data, "pearson", 4, $dendogramFile);
+
+        $this->assertFileExists($dendogramFile);
+        $this->assertStringContainsString('width="720" height="140"', file_get_contents($dendogramFile));
+        unlink($dendogramFile);
+    }
 }

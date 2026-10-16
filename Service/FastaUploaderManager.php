@@ -7,6 +7,7 @@
  */
 namespace Amelaye\BioTools\Service;
 
+use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
@@ -28,16 +29,7 @@ class FastaUploaderManager
             throw new \Exception('The sequence must be a string.');
         }
         try {
-            $iLength = strlen($sSequence);
-            for ($i = 0; $i < $iLength; ++$i) {
-                if(!($sSequence[$i]=='a' || $sSequence[$i]=='A'||
-                    $sSequence[$i]=='t'|| $sSequence[$i]=='T' ||
-                    $sSequence[$i]=='g'|| $sSequence[$i]=='G'||
-                    $sSequence[$i]=='c'|| $sSequence[$i]=='C')) {
-                    return false;
-                }
-            }
-            return true;
+            return GeneticsFunctions::CountACGT(strtoupper($sSequence)) === strlen($sSequence);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -84,25 +76,11 @@ class FastaUploaderManager
     {
         if($iLength != '') {
             if($this->isValidSequence($sVar)) {
-                for ($i = 0; $i < $iLength ; ++$i) {
-                    switch($sVar[$i]) {
-                        case 'a':
-                        case 'A':
-                            $iA++;
-                            break;
-                        case 't':
-                        case 'T':
-                            $iT++;
-                            break;
-                        case 'c':
-                        case 'C':
-                            $iC++;
-                            break;
-                        case 'g':
-                        case 'G':
-                            $iG++;
-                    }
-                }
+                $sUpper = strtoupper(substr($sVar, 0, (int) $iLength));
+                $iA += substr_count($sUpper, 'A');
+                $iT += substr_count($sUpper, 'T');
+                $iC += substr_count($sUpper, 'C');
+                $iG += substr_count($sUpper, 'G');
             } else {
                 throw new \Exception("Please check....This is not a Nucleotide sequence");
             }

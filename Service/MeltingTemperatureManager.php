@@ -11,7 +11,9 @@ namespace Amelaye\BioTools\Service;
 use Amelaye\BioPHP\Api\Interfaces\TmBaseStackingApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Entity\Sequence;
 use Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\MeltingTemperatureInterface;
 use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
+use Amelaye\BioPHP\Domain\Tools\Service\MeltingTemperatureCalculator;
 
 /**
  * Class MeltingTemperatureManager
@@ -26,28 +28,26 @@ class MeltingTemperatureManager
     private $sequenceManager;
 
     /**
-     * @var array
+     * @var MeltingTemperatureInterface
      */
-    private $aEnthropyValues;
-
-    /**
-     * @var array
-     */
-    private $aEnthalpyValues;
+    private $meltingTemperature;
 
     /**
      * MeltingTemperatureManager constructor.
-     * @param   SequenceInterface           $sequenceManager
-     * @param   TmBaseStackingApiAdapter    $tmBaseStackingApi
+     * The Tm and GC% maths live in BioPHP's MeltingTemperatureCalculator; when none is
+     * injected, one is built from the base stacking adapter.
+     * @param   SequenceInterface               $sequenceManager
+     * @param   TmBaseStackingApiAdapter        $tmBaseStackingApi
+     * @param   MeltingTemperatureInterface|null $meltingTemperature
      */
     public function __construct(
         SequenceInterface $sequenceManager,
-        TmBaseStackingApiAdapter $tmBaseStackingApi
+        TmBaseStackingApiAdapter $tmBaseStackingApi,
+        ?MeltingTemperatureInterface $meltingTemperature = null
     )
     {
         $this->sequenceManager      = $sequenceManager;
-        $this->aEnthropyValues      = $tmBaseStackingApi::GetEnthropyValues($tmBaseStackingApi->getTmBaseStackings());
-        $this->aEnthalpyValues      = $tmBaseStackingApi::GetEnthalpyValues($tmBaseStackingApi->getTmBaseStackings());
+        $this->meltingTemperature   = $meltingTemperature ?? new MeltingTemperatureCalculator($tmBaseStackingApi);
     }
 
     /**
@@ -69,8 +69,7 @@ class MeltingTemperatureManager
         if ($sPrimer === "") {
             return 0;
         }
-        $fCg = round(100 * GeneticsFunctions::CountCG($sPrimer) / strlen($sPrimer),1);
-        return $fCg;
+        return $this->meltingTemperature->calculateGcPercent($sPrimer);
     }
 
     /**
@@ -149,50 +148,14 @@ class MeltingTemperatureManager
                 ];
             }
 
-            $fH = $fS = 0;
-
-            $aEnthalpyValues = $this->aEnthalpyValues;
-            $aEnthropyValues = $this->aEnthropyValues;
-
-            // effect on entropy by salt correction; von Ahsen et al 1999
-            // Increase of stability due to presence of Mg;
-            $fSaltEffect = ($iConcSalt/1000) + (($iConcMg/1000) * 140);
-            // effect on entropy
-            $fS += 0.368 * (strlen($sPrimer)-1) * log($fSaltEffect);
-
-            // terminal corrections. Santalucia 1998
-            $sFirstNucleotid = substr($sPrimer,0,1);
-            if($sFirstNucleotid == "G" || $sFirstNucleotid == "C") {
-                $fH += 0.1;
-                $fS += -2.8;
-            }
-            if($sFirstNucleotid == "A" ||  $sFirstNucleotid == "T") {
-                $fH += 2.3;
-                $fS += 4.1;
-            }
-
-            $sLastNucleotid = substr($sPrimer,strlen($sPrimer)-1,1);
-            if ($sLastNucleotid == "G" || $sLastNucleotid == "C") {
-                $fH += 0.1;
-                $fS += -2.8;
-            }
-            if ($sLastNucleotid == "A" || $sLastNucleotid == "T"){
-                $fH += 2.3;
-                $fS += 4.1;
-            }
-
-            // compute new H and s based on sequence. Santalucia 1998
-            for($i = 0; $i < strlen($sPrimer)-1; $i++) {
-                $sSubc = substr($sPrimer, $i,2);
-                $fH += $aEnthalpyValues[$sSubc];
-                $fS += $aEnthropyValues[$sSubc];
-            }
-            $fTm = ((1000 * $fH) / ($fS + (1.987 * log($iConcPrimer / 2000000000)))) - 273.15;
+            $oResult = $this->meltingTemperature->calculateNearestNeighborTm(
+                $sPrimer, (float) $iConcPrimer, (float) $iConcSalt, (float) $iConcMg
+            );
 
             $aBaseStacking = [
-                'tm'        => round($fTm, 1),
-                'enthalpy'  => round($fH,2),
-                'entropy'   => round($fS,2)
+                'tm'        => $oResult->getTm(),
+                'enthalpy'  => $oResult->getEnthalpy(),
+                'entropy'   => $oResult->getEntropy()
             ];
 
             return $aBaseStacking;
@@ -213,11 +176,7 @@ class MeltingTemperatureManager
             throw new \Exception('The primer must be a string.');
         }
         try {
-            $iPrimerLen = strlen($sPrimer);
-            $sPrimer2 = $this->primerMin($sPrimer);
-            $fTemperature = $this->calculateTemperature($sPrimer2, $iPrimerLen);
-
-            return $fTemperature;
+            return $this->meltingTemperature->calculateMinimumTm($sPrimer);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -236,10 +195,7 @@ class MeltingTemperatureManager
             throw new \Exception('The primer must be a string.');
         }
         try {
-            $iPrimerLen = strlen($sPrimer);
-            $sPrimer2 = $this->primerMax($sPrimer);
-            $fTemperature = $this->calculateTemperature($sPrimer2, $iPrimerLen);
-            return $fTemperature;
+            return $this->meltingTemperature->calculateMaximumTm($sPrimer);
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -263,69 +219,6 @@ class MeltingTemperatureManager
             $this->sequenceManager->setSequence($oSequence);
             $fMwt = $this->sequenceManager->molwt($sLimit);
             return $fMwt;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
-    }
-
-    /**
-     * Gets Temperature
-     * @param   string      $sPrimer
-     * @param   int         $iPrimerLen
-     * @return  float
-     * @throws  \Exception
-     */
-    private function calculateTemperature($sPrimer, $iPrimerLen)
-    {
-        try {
-            $fTemperature = 0;
-
-            $iNbAT = substr_count($sPrimer,"A");
-            $iNbCG = substr_count($sPrimer,"G");
-
-            if($iPrimerLen > 0) {
-                if($iPrimerLen < 14) {
-                    $fTemperature = round(2 * ($iNbAT) + 4 * ($iNbCG));
-                } else {
-                    $fTemperature = round(64.9 + 41 * (($iNbCG - 16.4) / $iPrimerLen),1);
-                }
-            }
-
-            return $fTemperature;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
-    }
-
-    /**
-     * Unreduces the primer
-     * @param       string      $sPrimer     Sequence to analyze
-     * @return      string
-     * @throws      \Exception
-     */
-    private function primerMax($sPrimer)
-    {
-        try {
-            $sPrimer = preg_replace("/A|T|W/","A",$sPrimer);
-            $sPrimer = preg_replace("/C|G|Y|R|S|K|M|D|V|H|B|N/","G",$sPrimer);
-            return $sPrimer;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
-        }
-    }
-
-    /**
-     * Reduces the primer
-     * @param       string      $sPrimer     Sequence to analyze
-     * @return      string
-     * @throws      \Exception
-     */
-    private function primerMin($sPrimer)
-    {
-        try {
-            $sPrimer = preg_replace("/A|T|Y|R|W|K|M|D|V|H|B|N/","A",$sPrimer);
-            $sPrimer = preg_replace("/C|G|S/","G",$sPrimer);
-            return $sPrimer;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

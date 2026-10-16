@@ -375,4 +375,26 @@ class DnaToProteinManagerTest extends TestCase
 
         $this->assertEquals("", $testFunction);
     }
+
+    public function testFindOrfRegionsDelegatesToOrfFinder()
+    {
+        $oOrf = new \Amelaye\BioPHP\Domain\Tools\ValueObject\OpenReadingFrame(1, 1, 9, 'MKA', true);
+        $oFinder = $this->createMock(\Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface::class);
+        $oFinder->expects($this->once())
+            ->method('findOrfs')
+            ->with($this->callback(fn($oDna) => $oDna->getValue() === 'ATGAAAGCCTAA'), 3)
+            ->willReturn([$oOrf]);
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock, $oFinder);
+
+        $this->assertSame([$oOrf], $service->findOrfRegions('atgaaagcctaa', 3));
+    }
+
+    public function testFindOrfRegionsRequiresAnOrfFinder()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $this->expectException(\LogicException::class);
+        $service->findOrfRegions('ATGAAAGCCTAA');
+    }
 }

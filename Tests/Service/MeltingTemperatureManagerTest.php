@@ -10,6 +10,8 @@ use Amelaye\BioPHP\Api\TmBaseStackingApi;
 use Amelaye\BioPHP\Domain\Sequence\Builder\SequenceBuilder;
 use Amelaye\BioPHP\Domain\Sequence\Entity\Sequence;
 use Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\MeltingTemperatureInterface;
+use Amelaye\BioPHP\Domain\Tools\Result\NearestNeighborTmResult;
 use Amelaye\BioTools\Service\MeltingTemperatureManager;
 use PHPUnit\Framework\TestCase;
 
@@ -175,6 +177,12 @@ class MeltingTemperatureManagerTest extends TestCase
         $this->assertEquals(0, $service->calculateCG(""));
     }
 
+    /**
+     * BioPHP 2.0 corrects the legacy salt term : Mg2+ counts as 120 x sqrt([Mg2+]) mM of sodium
+     * (von Ahsen 2001) and the strand concentration is divided by 4 (SantaLucia 1998). For Mg = 2 mM
+     * the entropy moves from -414.45 (legacy) to -417.3, hand-checked : 0.368 x 19 x ln(0.2197)
+     * replaces 0.368 x 19 x ln(0.33), a difference of -2.84 e.u.
+     */
     public function testTmBaseStacking()
     {
         $primer = "AAAATTTGGGGCCCATGCCC";
@@ -183,9 +191,9 @@ class MeltingTemperatureManagerTest extends TestCase
         $concMg = "2";
 
         $aExpected = [
-            "tm" => 68.6,
+            "tm" => 65.4,
             "enthalpy" => -152.6,
-            "entropy" => -414.45,
+            "entropy" => -417.3,
         ];
 
         $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
@@ -367,9 +375,9 @@ class MeltingTemperatureManagerTest extends TestCase
         $primer = "AAAATTTGGGGCCCATGCCC";
 
         $aExpected = [
-            "tm" => 68.6,
+            "tm" => 65.4,
             "enthalpy" => -152.6,
-            "entropy" => -414.45,
+            "entropy" => -417.3,
         ];
 
         $service = new MeltingTemperatureManager($this->sequenceBuilder, $this->apiTmMock);
@@ -390,5 +398,33 @@ class MeltingTemperatureManagerTest extends TestCase
         $service->neighborCalculations(false, $aTmBaseStacking, $primer, "200", "50", "2");
 
         $this->assertNull($aTmBaseStacking);
+    }
+
+    /**
+     * Tm and GC% maths are delegated to the injected BioPHP calculator
+     */
+    public function testDelegatesToInjectedMeltingTemperatureCalculator()
+    {
+        $oCalculator = $this->createMock(MeltingTemperatureInterface::class);
+        $oCalculator->method('calculateGcPercent')->with('ACGT')->willReturn(50.0);
+        $oCalculator->method('calculateMinimumTm')->with('ACGT')->willReturn(10.0);
+        $oCalculator->method('calculateMaximumTm')->with('ACGT')->willReturn(12.0);
+        $oCalculator->method('calculateNearestNeighborTm')
+            ->with('ACGT', 200.0, 50.0, 1.5)
+            ->willReturn(new NearestNeighborTmResult(30.1, -10.5, -20.25));
+
+        $oManager = new MeltingTemperatureManager(
+            $this->createMock(\Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface::class),
+            $this->createMock(\Amelaye\BioPHP\Api\Interfaces\TmBaseStackingApiAdapter::class),
+            $oCalculator
+        );
+
+        $this->assertSame(50.0, $oManager->calculateCG('ACGT'));
+        $this->assertSame(10.0, $oManager->tmMin('ACGT'));
+        $this->assertSame(12.0, $oManager->tmMax('ACGT'));
+        $this->assertSame(
+            ['tm' => 30.1, 'enthalpy' => -10.5, 'entropy' => -20.25],
+            $oManager->tmBaseStacking('ACGT', 200, 50, 1.5)
+        );
     }
 }

@@ -9,6 +9,7 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
+use Amelaye\BioPHP\Domain\Tools\Service\GeneticsFunctions;
 
 /**
  * Sequence Manipulation and DATA Functions
@@ -66,9 +67,7 @@ class SequenceManipulationAndDataManager
             if ($iLenSeq === 0) {
                 return 0;
             }
-            $iNumberOfG = substr_count($sSeq,"G");
-            $iNumberOfC = substr_count($sSeq,"C");
-            $fGcPercent = round(100*($iNumberOfG + $iNumberOfC)/$iLenSeq,2);
+            $fGcPercent = round(100 * GeneticsFunctions::CountCG($sSeq) / $iLenSeq,2);
             return $fGcPercent;
         } catch (\Exception $e) {
             throw new \Exception($e);

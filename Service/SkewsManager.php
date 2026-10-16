@@ -9,6 +9,9 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Domain\Tools\Interfaces\OligosInterface;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\SkewCalculatorInterface;
+use Amelaye\BioPHP\Domain\Tools\Service\MathematicsFunctions;
+use Amelaye\BioPHP\Domain\Tools\Service\SkewCalculator;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 use Amelaye\BioTools\Service\Graphics\SvgCanvas;
 
@@ -29,13 +32,23 @@ class SkewsManager
     private $aNucleotidsGraphs;
 
     /**
-     * @param   array               $aNucleotidsGraphs
-     * @param   OligosInterface     $oligosManger
+     * @var SkewCalculatorInterface
      */
-    public function __construct(array $aNucleotidsGraphs, OligosInterface $oligosManger)
-    {
+    private $skewCalculator;
+
+    /**
+     * @param   array                           $aNucleotidsGraphs
+     * @param   OligosInterface                 $oligosManger
+     * @param   SkewCalculatorInterface|null    $skewCalculator     Defaults to BioPHP's SkewCalculator
+     */
+    public function __construct(
+        array $aNucleotidsGraphs,
+        OligosInterface $oligosManger,
+        ?SkewCalculatorInterface $skewCalculator = null
+    ) {
         $this->aNucleotidsGraphs = $aNucleotidsGraphs;
         $this->oligosManger = $oligosManger;
+        $this->skewCalculator = $skewCalculator ?? new SkewCalculator();
     }
 
     /**
@@ -120,30 +133,7 @@ class SkewsManager
         if(sizeof($aValsX) != sizeof($aValsY)) {
             return;
         }
-        $fNw = $fX2y = $fXy2 = $fPreSx = $fPreSy = $fPreRw = 0;
-
-        foreach($aValsX as $sKey => $fValX) {
-            $fValY = $aValsY[$sKey];
-            $fNw += $fValX * $fValY;
-            $fX2y += $fValX * $fValX * $fValY;
-            $fXy2 += $fValX * $fValY * $fValY;
-        }
-        $fXw = $fX2y / $fNw;
-        $fYw = $fXy2 / $fNw;
-        foreach($aValsX as $sKey => $fValX) {
-            $fValY = $aValsY[$sKey];
-            $fPreSx += pow($fValX - $fXw,2) * $fValX * $fValY;
-            $fPreSy += pow($fValY - $fYw,2) * $fValX * $fValY;
-        }
-        $fSx = $fPreSx / $fNw;
-        $fSy = $fPreSy / $fNw;
-        foreach($aValsX as $sKey => $fValX){
-            $fValY = $aValsY[$sKey];
-            $fPreRw += ($fValX - $fXw) * ($fValY - $fYw) * $fValX * $fValY / (sqrt($fSx) * sqrt($fSy));
-        }
-        $fRw = $fPreRw / $fNw;
-        $fDistance = round(1 - $fRw,8);
-        return $fDistance;
+        return MathematicsFunctions::AlmeidaDistance($aValsX, $aValsY);
     }
 
     /**
@@ -158,25 +148,8 @@ class SkewsManager
         if(sizeof($aValsX) != sizeof($aValsY)) {
             return;
         }
-        $fSumX = array_sum($aValsX);
-        $fSumY = array_sum($aValsY);
-        $fSumX2 = 0;
-        $fSumY2 = 0;
-        $fSumXY = 0;
-        foreach($aValsX as $sKey => $fValX) {
-            $fValY = $aValsY[$sKey];
-            $fSumX2 += $fValX * $fValX;
-            $fSumY2 += $fValY * $fValY;
-            $fSumXY += $fValX * $fValY;
-        }
-        $iN = sizeof($aValsX);
-        // calculate regression
-        $fR = ($iN * $fSumXY - $fSumX * $fSumY)
-            / (sqrt($iN * $fSumX2 - $fSumX * $fSumX) * sqrt($iN * $fSumY2 - $fSumY * $fSumY));
-        // return distance
-        return (1 - $fR);
+        return MathematicsFunctions::PearsonDistance($aValsX, $aValsY);
     }
-
 
     /**
      * @param   string  $sStr
@@ -211,19 +184,16 @@ class SkewsManager
             // computes data for GC, AT, KETO and G+C skews (if requested)
             while($iPos < $iSeqLength - $iWindow) {
                 $sSubSequence = substr($sSequence, $iPos, $iWindow);
-                $iA = substr_count($sSubSequence,"A");
-                $iC = substr_count($sSubSequence,"C");
-                $iG = substr_count($sSubSequence,"G");
-                $iT = substr_count($sSubSequence,"T");
-                $aGC[$iPos] = ($iG-$iC) / ($iG+$iC);
+                $oSkew = $this->skewCalculator->calculate($sSubSequence);
+                $aGC[$iPos] = $oSkew->getGcSkew();
                 if($bAT) {
-                    $aAT[$iPos] = ($iA-$iT) / ($iA+$iT);
+                    $aAT[$iPos] = $oSkew->getAtSkew();
                 }
                 if($bKETO) {
-                    $aKETO[$iPos] = round(($iG+$iC-$iA-$iT) / ($iA+$iC+$iG+$iT),4);
+                    $aKETO[$iPos] = round($oSkew->getKetoSkew(),4);
                 }
                 if($bGmC) {
-                    $aGmC[$iPos] = ($iG+$iC)/($iA+$iC+$iG+$iT);
+                    $aGmC[$iPos] = $oSkew->getGcContent();
                 }
                 $iPos += $iPeriod;
             }

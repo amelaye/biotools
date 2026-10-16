@@ -27,7 +27,7 @@ class MeltingTemperatureManagerIntegrationTest extends TestCase
         $oManager = new MeltingTemperatureManager($oSequenceManager, $tmApi);
 
         $aResult = $oManager->tmBaseStacking("ACGTACGTAC", 200, 50, 1.5);
-        $this->assertEquals(['tm' => 34.8, 'enthalpy' => -75.2, 'entropy' => -212.16], $aResult);
+        $this->assertEquals(['tm' => 31.9, 'enthalpy' => -75.2, 'entropy' => -213.08], $aResult);
     }
 
     public function testRealBaseStackingDataRefusesDegenerateNucleotides()

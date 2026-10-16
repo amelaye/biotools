@@ -680,6 +680,34 @@ class ProteinPropertiesManagerTest extends TestCase
     }
 
     /**
+     * The chemical groups are classified by BioPHP's real SequenceBuilder and SequenceManager, which only needs
+     * the APIs at construction time
+     */
+    private function buildRealSequenceManager()
+    {
+        $oElementApi = $this->createMock(\Amelaye\BioPHP\Api\Interfaces\ElementApiAdapter::class);
+        $oElementApi->method('getElement')->willReturn(new \Amelaye\BioPHP\Api\DTO\ElementDTO());
+
+        $oNucleotidApi = $this->createMock(\Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter::class);
+        $oNucleotidApi->method('getNucleotids')->willReturn([]);
+
+        $oAminoApi = $this->createMock(\Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter::class);
+        $oAminoApi->method('getAminos')->willReturn([]);
+
+        return new \Amelaye\BioPHP\Domain\Sequence\Builder\SequenceBuilder(
+            new \Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager($oAminoApi, $oNucleotidApi, $oElementApi)
+        );
+    }
+
+    public function testProteinAminoacidsChemicalGroupRequiresASequenceManager()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->expectException(\LogicException::class);
+        $service->proteinAminoacidsChemicalGroup("A");
+    }
+
+    /**
      * Each amino acid is replaced by the letter of its chemical group: L for the
      * aliphatic ones (G A V L I), H for the hydroxyl ones (S T), M for the amide ones
      * (N Q), R for the aromatic ones (F Y W), S for the sulfur ones (C M), I for the
@@ -690,7 +718,7 @@ class ProteinPropertiesManagerTest extends TestCase
         $sSequence = "ACDEFGHIKLMNPQRSTVWY";
         $sExpected = "LSAARLCLCLSMIMCHHLRR";
 
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
         $this->assertEquals($sExpected, $service->proteinAminoacidsChemicalGroup($sSequence));
     }
@@ -701,7 +729,7 @@ class ProteinPropertiesManagerTest extends TestCase
     #[DataProvider('providerChemicalGroups')]
     public function testProteinAminoacidsChemicalGroupOfASingleAminoAcid($sAminoAcid, $sGroup)
     {
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
         $this->assertEquals($sGroup, $service->proteinAminoacidsChemicalGroup($sAminoAcid));
     }
@@ -737,7 +765,7 @@ class ProteinPropertiesManagerTest extends TestCase
      */
     public function testProteinAminoacidsChemicalGroupKeepsTheStopAndTheUnknown()
     {
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
         $this->assertEquals("*", $service->proteinAminoacidsChemicalGroup("*"));
         $this->assertEquals("X", $service->proteinAminoacidsChemicalGroup("X"));
@@ -746,7 +774,7 @@ class ProteinPropertiesManagerTest extends TestCase
 
     public function testProteinAminoacidsChemicalGroupOfAnEmptySequence()
     {
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
         $this->assertEquals("", $service->proteinAminoacidsChemicalGroup(""));
     }
@@ -756,22 +784,20 @@ class ProteinPropertiesManagerTest extends TestCase
      */
     public function testProteinAminoacidsChemicalGroupRefusesAnUnknownSymbol()
     {
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
         $this->expectException(\Exception::class);
 
-        $service->proteinAminoacidsChemicalGroup("AZ");
+        $service->proteinAminoacidsChemicalGroup("A1");
     }
 
     /**
-     * The classification is case sensitive: a lower case sequence is refused
+     * BioPHP 2.0 accepts a lower case sequence
      */
-    public function testProteinAminoacidsChemicalGroupIsCaseSensitive()
+    public function testProteinAminoacidsChemicalGroupAcceptsLowerCase()
     {
-        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock, $this->buildRealSequenceManager());
 
-        $this->expectException(\Exception::class);
-
-        $service->proteinAminoacidsChemicalGroup("acdefg");
+        $this->assertEquals("LSAARL", $service->proteinAminoacidsChemicalGroup("acdefg"));
     }
 }

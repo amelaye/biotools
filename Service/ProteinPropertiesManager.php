@@ -9,6 +9,7 @@ namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\PKApiAdapter;
+use Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface;
 
 /**
  * Class ProteinPropertiesManager
@@ -38,13 +39,20 @@ class ProteinPropertiesManager
     private $aPk;
 
     /**
+     * @var SequenceInterface|null
+     */
+    private $sequenceManager;
+
+    /**
      * ProteinPropertiesManager constructor.
-     * @param   AminoApiAdapter     $aminoApi
-     * @param   PKApiAdapter        $pkApi
+     * @param   AminoApiAdapter         $aminoApi
+     * @param   PKApiAdapter            $pkApi
+     * @param   SequenceInterface|null  $sequenceManager    Needed by proteinAminoacidsChemicalGroup() only
      */
     public function __construct(
-        AminoApiAdapter $aminoApi, PKApiAdapter $pkApi
+        AminoApiAdapter $aminoApi, PKApiAdapter $pkApi, ?SequenceInterface $sequenceManager = null
     ){
+        $this->sequenceManager   = $sequenceManager;
         $this->aResidueWeights   = $aminoApi::GetAminoResidueWeights($aminoApi->getAminos());
         $this->aAminos           = $aminoApi::GetAminosOneToThreeLetters($aminoApi->getAminos());
         $this->pkApi             = $pkApi;
@@ -365,68 +373,19 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Chemical group/aminoacids:
-     * L/GAVLI       Amino Acids with Aliphatic R-Groups
-     * H/ST          Non-Aromatic Amino Acids with Hydroxyl R-Groups
-     * M/NQ          Acidic Amino Acids
-     * R/FYW         Amino Acids with Aromatic Rings
-     * S/CM          Amino Acids with Sulfur-Containing R-Groups
-     * I/P           Imino Acids
-     * A/DE          Acidic Amino Acids
-     * C/KRH         Basic Amino Acids
-     * $ X/X
-     * @param       string   $sAminoSeq
-     * @return      string
-     * @throws      \Exception
+     * Replaces each amino acid by the letter of its chemical group, as BioPHP's chemicalGroup() does:
+     * L aliphatic, H hydroxyl, M amide, R aromatic, S sulfur, I imino, A acidic, C basic
+     * @param   string      $sAminoSeq
+     * @return  string
+     * @throws  \LogicException    When no SequenceInterface was injected
+     * @throws  \Exception         On an invalid amino acid symbol
      */
     public function proteinAminoacidsChemicalGroup($sAminoSeq)
     {
-        try {
-            $sChemgrpSeq = "";
-            $iCtr = 0;
-            while(1) {
-                $sAminoLetter = substr($sAminoSeq, $iCtr, 1);
-                if ($sAminoLetter == "") {
-                    break;
-                }
-                if (strpos(" GAVLI", $sAminoLetter) > 0) {
-                    $sChemgrpSeq .= "L";
-                }
-                elseif (($sAminoLetter == "S") || ($sAminoLetter == "T")) {
-                    $sChemgrpSeq .= "H";
-                }
-                elseif (($sAminoLetter == "N") || ($sAminoLetter == "Q")) {
-                    $sChemgrpSeq .= "M";
-                }
-                elseif (strpos(" FYW", $sAminoLetter)>0) {
-                    $sChemgrpSeq .= "R";
-                }
-                elseif (($sAminoLetter == "C") || ($sAminoLetter == "M")) {
-                    $sChemgrpSeq .= "S";
-                }
-                elseif ($sAminoLetter == "P") {
-                    $sChemgrpSeq .= "I";
-                }
-                elseif (($sAminoLetter == "D") || ($sAminoLetter == "E")) {
-                    $sChemgrpSeq .= "A";
-                }
-                elseif (($sAminoLetter == "K") || ($sAminoLetter == "R") || ($sAminoLetter == "H")) {
-                    $sChemgrpSeq .= "C";
-                }
-                elseif ($sAminoLetter == "*") {
-                    $sChemgrpSeq .= "*";
-                }
-                elseif ($sAminoLetter == "X" or $sAminoLetter == "N") {
-                    $sChemgrpSeq .= "X";
-                }
-                else {
-                    throw new \Exception("Invalid amino acid symbol in input sequence.");
-                }
-                $iCtr++;
-            }
-            return $sChemgrpSeq;
-        } catch (\Exception $e) {
-            throw new \Exception($e);
+        if ($this->sequenceManager === null) {
+            throw new \LogicException('No SequenceInterface was injected into ProteinPropertiesManager.');
         }
+
+        return $this->sequenceManager->chemicalGroup($sAminoSeq);
     }
 }

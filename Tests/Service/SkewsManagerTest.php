@@ -3,7 +3,9 @@
 namespace Tests\MinitoolsBundle\Service;
 
 use Amelaye\BioPHP\Api\NucleotidApi;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\SkewCalculatorInterface;
 use Amelaye\BioPHP\Domain\Tools\Service\OligosManager;
+use Amelaye\BioPHP\Domain\Tools\ValueObject\SkewResult;
 use Amelaye\BioTools\Service\SkewsManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -988,7 +990,8 @@ class SkewsManagerTest extends TestCase
             0 => null
         ];
 
-        $fExpected = 0.56;
+        // BioPHP 2.0 defines the keto skew as (G+T-A-C)/N ; the legacy (G+C-A-T)/N gave 0.56 here
+        $fExpected = 0.52;
 
         $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
         $testFunction = $service->computeImage($sequence,$pos, $window, $AT, $KETO, $GmC, $len_seq, $period,$dAT,$dGC,$dGmC,$dKETO);
@@ -1216,5 +1219,42 @@ class SkewsManagerTest extends TestCase
             "a number and a word" => ["5abc"],
             "a sequence"          => ["ACGT"],
         ];
+    }
+
+    /**
+     * The per-window maths is delegated to the injected BioPHP SkewCalculator
+     */
+    public function testComputeImageDelegatesToSkewCalculator()
+    {
+        $oCalculator = $this->createMock(SkewCalculatorInterface::class);
+        $oCalculator->expects($this->exactly(2))
+            ->method('calculate')
+            ->willReturn(new SkewResult(0.5, -0.25, 0.123456, 0.75));
+
+        $oService = new SkewsManager($this->aNucleotidGraph, $this->oligosManager, $oCalculator);
+
+        $iPos = 0;
+        $aAT = $aGC = $aGmC = $aKETO = [null];
+        $fNmax = $oService->computeImage("AAAACCCCGGGG", $iPos, 4, 1, 1, 1, 12, 4, $aAT, $aGC, $aGmC, $aKETO);
+
+        $this->assertSame(0.5, $aGC[0]);
+        $this->assertSame(-0.25, $aAT[4]);
+        $this->assertSame(0.1235, $aKETO[0]);
+        $this->assertSame(0.75, $aGmC[4]);
+        $this->assertSame(0.5, $fNmax);
+    }
+
+    /**
+     * A window without any G/C used to raise a DivisionByZeroError
+     */
+    public function testComputeImageToleratesWindowWithoutGc()
+    {
+        $oService = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $iPos = 0;
+        $aAT = $aGC = $aGmC = $aKETO = [null];
+        $oService->computeImage("AATTAATTAATT", $iPos, 4, 1, 1, 1, 12, 4, $aAT, $aGC, $aGmC, $aKETO);
+
+        $this->assertSame(0.0, $aGC[0]);
     }
 }
