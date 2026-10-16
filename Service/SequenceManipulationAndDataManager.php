@@ -3,7 +3,7 @@
  * Sequence Manipulation and DATA Functions
  * Inspired by BioPHP's project biophp.org
  * Created 1st march  2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -22,6 +22,10 @@ class SequenceManipulationAndDataManager
     use SequenceTrait;
 
     /**
+     * The sequence on 70 bases lines, each followed by its plain complement written base for base
+     * under it: the second row reads 3' to 5' from left to right (it is not the reverse complement),
+     * and each line ends with the 1-based position of its last base. The complement is the one of DNA:
+     * it knows no U. The forward row keeps the case of the input, the complement is in upper case.
      * @param   string  $sSeq
      * @return  string
      * @throws  \Exception

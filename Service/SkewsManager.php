@@ -3,7 +3,7 @@
  * Skews Functions
  * Inspired by BioPHP's project biophp.org
  * Created 1st march 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -75,7 +75,9 @@ class SkewsManager
     /**
      * Will  compare oligonucleotide frequencies in all the sequence
      * with frequencies in each window, and will return an array
-     * with distances: by default the Pearson distance (1 - r), as the legacy minitool did, or on
+     * with distances: by default the Pearson distance (1 - r), as the legacy minitool did (which
+     * correlated the 136 classes of the 256 tetranucleotides folded with their reverse complements;
+     * here the 256 words are correlated, so the numbers are close but not identical), or on
      * request the distance of Almeida et al, 2001 (a Pearson correlation weighted by x * y).
      * The Almeida distance weights the words by their frequency in both series, which Pearson does
      * not: on a sequence whose two strands differ in composition it reshapes the curve instead of
@@ -86,7 +88,9 @@ class SkewsManager
      * @param       string      $sSequence      The sequence to analyze
      * @param       int         $iWindow        The size of the window
      * @param       int         $iOskew         Number of nucleos
-     * @param       int         $iStrands       One or both strands
+     * @param       int         $iStrands       One or both strands. With one oligonucleotide length of 1 and both
+     *                                          strands, A = T and C = G: the distance only says on which side of
+     *                                          the AT / GC balance of the sequence the window is (0 or 2)
      * @param       string      $sDistance      self::DISTANCE_PEARSON (default) or self::DISTANCE_ALMEIDA
      * @return      array
      * @throws      \InvalidArgumentException  When the distance is neither of them
