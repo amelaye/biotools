@@ -622,6 +622,46 @@ class ChaosGameRepresentationManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * The 3-mer grid is 8 x 8 cells of 32 px. The first base is the least significant bit
+     * (G/T: +1 column, A/T: +1 row), the second weighs 2 and the third 4. Expected cells are
+     * worked out here by hand from that rule, not read back from the calculator.
+     */
+    public function testTrinucleotideLabelsSitInTheirOwnCell()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+        $aResult = $service->createFCGRImage(
+            ["AAA" => 1, "TTT" => 2], "labels", ["T" => 1, "A" => 1, "C" => 1, "G" => 1], 3, 1, "3"
+        );
+        $sSvg = file_get_contents($aResult["file"]);
+        unlink($aResult["file"]);
+
+        $aPositions = [];
+        preg_match_all('/<text x="([\d.]+)" y="([\d.]+)"[^>]*>([ACGT]{3})<\/text>/', $sSvg, $aMatches, PREG_SET_ORDER);
+        foreach ($aMatches as $aMatch) {
+            $aPositions[$aMatch[3]] = [(float) $aMatch[1], (float) $aMatch[2]];
+        }
+        $this->assertCount(64, $aPositions);
+
+        // CCC sits in cell (0, 0): it gives the pixel origin of the labels
+        list($fX0, $fY0) = $aPositions["CCC"];
+
+        foreach ($aPositions as $sWord => $aPosition) {
+            $iColumn = 0;
+            $iRow = 0;
+            foreach (str_split($sWord) as $i => $sBase) {
+                $iColumn += in_array($sBase, ["G", "T"]) ? (1 << $i) : 0;
+                $iRow    += in_array($sBase, ["A", "T"]) ? (1 << $i) : 0;
+            }
+            $this->assertEqualsWithDelta($fX0 + $iColumn * 32, $aPosition[0], 0.01, "$sWord column $iColumn");
+            $this->assertEqualsWithDelta($fY0 + $iRow * 32, $aPosition[1], 0.01, "$sWord row $iRow");
+        }
+
+        // the cells that were mislabelled or piled up before
+        $this->assertEqualsWithDelta($fX0 + 64, $aPositions["CTC"][0], 0.01);
+        $this->assertEqualsWithDelta($fX0 + 224, $aPositions["TTT"][0], 0.01);
+    }
+
     public function testFCGRComputeSingleStrand()
     {
         $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);

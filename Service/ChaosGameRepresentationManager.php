@@ -10,6 +10,7 @@ namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\NucleotidApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
+use Amelaye\BioPHP\Domain\Tools\Service\ChaosGameRepresentationCalculator;
 use Amelaye\BioTools\Service\Graphics\SvgCanvas;
 
 /**
@@ -439,83 +440,25 @@ class ChaosGameRepresentationManager
             $oIm->line(202, 90, 202, 346, $sBlack);
             $oIm->line(234, 90, 234, 346, $sBlack);
 
-            // trinucleotides in their place
+            // trinucleotides in their place: the cell of each word comes from BioPHP, as the coloured areas do
             $iHPos = 8;
             $iVPos = 10;
+            $iCell = 32;
 
-            $aImageNucleotids = array(
-                "CCC" => array("x" => 10   + $iHPos,  "y" => 90 + $iVPos), // x + 32
-                "GCC" => array("x" => 42   + $iHPos,  "y" => 90 + $iVPos),
-                "CGC" => array("x" => 74   + $iHPos,  "y" => 90 + $iVPos),
-                "GGC" => array("x" => 106  + $iHPos,  "y" => 90 + $iVPos),
-                "CCG" => array("x" => 138  + $iHPos,  "y" => 90 + $iVPos),
-                "GCG" => array("x" => 170  + $iHPos,  "y" => 90 + $iVPos),
-                "CGG" => array("x" => 202  + $iHPos,  "y" => 90 + $iVPos),
-                "GGG" => array("x" => 234  + $iHPos,  "y" => 90 + $iVPos),
-
-                "ACC" => array("x" => 10   + $iHPos,  "y" => 122 + $iVPos), // y + 32
-                "TCC" => array("x" => 42   + $iHPos,  "y" => 122 + $iVPos),
-                "AGC" => array("x" => 74   + $iHPos,  "y" => 122 + $iVPos),
-                "TGC" => array("x" => 106  + $iHPos,  "y" => 122 + $iVPos),
-                "ACG" => array("x" => 138  + $iHPos,  "y" => 122 + $iVPos),
-                "TCG" => array("x" => 170  + $iHPos,  "y" => 122 + $iVPos),
-                "AGG" => array("x" => 202  + $iHPos,  "y" => 122 + $iVPos),
-                "TGG" => array("x" => 234  + $iHPos,  "y" => 122 + $iVPos),
-
-                "CAC" => array("x" => 10   + $iHPos,  "y" => 154 + $iVPos),
-                "GAC" => array("x" => 42   + $iHPos,  "y" => 154 + $iVPos),
-                "ATC" => array("x" => 74   + $iHPos,  "y" => 154 + $iVPos),
-                "CTC" => array("x" => 106  + $iHPos,  "y" => 154 + $iVPos),
-                "CAG" => array("x" => 138  + $iHPos,  "y" => 154 + $iVPos),
-                "GAG" => array("x" => 170  + $iHPos,  "y" => 154 + $iVPos),
-                "CTG" => array("x" => 202  + $iHPos,  "y" => 154 + $iVPos),
-                "GTG" => array("x" => 234  + $iHPos,  "y" => 154 + $iVPos),
-
-                "AAC" => array("x" => 10   + $iHPos,  "y" => 186 + $iVPos),
-                "TAC" => array("x" => 42   + $iHPos,  "y" => 186 + $iVPos),
-                "GTC" => array("x" => 74   + $iHPos,  "y" => 186 + $iVPos),
-                "TTC" => array("x" => 106  + $iHPos,  "y" => 186 + $iVPos),
-                "AAG" => array("x" => 138  + $iHPos,  "y" => 186 + $iVPos),
-                "TAG" => array("x" => 170  + $iHPos,  "y" => 186 + $iVPos),
-                "ATG" => array("x" => 202  + $iHPos,  "y" => 186 + $iVPos),
-                "TTG" => array("x" => 234  + $iHPos,  "y" => 186 + $iVPos),
-
-                "CCA" => array("x" => 10   + $iHPos,  "y" => 218 + $iVPos),
-                "GCA" => array("x" => 42   + $iHPos,  "y" => 218 + $iVPos),
-                "CGA" => array("x" => 74   + $iHPos,  "y" => 218 + $iVPos),
-                "GGA" => array("x" => 106  + $iHPos,  "y" => 218 + $iVPos),
-                "CCT" => array("x" => 138  + $iHPos,  "y" => 218 + $iVPos),
-                "GCT" => array("x" => 170  + $iHPos,  "y" => 218 + $iVPos),
-                "CGT" => array("x" => 202  + $iHPos,  "y" => 218 + $iVPos),
-                "GGT" => array("x" => 234  + $iHPos,  "y" => 218 + $iVPos),
-
-                "ACA" => array("x" => 10   + $iHPos,  "y" => 250 + $iVPos),
-                "TCA" => array("x" => 42   + $iHPos,  "y" => 250 + $iVPos),
-                "AGA" => array("x" => 74   + $iHPos,  "y" => 250 + $iVPos),
-                "TGA" => array("x" => 106  + $iHPos,  "y" => 250 + $iVPos),
-                "ACT" => array("x" => 138  + $iHPos,  "y" => 250 + $iVPos),
-                "TCT" => array("x" => 170  + $iHPos,  "y" => 250 + $iVPos),
-                "AGT" => array("x" => 202  + $iHPos,  "y" => 250 + $iVPos),
-                "TGT" => array("x" => 234  + $iHPos,  "y" => 250 + $iVPos),
-
-                "CAA" => array("x" => 10   + $iHPos,  "y" => 282 + $iVPos),
-                "GAA" => array("x" => 42   + $iHPos,  "y" => 282 + $iVPos),
-                "CTA" => array("x" => 74   + $iHPos,  "y" => 282 + $iVPos),
-                "GTA" => array("x" => 106  + $iHPos,  "y" => 282 + $iVPos),
-                "CAT" => array("x" => 138  + $iHPos,  "y" => 282 + $iVPos),
-                "GAT" => array("x" => 170  + $iHPos,  "y" => 282 + $iVPos),
-                "CTT" => array("x" => 202  + $iHPos,  "y" => 282 + $iVPos),
-                "GTT" => array("x" => 234  + $iHPos,  "y" => 282 + $iVPos),
-
-                "AAA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "TAA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "ATA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "TTA" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "AAT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "TAT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "ATT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-                "TTT" => array("x" => 10   + $iHPos,  "y" => 314 + $iVPos),
-            );
+            $oCalculator = new ChaosGameRepresentationCalculator();
+            $aImageNucleotids = [];
+            foreach (['A', 'C', 'G', 'T'] as $sFirst) {
+                foreach (['A', 'C', 'G', 'T'] as $sSecond) {
+                    foreach (['A', 'C', 'G', 'T'] as $sThird) {
+                        $sWord = $sFirst . $sSecond . $sThird;
+                        list($iColumn, $iRow) = $oCalculator->cell($sWord);
+                        $aImageNucleotids[$sWord] = [
+                            "x" => 10 + $iColumn * $iCell + $iHPos,
+                            "y" => 90 + $iRow * $iCell + $iVPos
+                        ];
+                    }
+                }
+            }
 
             foreach($aImageNucleotids as $sKey => $aL) {
                 $oIm->text($iFontWeight, $aL["x"], $aL["y"], $sKey, $sBlack);
