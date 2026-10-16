@@ -43,6 +43,21 @@ class SequenceAlignmentManagerTest extends TestCase
         $this->assertStringContainsString("No local similarity", $aResult["message"]);
     }
 
+    /**
+     * With or without an alignment the result has the same keys, so that a template reading score or
+     * message does not fail on one of the two cases
+     */
+    public function testAlignmentResultsAlwaysHaveTheSameKeys()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $aKeys = array_keys($service->alignDNA("ACGT", "ACGT"));
+
+        $this->assertSame($aKeys, array_keys($service->alignDNA("AAAA", "TTTT")));
+        $this->assertSame($aKeys, array_keys($service->alignProteins("MKBL", "MKDL")));
+        $this->assertNull($service->alignDNA("AAAA", "TTTT")["score"]);
+        $this->assertNull($service->alignDNA("ACGT", "ACGT")["message"]);
+    }
+
     public function testAlignProteinsWithoutLocalSimilarity()
     {
         $service = new SequenceAlignmentManager($this->matrixMock);
@@ -73,7 +88,7 @@ class SequenceAlignmentManagerTest extends TestCase
         $service = new SequenceAlignmentManager($this->matrixMock);
 
         $this->assertEquals(
-            ["seqa" => "ACGTACGT", "seqb" => "ACGTACGT", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8],
+            ["seqa" => "ACGTACGT", "seqb" => "ACGTACGT", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8, "message" => null],
             $service->alignDNA("acgtacgt", "ACGTACGT")
         );
     }
@@ -88,12 +103,12 @@ class SequenceAlignmentManagerTest extends TestCase
 
         // best local region: the whole of the shorter sequence (8 matches x 2 = 16)
         $this->assertEquals(
-            ["seqa" => "ACGTACGTacgt", "seqb" => "ACGTACGT----", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8],
+            ["seqa" => "ACGTACGTacgt", "seqb" => "ACGTACGT----", "score" => 16, "startA" => 1, "endA" => 8, "startB" => 1, "endB" => 8, "message" => null],
             $service->alignDNA("ACGTACGTACGT", "ACGTACGT")
         );
         // the 7 leading bases of B have no counterpart in A, as in the legacy minitool output
         $this->assertEquals(
-            ["seqa" => "-------GGAGTGAGGGGAGC", "seqb" => "cgcatgcGGAGTGAGGGGAGC", "score" => 28, "startA" => 1, "endA" => 14, "startB" => 8, "endB" => 21],
+            ["seqa" => "-------GGAGTGAGGGGAGC", "seqb" => "cgcatgcGGAGTGAGGGGAGC", "score" => 28, "startA" => 1, "endA" => 14, "startB" => 8, "endB" => 21, "message" => null],
             $service->alignDNA("GGAGTGAGGGGAGC", "CGCATGCGGAGTGAGGGGAGC")
         );
     }

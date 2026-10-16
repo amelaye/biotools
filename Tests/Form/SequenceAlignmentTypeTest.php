@@ -83,4 +83,39 @@ class SequenceAlignmentTypeTest extends AbstractFormTypeTestCase
 
         $this->assertTrue($form->isValid());
     }
+
+    /**
+     * A peptide made of the letters A, C, G, T, N only looks like DNA: choosing "Protein" keeps it as it is
+     */
+    public function testTheChosenTypeOverridesTheDetection()
+    {
+        $aBase = ['id1' => 'a', 'sequence' => 'GATTACAX', 'id2' => 'b', 'sequence2' => 'GATTAGAX'];
+
+        $oAuto = $this->factory->create(SequenceAlignmentType::class);
+        $oAuto->submit($aBase);
+        $this->assertSame('GATTACAN', $oAuto->getData()['sequence']);
+
+        $oProtein = $this->factory->create(SequenceAlignmentType::class);
+        $oProtein->submit($aBase + ['moltype' => 'protein']);
+        $this->assertSame('GATTACAX', $oProtein->getData()['sequence']);
+        $this->assertSame('GATTAGAX', $oProtein->getData()['sequence2']);
+    }
+
+    /**
+     * An RNA with IUPAC codes is not recognised by the detection (R, Y... are also amino acids),
+     * but the nucleic type converts it
+     */
+    public function testNucleicTypeConvertsAnRnaWithIupacCodes()
+    {
+        $aBase = ['id1' => 'a', 'sequence' => 'AUGRYKUUX', 'id2' => 'b', 'sequence2' => 'AUGCCGUUX'];
+
+        $oAuto = $this->factory->create(SequenceAlignmentType::class);
+        $oAuto->submit($aBase);
+        $this->assertSame('AUGRYKUUX', $oAuto->getData()['sequence']);
+
+        $oNucleic = $this->factory->create(SequenceAlignmentType::class);
+        $oNucleic->submit($aBase + ['moltype' => 'nucleic']);
+        $this->assertSame('ATGRYKTTN', $oNucleic->getData()['sequence']);
+        $this->assertSame('ATGCCGTTN', $oNucleic->getData()['sequence2']);
+    }
 }

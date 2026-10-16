@@ -3,12 +3,13 @@
  * Class ReduceAlphabet
  * Freely inspired by BioPHP's project biophp.org
  * Created 20 april 2019
- * Last modified 24 august 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -89,6 +90,25 @@ class SequenceAlignmentType extends AbstractType
         );
 
         $builder->add(
+            'moltype',
+            ChoiceType::class,
+            [
+                'choices' => [
+                    'Detect from the sequences' => 'auto',
+                    'DNA or RNA' => 'nucleic',
+                    'Protein' => 'protein'
+                ],
+                'data' => 'auto',
+                'empty_data' => 'auto',
+                'required' => false,
+                'label' => "Type of the sequences : ",
+                'attr' => [
+                    'class' => "custom-select d-block w-20"
+                ]
+            ]
+        );
+
+        $builder->add(
             'submit',
             SubmitType::class,
             [
@@ -112,10 +132,13 @@ class SequenceAlignmentType extends AbstractType
             }
             // U -> T and X -> N only make sense for nucleic acids: in a protein, U is selenocysteine
             // and X an unknown residue. Both sequences are aligned together, so one protein is enough
-            // to keep both untouched.
+            // to keep both untouched. The type chosen in the form decides; "detect" reads a sequence as
+            // nucleic when it only holds A, C, G, T, U, N and X - a peptide made of these letters alone
+            // (GATTACA...) is then taken for DNA, which is why the type can be set.
+            $sType = $aData['moltype'] ?? 'auto';
             if (isset($aData['sequence'], $aData['sequence2'])
-                && self::isNucleic($aData['sequence'])
-                && self::isNucleic($aData['sequence2'])
+                && ($sType === 'nucleic'
+                    || ($sType === 'auto' && self::isNucleic($aData['sequence']) && self::isNucleic($aData['sequence2'])))
             ) {
                 foreach (['sequence', 'sequence2'] as $sField) {
                     $aData[$sField] = strtr($aData[$sField], ["U" => "T", "X" => "N"]);
