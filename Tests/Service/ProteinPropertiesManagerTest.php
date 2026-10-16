@@ -602,6 +602,17 @@ class ProteinPropertiesManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * Asn is a polar amide, Asp is the negatively charged acid (the two were swapped)
+     */
+    public function testProteinAminoacidNature2PutsAsnAmongThePolarAndAspAmongTheAcids()
+    {
+        $aColors = ["polar" => "P", "negatively_charged" => "-", "nonpolar" => "n", "hydrophobic" => "h", "positively_charged" => "+"];
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertSame([["N", "P"], ["Q", "P"], ["H", "P"], ["D", "-"], ["E", "-"]], $service->proteinAminoacidNature2("NQHDE", $aColors));
+    }
+
     public function testProteinAminoacidNature2()
     {
         $sSequence = "ARNDCEQGHILKMFP";
@@ -625,11 +636,11 @@ class ProteinPropertiesManagerTest extends TestCase
             ],
             2 => [
                 0 => "N",
-                1 => "red",
+                1 => "magenta",
             ],
             3 => [
                 0 => "D",
-                1 => "magenta",
+                1 => "red",
             ],
             4 => [
                 0 => "C",

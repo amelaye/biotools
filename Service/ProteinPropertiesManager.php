@@ -365,12 +365,12 @@ class ProteinPropertiesManager
                     continue;
                 }
                 // Polar
-                if (strpos(" DQH",substr($sSequence,$i,1)) > 0) {
+                if (strpos(" NQH",substr($sSequence,$i,1)) > 0) {
                     $aResult[] = [substr($sSequence,$i,1), $aColors["polar"]];
                     continue;
                 }
                 // Negatively charged
-                if (strpos(" NE",substr($sSequence,$i,1)) > 0) {
+                if (strpos(" DE",substr($sSequence,$i,1)) > 0) {
                     $aResult[] = [substr($sSequence,$i,1), $aColors["negatively_charged"]];
                     continue;
                 }
