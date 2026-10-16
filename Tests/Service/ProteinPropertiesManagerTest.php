@@ -371,42 +371,46 @@ class ProteinPropertiesManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
-    public function testMolarAbsorptionCoefficientOfProt()
+    /**
+     * Expected values worked out by hand from Pace et al. (1995): W*5500 + Y*1490 + floor(C/2)*125
+     * @dataProvider molarAbsorptionProvider
+     */
+    public function testMolarAbsorptionCoefficientOfProt(array $aCounts, $fExpected)
     {
-        $aminoacid_content = [
-          "*" => 0,
-          "A" => 1,
-          "C" => 1,
-          "D" => 1,
-          "E" => 1,
-          "F" => 1,
-          "G" => 1,
-          "H" => 1,
-          "I" => 1,
-          "K" => 1,
-          "L" => 1,
-          "M" => 1,
-          "N" => 1,
-          "O" => 0,
-          "P" => 1,
-          "Q" => 1,
-          "R" => 1,
-          "S" => 1,
-          "T" => 1,
-          "U" => 0,
-          "V" => 0,
-          "W" => 0,
-          "X" => 0,
-          "Y" => 0,
-        ];
-
-        $molweight = 1947.07;
-        $fExpected = 2.8889562265353;
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), $aCounts);
 
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
-        $testFunction = $service->molarAbsorptionCoefficientOfProt($aminoacid_content, $molweight);
 
-        $this->assertEqualsWithDelta($fExpected, $testFunction, 0.0001);
+        $this->assertEqualsWithDelta($fExpected, $service->molarAbsorptionCoefficientOfProt($aContent), 0.0001);
+    }
+
+    public static function molarAbsorptionProvider()
+    {
+        return [
+            'polyalanine absorbs nothing'   => [["A" => 10], 0],
+            'five tryptophans'              => [["W" => 5], 27500],
+            'two tyrosines'                 => [["Y" => 2], 2980],
+            'one cystine (CC)'              => [["C" => 2], 125],
+            'a lone Cys is no cystine'      => [["C" => 1], 0],
+            'three Cys make one cystine'    => [["C" => 3], 125],
+            'W + Y + CC'                    => [["W" => 1, "Y" => 1, "C" => 2], 7115],
+        ];
+    }
+
+    public function testMassAbsorptionCoefficientOfProt()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        // WWWWW: 5 * 186.21 + 18.02 = 949.07 Da, so 27500 / 949.07 = 28.98 for 1 g/L
+        $this->assertEqualsWithDelta(28.9757, $service->massAbsorptionCoefficientOfProt(27500, 949.07), 0.001);
+    }
+
+    public function testMassAbsorptionCoefficientRefusesNullWeight()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->massAbsorptionCoefficientOfProt(27500, 0);
     }
 
     public function testProteinMolecularWeight()

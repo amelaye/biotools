@@ -240,25 +240,39 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Prediction of the molar absorption coefficient of a protein
+     * Prediction of the molar absorption coefficient of a protein at 280 nm, in M-1.cm-1
      * Pace et al. . Protein Sci. 1995;4:2411-23.
+     * epsilon = W*5500 + Y*1490 + cystines*125, a cystine being a disulfide bridge, i.e. two Cys.
+     * The cystine count assumes every Cys that can pair is paired.
      * @param   array       $aAminoacidContent
-     * @param   float       $fMolWeight
      * @return  float
      * @throws  \Exception
      */
-    public function molarAbsorptionCoefficientOfProt($aAminoacidContent, $fMolWeight)
+    public function molarAbsorptionCoefficientOfProt($aAminoacidContent)
     {
         try {
-            $fAbscoef = (
-                    $aAminoacidContent["A"] * 5500
-                    + $aAminoacidContent["Y"] * 1490
-                    + $aAminoacidContent["C"] * 125
-                ) / $fMolWeight;
-            return $fAbscoef;
+            return $aAminoacidContent["W"] * 5500
+                + $aAminoacidContent["Y"] * 1490
+                + floor($aAminoacidContent["C"] / 2) * 125;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Mass absorption coefficient at 280 nm: A280 of a 1 g/L solution (epsilon / molecular weight)
+     * @param   float       $fMolarAbsorptionCoefficient    In M-1.cm-1
+     * @param   float       $fMolWeight                     In Da
+     * @return  float
+     * @throws  \InvalidArgumentException
+     */
+    public function massAbsorptionCoefficientOfProt($fMolarAbsorptionCoefficient, $fMolWeight)
+    {
+        if ($fMolWeight <= 0) {
+            throw new \InvalidArgumentException("The molecular weight must be positive.");
+        }
+
+        return $fMolarAbsorptionCoefficient / $fMolWeight;
     }
 
     /**
