@@ -8,6 +8,7 @@
 namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\Pam250MatrixDigitApiAdapter;
+use Amelaye\BioPHP\Domain\Alignment\Exception\InvalidAlignmentInputException;
 use Amelaye\BioPHP\Domain\Alignment\Interfaces\SmithWatermanAlignerInterface;
 use Amelaye\BioPHP\Domain\Alignment\Interfaces\SubstitutionScoringInterface;
 use Amelaye\BioPHP\Domain\Alignment\Result\PairwiseAlignmentResult;
@@ -66,14 +67,12 @@ class SequenceAlignmentManager
      */
     public function alignDNA($sSequenceA, $sSequenceB)
     {
-        $oResult = $this->oAligner->align(
+        return $this->alignLocally(
             new DnaSequence(strtoupper($sSequenceA)),
             new DnaSequence(strtoupper($sSequenceB)),
             new SimpleMatchMismatchScoring(self::DNA_MATCH, self::DNA_MISMATCH),
             self::DNA_GAP
         );
-
-        return $this->showWithFlanks($oResult, strtoupper($sSequenceA), strtoupper($sSequenceB));
     }
 
     /**
@@ -85,14 +84,43 @@ class SequenceAlignmentManager
      */
     public function alignProteins($sSequenceA, $sSequenceB)
     {
-        $oResult = $this->oAligner->align(
+        return $this->alignLocally(
             new AminoAcidSequence(strtoupper($sSequenceA)),
             new AminoAcidSequence(strtoupper($sSequenceB)),
             $this->oPam250Scoring,
             self::PROTEIN_GAP
         );
+    }
 
-        return $this->showWithFlanks($oResult, strtoupper($sSequenceA), strtoupper($sSequenceB));
+    /**
+     * Runs the local alignment. Two situations are not errors of the user's request but results
+     * to report: no similarity at all (BioPHP then refuses to build an empty alignment), and a
+     * symbol the scoring matrix has no entry for (B, Z, J, O, * with PAM250). Both give empty
+     * sequences and a message to display.
+     * @param   AminoAcidSequence|DnaSequence   $oFirst
+     * @param   AminoAcidSequence|DnaSequence   $oSecond
+     * @param   SubstitutionScoringInterface    $oScoring
+     * @param   int                             $iGapPenalty
+     * @return  array
+     */
+    private function alignLocally($oFirst, $oSecond, SubstitutionScoringInterface $oScoring, int $iGapPenalty) : array
+    {
+        try {
+            $oResult = $this->oAligner->align($oFirst, $oSecond, $oScoring, $iGapPenalty);
+        } catch (InvalidAlignmentInputException $e) {
+            if ($e->getMessage() === InvalidAlignmentInputException::emptyAlignedSequence()->getMessage()) {
+                return ["seqa" => "", "seqb" => "", "message" => "No local similarity was found between the two sequences."];
+            }
+            if (strpos($e->getMessage(), 'No substitution score is defined') === 0) {
+                return [
+                    "seqa" => "", "seqb" => "",
+                    "message" => "A symbol of the sequences is not supported by the PAM250 matrix. " . $e->getMessage()
+                ];
+            }
+            throw $e;
+        }
+
+        return $this->showWithFlanks($oResult, $oFirst->getValue(), $oSecond->getValue());
     }
 
     /**

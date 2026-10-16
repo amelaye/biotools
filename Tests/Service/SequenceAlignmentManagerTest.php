@@ -30,6 +30,42 @@ class SequenceAlignmentManagerTest extends TestCase
     }
 
     /**
+     * Without any common base there is no local alignment: an empty result with a message,
+     * not an exception
+     */
+    public function testAlignDNAWithoutLocalSimilarity()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $aResult = $service->alignDNA("AAAA", "TTTT");
+
+        $this->assertSame("", $aResult["seqa"]);
+        $this->assertSame("", $aResult["seqb"]);
+        $this->assertStringContainsString("No local similarity", $aResult["message"]);
+    }
+
+    public function testAlignProteinsWithoutLocalSimilarity()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        // W against C scores -8 in PAM250: nothing positive to align
+        $aResult = $service->alignProteins("WWWW", "CCCC");
+
+        $this->assertSame("", $aResult["seqa"]);
+        $this->assertStringContainsString("No local similarity", $aResult["message"]);
+    }
+
+    /**
+     * B, Z, J, O and * have no PAM250 score
+     */
+    public function testAlignProteinsWithASymbolPam250DoesNotKnow()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+        $aResult = $service->alignProteins("MKBL", "MKDL");
+
+        $this->assertSame("", $aResult["seqa"]);
+        $this->assertStringContainsString("not supported by the PAM250 matrix", $aResult["message"]);
+    }
+
+    /**
      * Identical sequences align without any gap or flank
      */
     public function testAlignDNAIdentical()
