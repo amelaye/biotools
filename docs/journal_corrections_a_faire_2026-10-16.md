@@ -110,7 +110,7 @@ Cases : `[ ]` à faire, `[x]` fait.
 
 ## Groupe 3 — formulaire d'alignement, classes, FASTA, fixture
 
-### [ ] J8. Formulaire et résultat d'alignement — Agent
+### [x] J8. Formulaire et résultat d'alignement — Agent
 - **Fichiers :** `Form/SequenceAlignmentType.php`, `Service/SequenceAlignmentManager.php`.
 - **Problèmes :**
   - l'heuristique « nucléique » (seulement A, C, G, T, U, N, X) prend pour de l'ADN un peptide court
@@ -118,12 +118,14 @@ Cases : `[ ]` à faire, `[x]` fait.
     n'est alors pas converti ;
   - le résultat vide n'a pas les mêmes clés que le résultat normal : un gabarit Twig en mode strict
     échoue sur `.score` ou `.message`.
-- **Correction :** étendre l'alphabet nucléique à l'IUPAC ; renvoyer toujours les mêmes clés
+- **Correction réalisée :** l'alphabet n'est pas étendu (M, K, R, S, V, H, D, Y, W, B sont aussi des acides
+  aminés : on prendrait plus de protéines pour de l'ADN) ; un champ « type des séquences » (détecter /
+  ADN ou ARN / protéine) décide à la place de l'heuristique, qui reste le mode par défaut ; renvoyer toujours les mêmes clés
   (`score`, positions, `message`, avec `null` quand il n'y a pas d'alignement) ; si le code appelant
   connaît le type (ADN / protéine), le laisser primer sur l'heuristique.
 - **Tests :** `GATTACA` contre `GATTAGA` ; ARN avec codes IUPAC ; clés identiques dans les deux cas.
 
-### [ ] J9. Classes d'acides aminés — Agent
+### [x] J9. Classes d'acides aminés — Agent
 - **Fichier :** `Service/ProteinPropertiesManager.php` — `proteinAminoacidNature1()` et `…Nature2()`.
 - **Problèmes :** libellés inexacts dans la classification 2 (S et T sont polaires et non « petits
   apolaires » ; F, Y, M, W ne sont pas « petits » ; Y et W sont à peine hydrophobes). Les résidus hors
@@ -133,7 +135,7 @@ Cases : `[ ]` à faire, `[x]` fait.
 - **Correction :** renommer les libellés ; émettre une couleur neutre pour un résidu non classé.
 - **Test :** `proteinAminoacidNature2("aX", …)` ne doit plus renvoyer `[]`.
 
-### [ ] J10. Upload FASTA — Agent
+### [x] J10. Upload FASTA — Agent
 - **Fichier :** `Service/FastaUploaderManager.php`.
 - **Problèmes :** fins de ligne `\r` seules (ancien Mac) : tout après `>` devient un en-tête, la
   séquence est vide et acceptée avec des comptes nuls ; fichier sans séquence accepté sans erreur ;
@@ -143,33 +145,39 @@ Cases : `[ ]` à faire, `[x]` fait.
 - **Correction :** normaliser `\r\n` et `\r`, refuser une séquence vide (« no sequence »), ignorer les
   lignes `;`, documenter la concaténation.
 
-### [ ] J11. Fixture du ver plat — Agent
+### [x] J11. Fixture du ver plat — Agent
 - **Fichier :** `Tests/Service/samples/TripletsSpecies.php:521-522` : le 14ᵉ triplet est `ATH` au lieu
   de `AAH` (Asn). Sans effet sur la traduction avec traducteur ; seul le chemin de secours est faussé.
-- **À faire :** corriger la fixture de test ; **vérifier la copie dans bioapi** (hors de ce dépôt).
+- **Fait :** fixture corrigée (la fixture de BioPHP avait déjà `AAH`). **À vérifier :** la copie dans bioapi
+  (hors de ce dépôt).
 
 ---
 
 ## Mineur et tests manquants
 
-- [ ] Les erreurs de `proteinIsoelectricPoint()` / `proteinCharge()` sont ré-enveloppées en
+Laissés tels quels, volontairement : N contre N compte comme un match (+2) en ADN et `findORF()` non trimmed
+surligne les segments sans Met (comportements du legacy, documentés) ; l'échelle de l'axe de l'oligo-skew
+varie d'un graphe à l'autre (les graduations suivent l'échelle). `displayBothStrands()` : seule la
+docblock précise 3'→5' (la sortie n'est pas modifiée).
+
+- [x] Les erreurs de `proteinIsoelectricPoint()` / `proteinCharge()` sont ré-enveloppées en
   `\Exception($e)` : le message devient une trace et le type est perdu. `proteinMolecularWeight()` ne
   nomme pas le symbole sans poids (`J`).
-- [ ] « 7 bp » du CGR compte aussi les espaces et les N (`strlen`).
-- [ ] `createGraphForTrinucleo()` instancie son propre calculateur au lieu d'utiliser celui qui est
+- [x] « 7 bp » du CGR compte aussi les espaces et les N (`strlen`).
+- [x] `createGraphForTrinucleo()` instancie son propre calculateur au lieu d'utiliser celui qui est
   injecté.
 - [ ] N contre N compte comme un match (+2) en ADN (héritage legacy, discutable).
-- [ ] `compareAlignment()` traite toute minuscule comme un flanc : à documenter (n'alimenter qu'avec la
+- [x] `compareAlignment()` traite toute minuscule comme un flanc : à documenter (n'alimenter qu'avec la
   sortie de `alignDNA()` / `alignProteins()`).
 - [ ] `findORF()` non trimmed surligne encore les segments sans Met (comportement legacy documenté).
-- [ ] Docblocks : « comme le legacy » pour l'oligo-skew est un peu fort (136 classes repliées contre
+- [x] Docblocks : « comme le legacy » pour l'oligo-skew est un peu fort (136 classes repliées contre
   256 mots) ; à k = 1 sur deux brins, la distance ne vaut que 0 ou 2.
 - [ ] L'échelle de l'axe de l'oligo-skew change d'un graphe à l'autre (0,8 / 1,6 / 2,4).
-- [ ] `displayBothStrands()` : étiqueter les extrémités 5'/3' (la ligne du bas est le complément simple,
+- [x] `displayBothStrands()` : étiqueter les extrémités 5'/3' (la ligne du bas est le complément simple,
   lu 3'→5').
-- [ ] Tm : une amorce en minuscules passée directement au service (sans le formulaire) est jugée
+- [x] Tm : une amorce en minuscules passée directement au service (sans le formulaire) est jugée
   « dégénérée » ; aucune case Tm cochée n'est signalée.
-- [ ] Garder dans le dépôt le script Python qui a produit les valeurs Almeida et celles de l'oligo-skew
+- [x] Garder dans le dépôt le script Python qui a produit les valeurs Almeida et celles de l'oligo-skew
   à deux brins (les agents ne peuvent pas les vérifier).
 
 **Tests manquants relevés par les agents :** frames 4 à 6 avec le vrai traducteur et une longueur non

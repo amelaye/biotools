@@ -102,6 +102,19 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
 - **G+C% de la manipulation de séquence.** Un tiret ou un chiffre est écarté du dénominateur comme un
   N ; sans aucune base informative (séquence vide, seulement des N), le résultat est `null` et non 0 %.
 
+- **Formulaire d'alignement.** Nouveau champ « Type of the sequences » (détecter, ADN ou ARN, protéine) :
+  le type choisi décide de la conversion U→T et X→N, l'heuristique restant le mode par défaut. Le
+  résultat d'un alignement a toujours les mêmes clés (`score`, positions et `message` valent `null`
+  quand ils n'ont pas de sens).
+- **Classes d'acides aminés.** Un résidu non classé (B, Z, X, U, O, `*`…) garde sa place avec la couleur
+  `other` ; les minuscules sont classées. Libellés des docblocks corrigés.
+- **Upload FASTA.** Fins de ligne `\r` seules, lignes de commentaire `;` ; un fichier sans séquence est
+  refusé.
+- **Messages d'erreur.** Le pI, la charge et la masse moléculaire ne réenveloppent plus leurs exceptions ;
+  la masse nomme le symbole sans poids. L'étiquette « bp » du CGR ne compte plus les espaces. Une amorce
+  en minuscules passée directement au service n'est plus jugée dégénérée ; au moins une méthode de Tm doit
+  être cochée dans le formulaire.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min
