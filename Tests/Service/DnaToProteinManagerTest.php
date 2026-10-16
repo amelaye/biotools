@@ -217,6 +217,33 @@ class DnaToProteinManagerTest extends TestCase
         $this->assertSame("IS", $aFrames[6]);
     }
 
+    /**
+     * The same gene written as RNA (AUGAAAUAG) has the same six frames: U is read as T before the
+     * opposite strand is built, since the complement of DNA knows no U (AUG would give CUT, not CAU)
+     */
+    public function testDefinedTreatmentReadsRnaLikeDna()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        $aFrames = $service->definedTreatment(6, "standard", "AUGAAAUAG");
+
+        $this->assertSame("MK*", $aFrames[1]);
+        $this->assertSame("LFH", $aFrames[4]);
+        $this->assertSame("YF", $aFrames[5]);
+        $this->assertSame("IS", $aFrames[6]);
+        $this->assertEquals($service->definedTreatment(6, "standard", "augaaauag"), $service->definedTreatment(6, "standard", "atgaaatag"));
+    }
+
+    public function testCustomTreatmentReadsRnaLikeDna()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+        $sMycode = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG";
+
+        $this->assertSame(
+            $service->customTreatment(6, "ATGAAATAG", $sMycode),
+            $service->customTreatment(6, "AUGAAAUAG", $sMycode)
+        );
+    }
+
     public function testDefinedTreatmentMore3Frames()
     {
         $iFrames = "6";

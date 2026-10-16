@@ -122,6 +122,18 @@ class DnaToProteinManager
 
 
     /**
+     * The sequence of an RNA read as DNA (U -> T), as BioPHP's RnaSequence::toDna() does. The
+     * complement used for the frames 4 to 6 (compDNA / revCompDNA) is the one of DNA: it knows no U,
+     * so an RNA sequence would be left uncomplemented at every U.
+     * @param   string  $sSequence
+     * @return  string
+     */
+    private function rnaToDna(string $sSequence) : string
+    {
+        return strtr($sSequence, ["U" => "T", "u" => "t"]);
+    }
+
+    /**
      * Treatment when chosen custom
      * Unit Tests OK
      * @param   int         $iFrames
@@ -133,6 +145,7 @@ class DnaToProteinManager
     public function customTreatment($iFrames, $sSequence, $sMycode)
     {
         try {
+            $sSequence = $this->rnaToDna((string) $sSequence);
             $aFrames = [];
             // Translate in  5-3 direction
             $aFrames[1] = $this->translateDNAToProteinCustomcode(substr($sSequence, 0, floor(strlen($sSequence)/3)*3), $sMycode);
@@ -167,6 +180,7 @@ class DnaToProteinManager
     public function definedTreatment($iFrames, $sGeneticCode, $sSequence)
     {
         try {
+            $sSequence = $this->rnaToDna((string) $sSequence);
             // Translate in 5-3 direction
             $aFrames[1] = $this->translateDNAToProtein(substr($sSequence, 0, floor(strlen($sSequence)/3)*3), $sGeneticCode);
             if ($iFrames > 1){
