@@ -85,6 +85,14 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   L'axe de l'oligo-skew (0 à 0,8) s'élargit par paliers de 0,8 quand une distance le dépasse
   (jusqu'à 0 – 2,4 pour une distance de 2), pour que les points restent dans le graphe.
 
+- **Comptage d'oligonucléotides à travers les N.** `ChaosGameRepresentationManager::oligoCounts()`
+  ne recolle plus les bases de part et d'autre d'un N, d'un tiret ou d'un espace : chaque segment ACGT
+  est compté séparément (`ACGNTT` ne contient pas GT).
+- **ARN en cadres 4 à 6.** U est lu comme T avant la construction du brin opposé (le complément de
+  DNA de BioPHP ne connaît pas U) : `AUGAAAUAG` donne les mêmes six cadres que `ATGAAATAG`.
+- **Absorption molaire.** Passer encore la masse moléculaire à `molarAbsorptionCoefficientOfProt()`
+  déclenche un avertissement d'obsolescence, car la valeur reçue est désormais le coefficient molaire.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min
