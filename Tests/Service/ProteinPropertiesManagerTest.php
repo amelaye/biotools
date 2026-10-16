@@ -444,6 +444,34 @@ class ProteinPropertiesManagerTest extends TestCase
         ];
     }
 
+    /**
+     * A caller of the former signature (content, molecular weight) is told that the value it gets is
+     * now the molar one; the result itself does not depend on the weight
+     */
+    public function testMolarAbsorptionCoefficientWarnsWhenGivenTheFormerWeightArgument()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), ["W" => 5]);
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $aMessages = [];
+        set_error_handler(function ($iLevel, $sMessage) use (&$aMessages) {
+            $aMessages[] = [$iLevel, $sMessage];
+            return true;
+        });
+        try {
+            $fWithWeight = $service->molarAbsorptionCoefficientOfProt($aContent, 949.07);
+            $fWithout = $service->molarAbsorptionCoefficientOfProt($aContent);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame(27500.0, (float) $fWithWeight);
+        $this->assertSame(27500.0, (float) $fWithout);
+        $this->assertCount(1, $aMessages);
+        $this->assertSame(E_USER_DEPRECATED, $aMessages[0][0]);
+        $this->assertStringContainsString('massAbsorptionCoefficientOfProt', $aMessages[0][1]);
+    }
+
     public function testMassAbsorptionCoefficientOfProt()
     {
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);

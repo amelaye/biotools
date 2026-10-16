@@ -251,12 +251,23 @@ class ProteinPropertiesManager
      * Pace et al. . Protein Sci. 1995;4:2411-23.
      * epsilon = W*5500 + Y*1490 + cystines*125, a cystine being a disulfide bridge, i.e. two Cys.
      * The cystine count assumes every Cys that can pair is paired.
+     * Since this method no longer divides by the molecular weight, it takes the amino acid content
+     * only; a second argument (the weight of the former signature) is ignored and reported as
+     * deprecated, because the value it used to receive was the mass coefficient: use
+     * massAbsorptionCoefficientOfProt() for that one.
      * @param   array       $aAminoacidContent
      * @return  float
      * @throws  \Exception
      */
     public function molarAbsorptionCoefficientOfProt($aAminoacidContent)
     {
+        if (func_num_args() > 1) {
+            trigger_error(
+                'molarAbsorptionCoefficientOfProt() no longer takes the molecular weight and returns the molar '
+                . 'coefficient (M-1.cm-1), not the mass coefficient: use massAbsorptionCoefficientOfProt().',
+                E_USER_DEPRECATED
+            );
+        }
         try {
             return $aAminoacidContent["W"] * 5500
                 + $aAminoacidContent["Y"] * 1490
