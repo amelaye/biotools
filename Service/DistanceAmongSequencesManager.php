@@ -29,6 +29,16 @@ class DistanceAmongSequencesManager
     use SequenceTrait;
 
     /**
+     * With 2 common words a correlation is +1 or -1 by construction, so 3 is the least that carries information
+     */
+    public const MINIMUM_COMMON_WORDS = 3;
+
+    /**
+     * Part of the shorter vector that the common words must make up for the Pearson distance to be defined
+     */
+    public const MINIMUM_COMMON_COVERAGE = 0.5;
+
+    /**
      * @var int|string
      */
     private $sX = null;
@@ -374,7 +384,7 @@ class DistanceAmongSequencesManager
             $iRows  = sizeof($aStr);
 
             $iWidth = 600;     // width of scale from 0 to 2
-            $oIm    = new SvgCanvas((int) ($iWidth*1.2), $iRows*$iW+40);
+            $oIm    = new SvgCanvas((int) ($iWidth*1.2), $iRows*$iW+52);
             $sWhite = SvgCanvas::rgb(255, 255, 255);
             $sBlack = SvgCanvas::rgb(0, 0, 0);
             $sRed   = SvgCanvas::rgb(255, 0, 0);
@@ -386,9 +396,11 @@ class DistanceAmongSequencesManager
             // lines for scale
             $aJValues = [0.1, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0];
 
+            // the scale is graduated in distances D, and a node is drawn at the height D / 2 (UPGMA is
+            // ultrametric): a merge at distance D falls on the tick labelled D. The axis is logarithmic.
             foreach($aJValues as $fJ) {
-                $fX = log($fJ + 1) * $iF + 20;
-                $fX2 = log($fJ + 1) * $iF - 8 + 20;
+                $fX = log($fJ / 2 + 1) * $iF + 20;
+                $fX2 = log($fJ / 2 + 1) * $iF - 8 + 20;
                 $oIm->line($fX, $iY, $fX, $iY + 10, $sBlack);
                 $oIm->text(1, $fX2, $iY + 12,  $fJ, $sBlack);
             }
@@ -463,6 +475,7 @@ class DistanceAmongSequencesManager
                 $oIm->text(2, 5, $iRows*$iW+25,  "Pearson distance for z-scores of tetranucleotides.", $sRed);
             }
 
+            $oIm->text(1, 5, $iRows*$iW+42,  "Scale: distance D between the groups, drawn at the height D / 2 (UPGMA), logarithmic axis.", $sBlack);
             $oIm->text(2, $iWidth*1, $iRows*$iW+25,  "by insilico.ehu.es", $sBlack);
             return $oIm->save($sDendogramFile);
         } catch (\Exception $e) {
@@ -493,6 +506,19 @@ class DistanceAmongSequencesManager
     }
 
     /**
+     * Whether all the values are the same, up to the rounding of a floating point number
+     * @param   array   $aValues
+     * @return  bool
+     */
+    private function isConstant(array $aValues) : bool
+    {
+        $fMax = max($aValues);
+        $fMin = min($aValues);
+
+        return ($fMax - $fMin) <= 1e-9 * max(1.0, abs($fMax), abs($fMin));
+    }
+
+    /**
      * Generates the distance value from array X and array Y
      * Only in case pearson selected
      * Unit test created
@@ -516,10 +542,23 @@ class DistanceAmongSequencesManager
         }
 
         $aCommonKeys = array_keys(array_intersect_key($aValsX, $aValsY));
-        if (count($aCommonKeys) < 2) {
+        if (count($aCommonKeys) < self::MINIMUM_COMMON_WORDS) {
             throw new \DomainException(sprintf(
-                'Pearson distance is undefined : %d common z-score(s), 2 at least are needed.',
-                count($aCommonKeys)
+                'Pearson distance is undefined : %d common z-score(s), %d at least are needed.',
+                count($aCommonKeys),
+                self::MINIMUM_COMMON_WORDS
+            ));
+        }
+        // The words of a sequence are those whose variance is not null: two sequences rarely hold the
+        // same ones. When the words they share are only a small part of the shorter vector, the two are
+        // not described by the same words, and their correlation says little about their resemblance.
+        $iShorter = min(count($aValsX), count($aValsY));
+        if (count($aCommonKeys) < self::MINIMUM_COMMON_COVERAGE * $iShorter) {
+            throw new \DomainException(sprintf(
+                'Pearson distance is undefined : only %d common z-score(s) out of %d, at least %d%% of the shorter vector is needed.',
+                count($aCommonKeys),
+                $iShorter,
+                self::MINIMUM_COMMON_COVERAGE * 100
             ));
         }
 
@@ -529,11 +568,23 @@ class DistanceAmongSequencesManager
             $aCommonY[$mKey] = $aValsY[$mKey];
         }
 
+        // BioPHP's PearsonDistance raises DivisionByZeroError for exactly constant series only: on
+        // decimals that are all equal, its one-pass variance is rounding noise, not 0, and it returns a
+        // meaningless number close to 1. The constant series are therefore refused here.
+        if ($this->isConstant($aCommonX) || $this->isConstant($aCommonY)) {
+            throw new \DomainException('Pearson distance is undefined : the common z-scores of a sequence are all equal.');
+        }
+
         try {
-            return MathematicsFunctions::PearsonDistance($aCommonX, $aCommonY);
+            $fDistance = MathematicsFunctions::PearsonDistance($aCommonX, $aCommonY);
         } catch (\DivisionByZeroError $e) {
             throw new \DomainException('Pearson distance is undefined : the common z-scores of a sequence are all equal.');
         }
+        if (!is_finite($fDistance)) {
+            throw new \DomainException('Pearson distance is undefined : the correlation is not a finite number.');
+        }
+
+        return $fDistance;
     }
 
     /**

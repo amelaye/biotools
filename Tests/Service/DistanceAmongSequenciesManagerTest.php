@@ -1956,6 +1956,71 @@ class DistanceAmongSequenciesManagerTest extends TestCase
     }
 
     /**
+     * Decimals that are all equal: BioPHP's one-pass variance is then rounding noise, not 0, and it
+     * would return a meaningless number close to 1 (0.99999997 for 0.7 0.7 0.7 against 1 2 4)
+     */
+    #[DataProvider('providerConstantDecimals')]
+    public function testPearsonDistanceRefusesConstantDecimals(array $aConstant)
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+        $aVarying = array_slice([1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 9.0], 0, count($aConstant));
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessageMatches('/all equal/');
+        $service->pearsonDistance($aConstant, $aVarying);
+    }
+
+    public static function providerConstantDecimals(): array
+    {
+        return [
+            "0.7 x3"       => [[0.7, 0.7, 0.7]],
+            "1.3 x7"       => [[1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]],
+            "0.1 x3"       => [[0.1, 0.1, 0.1]],
+            "constant Y"   => [[2.5, 2.5, 2.5, 2.5]],
+        ];
+    }
+
+    /**
+     * Two common words give a correlation of +1 or -1 whatever the values are: that is no information
+     */
+    public function testPearsonDistanceNeedsMoreThanTwoCommonWords()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessageMatches('/3 at least/');
+        $service->pearsonDistance([0 => 1, 1 => 2], [0 => 5, 1 => 9]);
+    }
+
+    /**
+     * Words in common that are only 4 of the 10 words of each vector: the two sequences are not described
+     * by the same words
+     */
+    public function testPearsonDistanceRefusesVectorsThatShareTooFewWords()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+        $aX = [0 => 1, 1 => 2, 2 => 3, 3 => 4, 10 => 1, 11 => 2, 12 => 3, 13 => 4, 14 => 5, 15 => 6];
+        $aY = [0 => 1, 1 => 3, 2 => 2, 3 => 4, 20 => 1, 21 => 2, 22 => 3, 23 => 4, 24 => 5, 25 => 6];
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessageMatches('/only 4 common z-score\(s\) out of 10/');
+        $service->pearsonDistance($aX, $aY);
+    }
+
+    /**
+     * 5 common words out of 10 is half of the vector: allowed. x = 1..5, y = 1 3 2 5 4:
+     * Sxy - SxSy/n = 53 - 45 = 8, Sxx = Syy = 55 - 45 = 10, r = 0.8, distance 0.2
+     */
+    public function testPearsonDistanceAcceptsHalfOfTheWordsInCommon()
+    {
+        $service = new DistanceAmongSequencesManager(new OligosManager($this->apiNucleoMock), $this->apiNucleoMock);
+        $aX = [0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5, 10 => 7, 11 => 1, 12 => 2, 13 => 9, 14 => 4];
+        $aY = [0 => 1, 1 => 3, 2 => 2, 3 => 5, 4 => 4, 20 => 7, 21 => 1, 22 => 2, 23 => 9, 24 => 4];
+
+        $this->assertEqualsWithDelta(0.2, $service->pearsonDistance($aX, $aY), 1e-12);
+    }
+
+    /**
      * A repetitive sequence has no tetranucleotide z-score at all : it must not come out as
      * "identical" (distance 0) to a sequence that has some
      */
@@ -2187,6 +2252,28 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $this->assertMatchesRegularExpression('/<line x1="77\.19" y1="[\d.]+" x2="77\.19" y2="[\d.]+"/', $content);
     }
 
+    /**
+     * The scale is graduated in distances D and a node is drawn at the height D / 2: a merge at D = 1.0
+     * falls on the tick labelled 1. Both sit at log(1.0 / 2 + 1) * 600 + 20 = 263.28 (hand worked)
+     */
+    public function testCreateDendrogramTickOfADistanceIsWhereItsMergeIsDrawn()
+    {
+        $oligoMock = new OligosManager($this->apiNucleoMock);
+        $service = new DistanceAmongSequencesManager($oligoMock, $this->apiNucleoMock);
+
+        $dendogramFile = tempnam(sys_get_temp_dir(), 'dendrogram_') . '.svg';
+        $service->createDendrogram("0,1", [0 => [1 => 1.0]], $dendogramFile, "pearson", 4);
+        $content = file_get_contents($dendogramFile);
+        unlink($dendogramFile);
+
+        // tick under the axis (2 rows of 20 px: y = 40), labelled 1
+        $this->assertStringContainsString('<line x1="263.28" y1="40" x2="263.28" y2="50"', $content);
+        $this->assertMatchesRegularExpression('/<text x="255\.28"[^>]*>1<\/text>/', $content);
+        // vertical bar of the merge, at the same abscissa
+        $this->assertMatchesRegularExpression('/<line x1="263\.28" y1="(?!40")[\d.]+" x2="263\.28" y2="(?!50")[\d.]+"/', $content);
+        $this->assertStringContainsString('drawn at the height D / 2', $content);
+    }
+
     public function testCreateDendrogram()
     {
         $oligoMock = new OligosManager($this->apiNucleoMock);
@@ -2199,7 +2286,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $this->assertFileExists($dendogramFile);
 
         $content = file_get_contents($dendogramFile);
-        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="80" viewBox="0 0 720 80">', $content);
+        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="92" viewBox="0 0 720 92">', $content);
         $this->assertStringContainsString('Pearson distance for z-scores of tetranucleotides.', $content);
 
         unlink($dendogramFile);
@@ -2223,7 +2310,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $this->assertFileExists($dendogramFile);
 
         $content = file_get_contents($dendogramFile);
-        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="120" viewBox="0 0 720 120">', $content);
+        $this->assertStringContainsString('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="132" viewBox="0 0 720 132">', $content);
         $this->assertStringContainsString('Euclidean distance for 2 bases long oligonucleotides.', $content);
         // 4 sequences means 4 case labels are drawn on the y axis
         $this->assertStringContainsString('preserve"> 0</text>', $content);
@@ -2285,7 +2372,7 @@ class DistanceAmongSequenciesManagerTest extends TestCase
         $service->upgmaClustering($data, "pearson", 4, $dendogramFile);
 
         $this->assertFileExists($dendogramFile);
-        $this->assertStringContainsString('width="720" height="140"', file_get_contents($dendogramFile));
+        $this->assertStringContainsString('width="720" height="152"', file_get_contents($dendogramFile));
         unlink($dendogramFile);
     }
 }
