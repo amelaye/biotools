@@ -68,6 +68,10 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   `DnaToProteinManager`. Un symbole hors IUPAC donne `X`, un dernier codon incomplet est ignoré. Le
   code personnalisé de 64 lettres reste traité par biotools.
 
+- **Point isoélectrique et charge (délégation 4.3).** Calculés par `ProteinPropertiesCalculator` de
+  BioPHP (même modèle de Henderson-Hasselbalch et mêmes jeux de pK) : la recherche par bissection
+  remplace la boucle qui n'avait pas de garde. Une protéine vide est refusée.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min

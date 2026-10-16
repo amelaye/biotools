@@ -10,6 +10,9 @@ namespace Amelaye\BioTools\Service;
 use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\PKApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface;
+use Amelaye\BioPHP\Domain\Sequence\ValueObject\AminoAcidSequence;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\ProteinPropertiesInterface;
+use Amelaye\BioPHP\Domain\Tools\Service\ProteinPropertiesCalculator;
 
 /**
  * Class ProteinPropertiesManager
@@ -44,15 +47,25 @@ class ProteinPropertiesManager
     private $sequenceManager;
 
     /**
+     * @var ProteinPropertiesInterface
+     */
+    private $proteinProperties;
+
+    /**
      * ProteinPropertiesManager constructor.
      * @param   AminoApiAdapter         $aminoApi
      * @param   PKApiAdapter            $pkApi
      * @param   SequenceInterface|null  $sequenceManager    Needed by proteinAminoacidsChemicalGroup() only
+     * @param   ProteinPropertiesInterface|null $proteinProperties  Charge and isoelectric point, BioPHP's calculator by default
      */
     public function __construct(
-        AminoApiAdapter $aminoApi, PKApiAdapter $pkApi, ?SequenceInterface $sequenceManager = null
+        AminoApiAdapter $aminoApi,
+        PKApiAdapter $pkApi,
+        ?SequenceInterface $sequenceManager = null,
+        ?ProteinPropertiesInterface $proteinProperties = null
     ){
         $this->sequenceManager   = $sequenceManager;
+        $this->proteinProperties = $proteinProperties ?? new ProteinPropertiesCalculator();
         $this->aResidueWeights   = $aminoApi::GetAminoResidueWeights($aminoApi->getAminos());
         $this->aAminos           = $aminoApi::GetAminosOneToThreeLetters($aminoApi->getAminos());
         $this->pkApi             = $pkApi;
@@ -112,10 +125,8 @@ class ProteinPropertiesManager
 
 
     /**
-     * At isoelectric point, charge of protein will be
-     * To calculate pH where charge is 0 a loop is required
-     * The loop will start computing charge of protein at pH=7, and if charge is not 0, new charge value will be computed
-     * by using a different pH. Procedure will be repeated until charge is 0 (at isoelectric point)
+     * Isoelectric point: the pH where the net charge is zero, found by BioPHP's bisection for the
+     * pK set chosen with setPk(), with two decimals.
      * @param       array       $aAminoacidContent
      * @return      float
      * @throws      \Exception
@@ -123,31 +134,29 @@ class ProteinPropertiesManager
     public function proteinIsoelectricPoint($aAminoacidContent)
     {
         try {
-            $iPH = 7;          // pH value at start
-            $iDelta = 4;       // this parameter will be used to modify pH when charge!=0. The value of $delta will change during the loop
-            while(1) {
-                // compute charge of protein at corresponding pH (uses a function)
-                $iCharge = $this->proteinCharge($aAminoacidContent, $iPH);
-                // check whether $charge is 0 (consecuentely, pH will be the isoelectric point
-                if (round($iCharge,4) == 0) {
-                    break;
-                }
-                // next line to check how computation is perform
-                // modify pH for next round
-                if ($iCharge > 0) {
-                    $iPH = $iPH + $iDelta;
-                } else {
-                    $iPH = $iPH - $iDelta;
-                }
-                // reduce value for $iDelta
-                $iDelta = $iDelta/2;
-            }
-            // return pH at which charge=0 (the isoelectric point) with two decimals
-            $fRoundPH = round($iPH,2);
-            return $fRoundPH;
+            return round(
+                $this->proteinProperties->isoelectricPoint($this->sequenceFromContent($aAminoacidContent), $this->aPk),
+                2
+            );
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * The residues of an amino acid content (letter => count), as a sequence: the order does not
+     * matter to the charge
+     * @param   array   $aAminoacidContent
+     * @return  AminoAcidSequence
+     */
+    private function sequenceFromContent(array $aAminoacidContent) : AminoAcidSequence
+    {
+        $sSequence = "";
+        foreach ($aAminoacidContent as $sAminoAcid => $iCount) {
+            $sSequence .= str_repeat((string) $sAminoAcid, (int) $iCount);
+        }
+
+        return new AminoAcidSequence($sSequence);
     }
 
     /**
@@ -169,25 +178,18 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Computes protein charge at corresponding pH
+     * Computes protein charge at corresponding pH, for the pK set chosen with setPk()
      * @param       array       $aAminoacidContent
-     * @param       int         $iPH
+     * @param       int|float   $iPH
      * @return      float
      * @throws      \Exception
      */
-    function proteinCharge($aAminoacidContent, $iPH)
+    public function proteinCharge($aAminoacidContent, $iPH)
     {
         try {
-            $iCharge = $this->partialCharge($this->aPk["NTERMINUS"], $iPH);
-            $iCharge+= $this->partialCharge($this->aPk["K"], $iPH) * $aAminoacidContent["K"];
-            $iCharge+= $this->partialCharge($this->aPk["R"], $iPH) * $aAminoacidContent["R"];
-            $iCharge+= $this->partialCharge($this->aPk["H"], $iPH) * $aAminoacidContent["H"];
-            $iCharge-= $this->partialCharge($iPH, $this->aPk["D"]) * $aAminoacidContent["D"];
-            $iCharge-= $this->partialCharge($iPH, $this->aPk["E"]) * $aAminoacidContent["E"];
-            $iCharge-= $this->partialCharge($iPH, $this->aPk["C"]) * $aAminoacidContent["C"];
-            $iCharge-= $this->partialCharge($iPH, $this->aPk["Y"]) * $aAminoacidContent["Y"];
-            $iCharge-= $this->partialCharge($iPH, $this->aPk["CTERMINUS"]);
-            return $iCharge;
+            return $this->proteinProperties->netCharge(
+                $this->sequenceFromContent($aAminoacidContent), (float) $iPH, $this->aPk
+            );
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

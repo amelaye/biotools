@@ -125,6 +125,53 @@ class ProteinPropertiesManagerTest extends TestCase
         $this->assertEquals($fExpected, $testFunction);
     }
 
+    /**
+     * Expected values from an independent bisection (EMBOSS pK set), not from the service:
+     * an acidic protein, a very basic one and one holding every charged residue
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('isoelectricPointProvider')]
+    public function testProteinIsoelectricPointOnOtherProteins(array $aCounts, $fExpected)
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0), $aCounts);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service->setPk("EMBOSS");
+
+        $this->assertEquals($fExpected, $service->proteinIsoelectricPoint($aContent));
+    }
+
+    public static function isoelectricPointProvider()
+    {
+        return [
+            'acidic (DDDDEEAAG)'   => [["D" => 4, "E" => 2, "A" => 2, "G" => 1], 3.12],
+            '30 Arg'               => [["R" => 30], 13.96],
+            'one of each charged'  => [["K" => 1, "R" => 1, "H" => 1, "D" => 1, "E" => 1, "C" => 1, "Y" => 1], 7.36],
+        ];
+    }
+
+    public function testProteinChargeAtAcidicPh()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0),
+            ["K" => 1, "R" => 1, "H" => 1, "D" => 1, "E" => 1, "C" => 1, "Y" => 1]);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service->setPk("EMBOSS");
+
+        $this->assertEqualsWithDelta(1.1924596, $service->proteinCharge($aContent, 5), 0.0001);
+    }
+
+    /**
+     * No residue, no isoelectric point
+     */
+    public function testProteinIsoelectricPointOfAnEmptyProteinIsRefused()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $service->setPk("EMBOSS");
+
+        $this->expectException(\Exception::class);
+        $service->proteinIsoelectricPoint(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWY"), 0));
+    }
+
     public function testPartialCharge()
     {
         $fVal1 = 8.6;
