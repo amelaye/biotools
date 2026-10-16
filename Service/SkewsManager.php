@@ -24,6 +24,12 @@ class SkewsManager
 {
     use SequenceTrait;
 
+    /**
+     * Distances between the oligonucleotide frequencies of a window and of the whole sequence
+     */
+    public const DISTANCE_PEARSON = 'pearson';
+    public const DISTANCE_ALMEIDA = 'almeida';
+
     private $oligosManger;
 
     /**
@@ -69,7 +75,11 @@ class SkewsManager
     /**
      * Will  compare oligonucleotide frequencies in all the sequence
      * with frequencies in each window, and will return an array
-     * with Pearson distances (1 - r), as the legacy minitool did.
+     * with distances: by default the Pearson distance (1 - r), as the legacy minitool did, or on
+     * request the distance of Almeida et al, 2001 (a Pearson correlation weighted by x * y).
+     * The Almeida distance weights the words by their frequency in both series, which Pearson does
+     * not: on a sequence whose two strands differ in composition it reshapes the curve instead of
+     * only shifting it.
      * With two strands, the window and the whole sequence are both counted on the forward
      * strand plus its reverse complement, so that the distance measures the local change of
      * composition and not the asymmetry between the two strands.
@@ -77,11 +87,16 @@ class SkewsManager
      * @param       int         $iWindow        The size of the window
      * @param       int         $iOskew         Number of nucleos
      * @param       int         $iStrands       One or both strands
+     * @param       string      $sDistance      self::DISTANCE_PEARSON (default) or self::DISTANCE_ALMEIDA
      * @return      array
+     * @throws      \InvalidArgumentException  When the distance is neither of them
      * @throws      \Exception
      */
-    public function oligoSkewArrayCalculation($sSequence, $iWindow, $iOskew, $iStrands)
+    public function oligoSkewArrayCalculation($sSequence, $iWindow, $iOskew, $iStrands, $sDistance = self::DISTANCE_PEARSON)
     {
+        if (!in_array($sDistance, [self::DISTANCE_PEARSON, self::DISTANCE_ALMEIDA], true)) {
+            throw new \InvalidArgumentException(sprintf('Unknown distance "%s".', $sDistance));
+        }
         try {
             $aDistances = [];
 
@@ -105,7 +120,7 @@ class SkewsManager
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
-                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY);
+                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY, $sDistance);
                     $i += $iPeriod;
                 }
             } else {
@@ -116,7 +131,7 @@ class SkewsManager
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
-                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY);
+                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY, $sDistance);
                     $i += $iPeriod;
                 }
             }
@@ -148,12 +163,15 @@ class SkewsManager
      * oligonucleotide, e.g. only N, has no variance): such a point is left out of the graph.
      * @param       array       $aValsX     Values for the whole sequence
      * @param       array       $aValsY     Values for the window
+     * @param       string      $sDistance  self::DISTANCE_PEARSON or self::DISTANCE_ALMEIDA
      * @return      float|null
      */
-    private function windowDistance($aValsX, $aValsY)
+    private function windowDistance($aValsX, $aValsY, $sDistance)
     {
         try {
-            $fDistance = $this->pearsonDistance($aValsX, $aValsY);
+            $fDistance = $sDistance === self::DISTANCE_ALMEIDA
+                ? $this->distance($aValsX, $aValsY)
+                : $this->pearsonDistance($aValsX, $aValsY);
         } catch (\InvalidArgumentException | \DivisionByZeroError $e) {
             return null;
         }
@@ -295,7 +313,12 @@ class SkewsManager
             }
 
             $this->writeSkews($oIm, $bGC, $bAT, $bKETO, $bGmC, $aOligoSkew, $sBlue, $sRed, $sGreen, $sBlack, $iOlen, $sGb);
-            $this->printScales($oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $sRed, $sBlack, $sGb, $fNmax);
+            // the oligo-skew axis runs from 0 to 0.8 (500 px per unit over the 400 px of the graph); a distance
+            // that goes beyond it (Almeida, or Pearson on very different strands, up to 2) widens it by
+            // steps of 0.8, so that the points stay in the graph
+            $iAxisSteps = $this->oligoSkewAxisSteps($aOligoSkew);
+            $fPxPerUnit = 500 / $iAxisSteps;
+            $this->printScales($oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $sRed, $sBlack, $sGb, $fNmax, $iAxisSteps);
 
             // print oligo-skew
             // oligo-skews must be the first one to be printed out
@@ -306,8 +329,8 @@ class SkewsManager
                         continue;
                     }
                     $fX = round(($iPos * 700 / $iLenSeq) + $fXp);
-                    $oIm->line($fX, 20, $fX, 19 + (500 * $fVal), $sQblack2);
-                    $oIm->pixel($fX, 20 + (500 * $fVal), $sGb);
+                    $oIm->line($fX, 20, $fX, 19 + ($fPxPerUnit * $fVal), $sQblack2);
+                    $oIm->pixel($fX, 20 + ($fPxPerUnit * $fVal), $sGb);
                 }
             }
             // print AT, GC and/or KETO-skews
@@ -350,6 +373,23 @@ class SkewsManager
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * How many times the default 0 to 0.8 axis of the oligo-skew has to be stretched to hold its values
+     * @param       array       $aOligoSkew     Distances, null where undefined
+     * @return      int         1 when everything is under 0.8, else 2, 3...
+     */
+    private function oligoSkewAxisSteps($aOligoSkew) : int
+    {
+        $aValues = array_filter($aOligoSkew, function ($fVal) {
+            return $fVal !== null;
+        });
+        if ([] === $aValues) {
+            return 1;
+        }
+
+        return max(1, (int) ceil(round(max($aValues) / 0.8, 6)));
     }
 
     /**
@@ -410,9 +450,10 @@ class SkewsManager
      * @param       int         $iGb            Shade of grey-blue
      * @param       int         $iBlack         Shade of black
      * @param       int         $iNmax
+     * @param       int         $iAxisSteps     The oligo-skew axis goes to 0.8 times this
      * @throws      \Exception
      */
-    private function printScales(&$oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $iRed, $iBlack, $iGb, $iNmax)
+    private function printScales(&$oIm, $aOligoSkew, $bAT, $bGC, $bGmC, $bKETO, $iRed, $iBlack, $iGb, $iNmax, $iAxisSteps = 1)
     {
         try {
             $iNe = 0;
@@ -449,7 +490,7 @@ class SkewsManager
             if(sizeof($aOligoSkew) > 10) {
                 $iKkk = 15;
                 for($i = 0; $i < 9; $i ++) {
-                    $oIm->text(3, 710+$iNe, $iKkk, "0.$i", $iGb);
+                    $oIm->text(3, 710+$iNe, $iKkk, number_format($i * 0.1 * $iAxisSteps, 1, '.', ''), $iGb);
                     $iKkk += 50;
                 }
                 if($iNe > 0) {

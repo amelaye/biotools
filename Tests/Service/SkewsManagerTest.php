@@ -219,6 +219,54 @@ class SkewsManagerTest extends TestCase
     }
 
     /**
+     * The distance of Almeida et al (weighted by x * y) on the same asymmetric 600 bp sequence,
+     * 2-mers, window of 100: expected values from an independent weighted-correlation script
+     */
+    #[DataProvider('providerAlmeidaDistances')]
+    public function testOligoSkewWithTheAlmeidaDistance($iStrands, array $aExpected)
+    {
+        $sSequence = "ATGTCGACGTTGCAGTCATGATCGAGGTCTGCGCATTAGTCTGATTACGGGGACACTGTTCGTAGTATGCCCGAATTTGGTCAATGGTGCTCTAGTAGGCAGTGTTAGCCACGATGTTGCATTGCGATCGCGTCGTATGAGTCGACTGATGGAGTCTACTATCACGGGTTGTTGCGAATCCTCTGGGATAAGTGCGTTCATGTATACGGCGGCTACGATTTAGCGGCTTACCGTATAGTGTGCAGGTCATCTTTGGCGAAACTGCGTGATCTATTGAGGCTCGGAACGTTTAGGTTCCAGGATTATGCGCTTGAGCTAGCTCTGATGGACGTAGGTACCTTCTATCAGGGCGGATGACTTTTGCGAACGTGAACTTGTCGATACTGGTGCACACGGTGTTGACATCGTTGATGTCAGGCTCGTCAGATTGTTGACGCGATGTTGATCCGACCGGATGATTGGTCTCAATGATCCTGAGGTTCTTAGGGCACTGTAGTACGCGATGCTGATCGGTAGTTACCTGGATGTCATGGTCGTAACTAGCCTGGATTTGTGGACCATGATCGCAGTGTGTATACCGATTCTGGCAGGGCAGTTTAC";
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $aDistances = $service->oligoSkewArrayCalculation($sSequence, 100, 2, $iStrands, SkewsManager::DISTANCE_ALMEIDA);
+
+        $this->assertCount(51, $aDistances);
+        foreach ($aExpected as $iPosition => $fExpected) {
+            $this->assertEqualsWithDelta($fExpected, $aDistances[$iPosition], 1e-7, "window at $iPosition");
+        }
+
+        // and it is not the Pearson distance, which is the default
+        $this->assertNotEquals($aDistances[250], $service->oligoSkewArrayCalculation($sSequence, 100, 2, $iStrands)[250]);
+    }
+
+    public static function providerAlmeidaDistances(): array
+    {
+        return [
+            'one strand'   => [1, [0 => 0.11184135, 100 => 0.0783831, 250 => 0.85791744, 500 => 0.0792858]],
+            'both strands' => [2, [0 => 0.00977272, 100 => 0.06765112, 250 => 1.34534644, 500 => 0.2713556]],
+        ];
+    }
+
+    public function testOligoSkewDefaultDistanceIsPearson()
+    {
+        $sSequence = str_repeat("GGTTGTCAGTACCA", 60);
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $this->assertEquals(
+            $service->oligoSkewArrayCalculation($sSequence, 100, 2, 2, SkewsManager::DISTANCE_PEARSON),
+            $service->oligoSkewArrayCalculation($sSequence, 100, 2, 2)
+        );
+    }
+
+    public function testOligoSkewRefusesAnUnknownDistance()
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->oligoSkewArrayCalculation("ACGTACGTACGT", 4, 2, 1, "euclidean");
+    }
+
+    /**
      * A window equal to the whole sequence must be at distance 0 from it. With a reference
      * counted on one strand only, an asymmetric sequence gives a non-zero distance (0.408 at k=4).
      */
@@ -1224,6 +1272,71 @@ class SkewsManagerTest extends TestCase
     public static function providerStrands(): array
     {
         return ['one strand' => [1], 'two strands' => [2]];
+    }
+
+    private function renderOligoSkew(array $aOligoSkew) : string
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $sPath = $service->createImage(str_repeat("ACGGT", 400), 100, false, false, false, false, $aOligoSkew, 2, null, null, "axis");
+        $sSvg = file_get_contents($sPath);
+        unlink($sPath);
+
+        return $sSvg;
+    }
+
+    private function oligoSkewSeries(float $fValue, float $fLast) : array
+    {
+        $aSeries = [];
+        for ($i = 0; $i < 11; $i++) {
+            $aSeries[$i * 100] = $fValue;
+        }
+        $aSeries[1100] = $fLast;
+
+        return $aSeries;
+    }
+
+    /**
+     * Under 0.8 the axis is the historical one: 0.0 to 0.8, 500 px per unit, so 0.4 ends at 20 + 199 = 219
+     */
+    public function testOligoSkewAxisStaysAtZeroPointEightForSmallDistances()
+    {
+        $sSvg = $this->renderOligoSkew($this->oligoSkewSeries(0.4, 0.8));
+
+        $this->assertStringContainsString('y1="20" x2="', $sSvg);
+        $this->assertMatchesRegularExpression('/y1="20" x2="[\d.]+" y2="219"/', $sSvg);
+        $this->assertMatchesRegularExpression('/y2="419"/', $sSvg);      // 0.8 reaches the bottom of the graph
+        foreach (["0.0", "0.4", "0.8"] as $sLabel) {
+            $this->assertStringContainsString(">$sLabel</text>", $sSvg);
+        }
+        $this->assertStringNotContainsString(">1.6</text>", $sSvg);
+    }
+
+    /**
+     * A distance of 1.2 widens the axis to 0 - 1.6 (250 px per unit): 1.2 reaches 19 + 300 = 319 and
+     * 0.4 only 19 + 100 = 119; the labels go up by 0.2
+     */
+    public function testOligoSkewAxisIsWidenedForLargeDistances()
+    {
+        $sSvg = $this->renderOligoSkew($this->oligoSkewSeries(0.4, 1.2));
+
+        $this->assertMatchesRegularExpression('/y1="20" x2="[\d.]+" y2="119"/', $sSvg);
+        $this->assertMatchesRegularExpression('/y1="20" x2="[\d.]+" y2="319"/', $sSvg);
+        foreach (["0.0", "0.2", "0.8", "1.2", "1.6"] as $sLabel) {
+            $this->assertStringContainsString(">$sLabel</text>", $sSvg);
+        }
+    }
+
+    /**
+     * Up to 2 (the largest Pearson distance): 0 - 2.4, by 0.3 (500 / 3 px per unit)
+     */
+    public function testOligoSkewAxisHoldsADistanceOfTwo()
+    {
+        $sSvg = $this->renderOligoSkew($this->oligoSkewSeries(0.3, 2.0));
+
+        $this->assertStringContainsString(">2.4</text>", $sSvg);
+        $this->assertStringContainsString(">0.3</text>", $sSvg);
+        // 2.0 * 500 / 3 + 19 = 352.33
+        $this->assertMatchesRegularExpression('/y2="352\.33"/', $sSvg);
     }
 
     public function testCreateImageSkipsUndefinedOligoSkewPoints()

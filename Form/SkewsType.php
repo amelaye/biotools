@@ -206,6 +206,22 @@ class SkewsType extends AbstractType
         );
 
         $builder->add(
+            'distance',
+            ChoiceType::class,
+            [
+                'choices' => [
+                    'Pearson (1 - r, as in the original minitool)' => 'pearson',
+                    'Almeida et al, 2001 (weighted Pearson)' => 'almeida'
+                ],
+                'data' => 'pearson',
+                'label' => "Oligo-skew distance : ",
+                'attr' => [
+                    'class' => "custom-select d-block w-20"
+                ]
+            ]
+        );
+
+        $builder->add(
             'from',
             TextType::class,
             [

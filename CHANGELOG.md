@@ -78,6 +78,13 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   résidu. Les valeurs changent légèrement (+0,17 Da sur un peptide de 17 résidus). Pour B, Z et X,
   qui couvrent plusieurs acides aminés, la borne haute est renvoyée.
 
+- **Distance de l'oligo-skew au choix.** `SkewsManager::oligoSkewArrayCalculation()` prend un
+  cinquième argument facultatif, `SkewsManager::DISTANCE_PEARSON` (par défaut, comme le legacy) ou
+  `SkewsManager::DISTANCE_ALMEIDA` (corrélation pondérée par x·y, Almeida et al. 2001), et le
+  formulaire des skews propose le choix. Une autre valeur lève `InvalidArgumentException`.
+  L'axe de l'oligo-skew (0 à 0,8) s'élargit par paliers de 0,8 quand une distance le dépasse
+  (jusqu'à 0 – 2,4 pour une distance de 2), pour que les points restent dans le graphe.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min

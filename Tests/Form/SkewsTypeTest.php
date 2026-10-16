@@ -96,4 +96,23 @@ class SkewsTypeTest extends AbstractFormTypeTestCase
 
         $this->assertTrue($form->isValid());
     }
+
+    /**
+     * The oligo-skew distance defaults to Pearson and accepts Almeida, nothing else
+     */
+    public function testDistanceDefaultsToPearsonAndAcceptsAlmeida()
+    {
+        $aBase = ['name' => 'S', 'seq' => str_repeat('ACGT', 2000), 'window' => 5000, 'oligo_len' => 2, 'strands' => 1];
+
+        $oDefault = $this->factory->create(SkewsType::class);
+        $this->assertSame('pearson', $oDefault->get('distance')->getData());
+
+        $oAlmeida = $this->factory->create(SkewsType::class);
+        $oAlmeida->submit($aBase + ['distance' => 'almeida']);
+        $this->assertSame('almeida', $oAlmeida->getData()['distance']);
+
+        $oInvalid = $this->factory->create(SkewsType::class);
+        $oInvalid->submit($aBase + ['distance' => 'euclidean']);
+        $this->assertFalse($oInvalid->get('distance')->isValid());
+    }
 }
