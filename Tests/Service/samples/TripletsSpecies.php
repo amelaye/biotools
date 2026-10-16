@@ -519,7 +519,7 @@ use Amelaye\BioPHP\Api\DTO\TripletSpecieDTO;
         $triplet->setNature("flatworm mitochondrial");
         $triplet->setTripletsGroups($triplets_flatworm_mitochondrial);
         $triplet->setTriplets(["TTY","YTN","ATH","ATG","GTN","WSN","CCN","ACN","GCN","TAH","TAG","CAY",
-            "CAR","ATH","AAG","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
+            "CAR","AAH","AAG","GAY","GAR","TGY","TGR","CGN","GGN","NNN"]);
         $aTripletSpeciesObjects[] = $triplet;
 
         $triplet = new TripletSpecieDTO();
