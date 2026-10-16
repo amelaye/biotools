@@ -676,7 +676,7 @@ class ChaosGameRepresentationManagerTest extends TestCase
         unlink($path);
 
         $this->assertStringContainsString('d="M64 192.5h1M160 224.5h1M208 112.5h1M104 56.5h1"', $content);
-        $this->assertStringContainsString('Seq (7 bp)', $content);
+        $this->assertStringContainsString('Seq (5 bp)', $content);
     }
 
     /**

@@ -3,7 +3,7 @@
  * Chaos Game Representation Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -223,7 +223,8 @@ class ChaosGameRepresentationManager
             }
             $oIm->pixelCloud($aPoints, $sBlack);
 
-            $iSeqlen = strlen($sSequence);
+            // white space is no base; an N is one (a base of unknown identity), drawn nowhere
+            $iSeqlen = strlen(preg_replace('/\s+/', '', $sSequence));
             $oIm->text(3, 5, $iSize + 5, "$sSeqName ($iSeqlen bp)", $sBlack);
 
             return $oIm->save($this->buildTargetPath($this->aNucleotidsGraphs["cgr_file"]));
@@ -488,13 +489,12 @@ class ChaosGameRepresentationManager
             $iVPos = 10;
             $iCell = 32;
 
-            $oCalculator = new ChaosGameRepresentationCalculator();
             $aImageNucleotids = [];
             foreach (['A', 'C', 'G', 'T'] as $sFirst) {
                 foreach (['A', 'C', 'G', 'T'] as $sSecond) {
                     foreach (['A', 'C', 'G', 'T'] as $sThird) {
                         $sWord = $sFirst . $sSecond . $sThird;
-                        list($iColumn, $iRow) = $oCalculator->cell($sWord);
+                        list($iColumn, $iRow) = $this->chaosGame->cell($sWord);
                         $aImageNucleotids[$sWord] = [
                             "x" => 10 + $iColumn * $iCell + $iHPos,
                             "y" => 90 + $iRow * $iCell + $iVPos
