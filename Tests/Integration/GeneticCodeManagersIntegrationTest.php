@@ -45,4 +45,71 @@ class GeneticCodeManagersIntegrationTest extends TestCase
         // Methionine's only real codon is ATG
         $this->assertEquals("ATG", $oManager->translateProteinToDNA("M", "standard"));
     }
+
+    private function buildManagerWithTheRealCodonTranslator(): DnaToProteinManager
+    {
+        $aminoData    = $this->loadBioPhpSample('Aminos.php', 'aAminosObjects');
+        $nucleoData   = $this->loadBioPhpSample('Nucleotids.php', 'aNucleoObjects');
+        $elementsData = $this->loadBioPhpSample('Elements.php', 'aElementsObjects');
+        $tripletData  = $this->loadBioPhpSample('Triplets.php', 'aTripletObjects');
+        $speciesData  = $this->loadBioPhpSample('TripletsSpecies.php', 'aTripletSpeciesObjects');
+
+        $oClient     = $this->getMockBuilder(\GuzzleHttp\Client::class)->getMock();
+        $oSerializer = \JMS\Serializer\SerializerBuilder::create()->build();
+
+        $oAmino = $this->getMockBuilder(AminoApi::class)
+            ->setConstructorArgs([$oClient, $oSerializer])->onlyMethods(['getAminos'])->getMock();
+        $oAmino->method('getAminos')->willReturn($aminoData);
+        $oNucleo = $this->getMockBuilder(\Amelaye\BioPHP\Api\NucleotidApi::class)
+            ->setConstructorArgs([$oClient, $oSerializer])->onlyMethods(['getNucleotids'])->getMock();
+        $oNucleo->method('getNucleotids')->willReturn($nucleoData);
+        $oElements = $this->getMockBuilder(\Amelaye\BioPHP\Api\ElementApi::class)
+            ->setConstructorArgs([$oClient, $oSerializer])->onlyMethods(['getElements', 'getElement'])->getMock();
+        $oElements->method('getElements')->willReturn($elementsData);
+        $oElements->method('getElement')->willReturn($elementsData[5]);
+
+        $oSequenceManager = new \Amelaye\BioPHP\Domain\Sequence\Service\SequenceManager($oAmino, $oNucleo, $oElements);
+        $oTranslator = new \Amelaye\BioPHP\Domain\Tools\Service\Codon\AlternateGeneticCodeTranslator(
+            new \Amelaye\BioPHP\Domain\Sequence\Builder\SequenceBuilder($oSequenceManager)
+        );
+
+        return new DnaToProteinManager(
+            $this->buildRealListApi(AminoApi::class, $aminoData),
+            $this->buildRealListApi(TripletApi::class, $tripletData),
+            $this->buildRealListApi(TripletSpecieApi::class, $speciesData),
+            null,
+            $oTranslator
+        );
+    }
+
+    /**
+     * AGR (AGA or AGG) is Arg and YTR (CTA or TTA... CTG, TTG) is Leu in the standard code: the triplet groups
+     * of the API left them as X. Expected letters worked out by hand from the genetic code.
+     */
+    public function testAmbiguousCodonsAreTranslatedUnderTheStandardCode()
+    {
+        $oManager = $this->buildManagerWithTheRealCodonTranslator();
+
+        $this->assertSame("MKRL", $oManager->translateDNAToProtein("ATGAAAAGRYTR", "standard"));
+    }
+
+    /**
+     * Vertebrate mitochondrial code (NCBI 2): TGA = Trp, ATA = Met, AGA and AGG = stop, hence AGR = stop
+     */
+    public function testNcbiTablesAreAppliedFromTheLabelOfTheForm()
+    {
+        $oManager = $this->buildManagerWithTheRealCodonTranslator();
+
+        $this->assertSame("MWM**", $oManager->translateDNAToProtein("ATGTGAATAAGAAGR", "vertebrate_mitochondrial"));
+        // euplotid nuclear (NCBI 10): TGA = Cys
+        $this->assertSame("C", $oManager->translateDNAToProtein("TGA", "euplotid_nuclear"));
+        $this->assertSame("*", $oManager->translateDNAToProtein("TGA", "standard"));
+    }
+
+    public function testSymbolsOutsideIupacGiveXAndAnIncompleteLastCodonIsDropped()
+    {
+        $oManager = $this->buildManagerWithTheRealCodonTranslator();
+
+        $this->assertSame("MXK", $oManager->translateDNAToProtein("atgZZZaaaAC", "standard"));
+    }
 }

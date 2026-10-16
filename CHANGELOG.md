@@ -62,6 +62,12 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   libre), amorce passée en majuscules avant validation, validateur déléguant à `GeneticsFunctions`.
   La masse moléculaire est documentée comme celle d'un brin 5'-phosphate (4.c).
 
+- **Codons ambigus à la traduction (4.i, délégation 4.2).** `AGR` et `YTR` donnent `R` et `L` au lieu
+  de `X` : les codes génétiques du formulaire (tables NCBI) sont traduits codon par codon par
+  `AlternateGeneticCodeTranslator` de BioPHP, injecté en cinquième argument facultatif de
+  `DnaToProteinManager`. Un symbole hors IUPAC donne `X`, un dernier codon incomplet est ignoré. Le
+  code personnalisé de 64 lettres reste traité par biotools.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min

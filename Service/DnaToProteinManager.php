@@ -14,6 +14,7 @@ use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 use Amelaye\BioPHP\Domain\Sequence\Traits\SequenceTrait;
 use Amelaye\BioPHP\Domain\Sequence\ValueObject\DnaSequence;
+use Amelaye\BioPHP\Domain\Tools\Interfaces\AlternateGeneticCodeTranslatorInterface;
 use Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface;
 use Amelaye\BioPHP\Domain\Tools\ValueObject\OpenReadingFrame;
 
@@ -77,19 +78,30 @@ class DnaToProteinManager
     private $orfFinder;
 
     /**
+     * @var AlternateGeneticCodeTranslatorInterface|null
+     */
+    private $codonTranslator;
+
+    /**
      * DnaToProteinManager constructor.
      * @param AminoApiAdapter            $aminoApi
      * @param TripletApiAdapter          $tripletApi
      * @param TripletSpecieApiAdapter    $tripletSpecieApi
      * @param OrfFinderInterface|null    $orfFinder          Needed by findOrfRegions() only
+     * @param AlternateGeneticCodeTranslatorInterface|null $codonTranslator  Translates the codons of the genetic codes
+     *                                                       of the form (NCBI tables); without it, the triplets
+     *                                                       groups of the API are used, which leave an ambiguous
+     *                                                       codon such as AGR as an X
      */
     public function __construct(
         AminoApiAdapter $aminoApi,
         TripletApiAdapter $tripletApi,
         TripletSpecieApiAdapter $tripletSpecieApi,
-        ?OrfFinderInterface $orfFinder = null
+        ?OrfFinderInterface $orfFinder = null,
+        ?AlternateGeneticCodeTranslatorInterface $codonTranslator = null
     ) {
         $this->orfFinder                  = $orfFinder;
+        $this->codonTranslator            = $codonTranslator;
         $this->aAminos                    = $aminoApi::GetAminosOnlyLetters($aminoApi->getAminos());
         $this->aTriplets                  = $tripletSpecieApi::GetTripletsGroups($tripletSpecieApi->getTriplets());
         $this->aTripletsCombinations      = $tripletApi::GetTripletsArray($tripletApi->getTriplets());
@@ -285,6 +297,11 @@ class DnaToProteinManager
             throw new \Exception('The sequence must be a string.');
         }
         try {
+            $sLabel = strtolower(str_replace("_", " ", (string) $sGeneticCode));
+            if ($this->codonTranslator !== null && isset(self::NCBI_GENETIC_CODES[$sLabel])) {
+                return $this->translateWithNcbiTable($sSequence, self::NCBI_GENETIC_CODES[$sLabel]);
+            }
+
             $aAminoAcids = ["F","L","I","M","V","S","P","T","A","Y","*","H","Q","N","K","D","E","C","W","R","G","X"];
             // place a space after each triplete in the sequence
             $sTemp = chunk_split(strtoupper($sSequence),3,' ');
@@ -295,6 +312,29 @@ class DnaToProteinManager
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Translates codon by codon under an NCBI table. An ambiguous codon stands for an amino acid when
+     * all the codons it covers read the same (AGR is Arg, YTR is Leu in the standard code), X otherwise;
+     * a symbol that is no IUPAC nucleotide gives X. A last incomplete codon is not translated.
+     * @param   string  $sSequence
+     * @param   int     $iTableId
+     * @return  string
+     */
+    private function translateWithNcbiTable(string $sSequence, int $iTableId) : string
+    {
+        $sPeptide = "";
+        foreach (str_split(strtoupper($sSequence), 3) as $sCodon) {
+            if (strlen($sCodon) < 3) {
+                break;
+            }
+            $sPeptide .= preg_match('/^[ACGTURYSWKMBDHVN]{3}$/', $sCodon) === 1
+                ? $this->codonTranslator->translateCodon($sCodon, $iTableId)
+                : "X";
+        }
+
+        return $sPeptide;
     }
 
     /**

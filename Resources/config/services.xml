@@ -27,6 +27,7 @@
             <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletApiAdapter" />
             <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter" />
             <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface" />
+            <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\AlternateGeneticCodeTranslatorInterface" />
         </service>
 
         <service id="Amelaye\BioTools\Service\FastaUploaderManager" />
