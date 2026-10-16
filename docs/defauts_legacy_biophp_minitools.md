@@ -137,11 +137,13 @@ line 304 with:
 $subsequence=substr($sequence,$i,$window)." ".strrev(substr($sequence2,$i,$window));
 ```
 
-`$sequence2` is never assigned anywhere in the function. The general sibling
+`$sequence2` is never assigned anywhere in the function. (Correction: this has no numerical
+effect, see below.) The general sibling
 `Oligo_skew_array_calculation()` does assign it (`$sequence2=Comp($sequence);`, line
 254), but that line has no counterpart here. `substr()` on the undefined variable
-yields an empty string, so the appended half is always empty and the function scores
-**one** strand while reporting both.
+yields an empty string, so the appended half is always empty. The function still counts
+both strands: its 120 + 16 class folding counts each word with its reverse complement, so
+the missing half only doubles the counts, and Pearson does not depend on the scale.
 
 **Suggested fix**: add `$sequence2 = Comp($sequence);` before the loop.
 
@@ -160,8 +162,8 @@ combining both strands with an oligonucleotide length other than 4 therefore die
 routed to the separate (and itself defective, see 7) optimised function.
 
 **Suggested fix**: supply the missing function — the header comment of
-`Oligo_skew_array_calculation()` points at the modified Pearson correlation of Almeida
-et al, 2001, which is what the port implements.
+`Oligo_skew_array_calculation()` says "Pearson distances", i.e. a plain Pearson distance
+(1 - r), as `Pearson_distance_136()` does. The port uses it too (not Almeida et al, 2001).
 
 ## 9. `includeN_3()` is a copy of `includeN_2()` and allows only two mismatches
 

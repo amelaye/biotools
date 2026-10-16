@@ -53,23 +53,23 @@ at the call site):
   millimetre-to-inch factor, overstating the result by ~33%. Corrected to
   `mbar x 0.02953`.
 
-`skews.php` computes its oligo-skews through two code paths, and **both** are broken
-in the original, so `Service/SkewsManager.php` implements only the general one:
+`skews.php` computes its oligo-skews through two code paths; the general one is broken
+in the original, and `Service/SkewsManager.php` implements it:
 
 - `oligo_len == 4` and `strands == 2` — the tool's default — routes to the "optimized"
-  `Oligo_skew_array_calculation4bothstrands()`. That function never assigns
-  `$sequence2` (unlike its general sibling, which does `$sequence2 = Comp($sequence)`),
-  so the `strrev(substr($sequence2, ...))` half of every window is empty: despite its
-  name it silently analyses a single strand. It also scores with
-  `Pearson_distance_136()`.
+  `Oligo_skew_array_calculation4bothstrands()`. It never assigns `$sequence2`, so the
+  `strrev(substr($sequence2, ...))` half of every window is empty. This has no numerical
+  effect: the window and the reference are both counted on the forward strand only, the
+  counts are simply folded into 120 + 16 classes, and Pearson (`Pearson_distance_136()`)
+  does not depend on the scale. Its reference is symmetrised
+  (`search_oligos_4bothstrands`), as are its windows.
 - any other `strands == 2` combination calls `distance()`, a function defined nowhere
   in the file — a fatal error under every PHP version.
 
 `SkewsManager::oligoSkewArrayCalculation()` always takes the general path, with a real
-reverse complement and a genuine `distance()` (Almeida et al, 2001) implementation.
-Both defects are therefore fixed, but as a consequence **the tool's default
-configuration returns different numbers from the original** — the original's were
-computed on one strand.
+reverse complement for both the windows and the reference, and the Pearson distance (1 - r)
+the legacy header announces ("Pearson distances"). The Almeida et al distance was an
+addition of the port and is no longer used here.
 
 Two entries the original does not compute at all are implemented in
 `FormulasManager`: "Molar conversions for proteins" (`pmolToMicrogProtein`) and

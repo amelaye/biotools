@@ -69,7 +69,10 @@ class SkewsManager
     /**
      * Will  compare oligonucleotide frequencies in all the sequence
      * with frequencies in each window, and will return an array
-     * with distances  (computed as Almeida et al, 2001).
+     * with Pearson distances (1 - r), as the legacy minitool did.
+     * With two strands, the window and the whole sequence are both counted on the forward
+     * strand plus its reverse complement, so that the distance measures the local change of
+     * composition and not the asymmetry between the two strands.
      * @param       string      $sSequence      The sequence to analyze
      * @param       int         $iWindow        The size of the window
      * @param       int         $iOskew         Number of nucleos
@@ -82,8 +85,12 @@ class SkewsManager
         try {
             $aDistances = [];
 
-            // search for oligos in the complet sequence
-            $aOligosX = $this->oligosManger->findOligos($sSequence, $iOskew);
+            // search for oligos in the complet sequence; with two strands the reference is
+            // symmetrised the same way as the windows
+            $sReference = $iStrands == 2
+                ? $sSequence . " " . $this->revCompDNA($sSequence)
+                : $sSequence;
+            $aOligosX = $this->oligosManger->findOligos($sReference, $iOskew);
             $iSeqLength = strlen($sSequence);
             $iPeriod = ceil($iSeqLength / 1400);
             if($iPeriod < 10) {
@@ -98,7 +105,7 @@ class SkewsManager
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
-                    $aDistances[$i] = $this->distance($aOligosX, $aOligosY);
+                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY);
                     $i += $iPeriod;
                 }
             } else {
@@ -109,7 +116,7 @@ class SkewsManager
                     // compute oligonucleotide frequencies in window
                     $aOligosY = $this->oligosManger->findOligos($sSequenceCut, $iOskew);
                     // compute distance between complete sequence and window
-                    $aDistances[$i] = $this->pearsonDistance($aOligosX, $aOligosY);
+                    $aDistances[$i] = $this->windowDistance($aOligosX, $aOligosY);
                     $i += $iPeriod;
                 }
             }
@@ -137,8 +144,26 @@ class SkewsManager
     }
 
     /**
+     * Distance of a window to the whole sequence, or null when it is undefined (a window with no
+     * oligonucleotide, e.g. only N, has no variance): such a point is left out of the graph.
+     * @param       array       $aValsX     Values for the whole sequence
+     * @param       array       $aValsY     Values for the window
+     * @return      float|null
+     */
+    private function windowDistance($aValsX, $aValsY)
+    {
+        try {
+            $fDistance = $this->pearsonDistance($aValsX, $aValsY);
+        } catch (\InvalidArgumentException | \DivisionByZeroError $e) {
+            return null;
+        }
+
+        return is_numeric($fDistance) && is_finite($fDistance) ? $fDistance : null;
+    }
+
+    /**
      * Computes the standard Pearson distance between two arrays of values, used to
-     * compare oligonucleotide frequencies when only one strand is analysed
+     * compare oligonucleotide frequencies
      * @param       array       $aValsX     Values for X
      * @param       array       $aValsY     Values for Y
      * @return      float|void
@@ -233,6 +258,10 @@ class SkewsManager
             $aAT = $aGC = $aGmC = $aKETO = [null];
 
             $fNmax = $this->computeImage($sSequence, $iPos, $iWindow, $bAT, $bKETO, $bGmC, $iLenSeq, $iPeriod, $aAT, $aGC, $aGmC, $aKETO);
+            // flat curves (every skew null) have no scale of their own: use a default one
+            if ($fNmax == 0) {
+                $fNmax = 1;
+            }
             $fRectify = round(200 / $fNmax);
 
             // starts the image
@@ -273,6 +302,9 @@ class SkewsManager
             $fXp = ($iWindow * 700) / (2 * $iLenSeq);
             if(sizeof($aOligoSkew) > 10) {
                 foreach($aOligoSkew as $iPos => $fVal) {
+                    if ($fVal === null) {
+                        continue;
+                    }
                     $fX = round(($iPos * 700 / $iLenSeq) + $fXp);
                     $oIm->line($fX, 20, $fX, 19 + (500 * $fVal), $sQblack2);
                     $oIm->pixel($fX, 20 + (500 * $fVal), $sGb);

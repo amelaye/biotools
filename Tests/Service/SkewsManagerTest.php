@@ -218,6 +218,26 @@ class SkewsManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * A window equal to the whole sequence must be at distance 0 from it. With a reference
+     * counted on one strand only, an asymmetric sequence gives a non-zero distance (0.408 at k=4).
+     */
+    public function testOligoSkewTwoStrandsWholeSequenceWindowIsZero()
+    {
+        // 600 bp, 30 % G, 30 % T, 20 % C, 20 % A: far from strand-symmetric (shuffled 10-mers)
+        $sSequence = "ATGTCGACGTTGCAGTCATGATCGAGGTCTGCGCATTAGTCTGATTACGGGGACACTGTTCGTAGTATGCCCGAATTTGGTCAATGGTGCTCTAGTAGGCAGTGTTAGCCACGATGTTGCATTGCGATCGCGTCGTATGAGTCGACTGATGGAGTCTACTATCACGGGTTGTTGCGAATCCTCTGGGATAAGTGCGTTCATGTATACGGCGGCTACGATTTAGCGGCTTACCGTATAGTGTGCAGGTCATCTTTGGCGAAACTGCGTGATCTATTGAGGCTCGGAACGTTTAGGTTCCAGGATTATGCGCTTGAGCTAGCTCTGATGGACGTAGGTACCTTCTATCAGGGCGGATGACTTTTGCGAACGTGAACTTGTCGATACTGGTGCACACGGTGTTGACATCGTTGATGTCAGGCTCGTCAGATTGTTGACGCGATGTTGATCCGACCGGATGATTGGTCTCAATGATCCTGAGGTTCTTAGGGCACTGTAGTACGCGATGCTGATCGGTAGTTACCTGGATGTCATGGTCGTAACTAGCCTGGATTTGTGGACCATGATCGCAGTGTGTATACCGATTCTGGCAGGGCAGTTTAC";
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $aDistances = $service->oligoSkewArrayCalculation($sSequence, strlen($sSequence), 4, 2);
+
+        $this->assertCount(1, $aDistances);
+        $this->assertEqualsWithDelta(0, $aDistances[0], 1e-9);
+    }
+
+    /**
+     * Expected values come from an independent script: Pearson distance (1 - r) between the
+     * 2-mer counts of seq + " " + revcomp(seq) and those of each window + " " + revcomp(window).
+     */
     public function testOligoSkewArrayCalculationTwoStrands()
     {
         $sequence = "GGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGGGGGGGAGTGAGGGGAGCAGTTGGGCCAAGATGGCGGCCGCCGAGGGACCGGTGGGCGACGCGG";
@@ -225,153 +245,153 @@ class SkewsManagerTest extends TestCase
         $oskew = 2;
         $strands = 2;
         $aExpected = [
-          0 => 0.32147015,
-          10 => 0.33096696,
-          20 => 0.3510755,
-          30 => 0.32194983,
-          40 => 0.27795001,
-          50 => 0.27264332,
-          60 => 0.28485569,
-          70 => 0.29293218,
-          80 => 0.33283053,
-          90 => 0.3056786,
-          100 => 0.27795001,
-          110 => 0.28376523,
-          120 => 0.32147015,
-          130 => 0.33096696,
-          140 => 0.3510755,
-          150 => 0.32194983,
-          160 => 0.27795001,
-          170 => 0.27264332,
-          180 => 0.28485569,
-          190 => 0.29293218,
-          200 => 0.33283053,
-          210 => 0.3056786,
-          220 => 0.27795001,
-          230 => 0.28376523,
-          240 => 0.32147015,
-          250 => 0.33096696,
-          260 => 0.3510755,
-          270 => 0.32194983,
-          280 => 0.27795001,
-          290 => 0.27264332,
-          300 => 0.28485569,
-          310 => 0.29293218,
-          320 => 0.33283053,
-          330 => 0.3056786,
-          340 => 0.27795001,
-          350 => 0.28376523,
-          360 => 0.32147015,
-          370 => 0.33096696,
-          380 => 0.3510755,
-          390 => 0.32194983,
-          400 => 0.27795001,
-          410 => 0.27264332,
-          420 => 0.28485569,
-          430 => 0.29293218,
-          440 => 0.33283053,
-          450 => 0.3056786,
-          460 => 0.27795001,
-          470 => 0.28376523,
-          480 => 0.32147015,
-          490 => 0.33096696,
-          500 => 0.3510755,
-          510 => 0.32194983,
-          520 => 0.27795001,
-          530 => 0.27264332,
-          540 => 0.28485569,
-          550 => 0.29293218,
-          560 => 0.33283053,
-          570 => 0.3056786,
-          580 => 0.27795001,
-          590 => 0.28376523,
-          600 => 0.32147015,
-          610 => 0.33096696,
-          620 => 0.3510755,
-          630 => 0.32194983,
-          640 => 0.27795001,
-          650 => 0.27264332,
-          660 => 0.28485569,
-          670 => 0.29293218,
-          680 => 0.33283053,
-          690 => 0.3056786,
-          700 => 0.27795001,
-          710 => 0.28376523,
-          720 => 0.32147015,
-          730 => 0.33096696,
-          740 => 0.3510755,
-          750 => 0.32194983,
-          760 => 0.27795001,
-          770 => 0.27264332,
-          780 => 0.28485569,
-          790 => 0.29293218,
-          800 => 0.33283053,
-          810 => 0.3056786,
-          820 => 0.27795001,
-          830 => 0.28376523,
-          840 => 0.32147015,
-          850 => 0.33096696,
-          860 => 0.3510755,
-          870 => 0.32194983,
-          880 => 0.27795001,
-          890 => 0.27264332,
-          900 => 0.28485569,
-          910 => 0.29293218,
-          920 => 0.33283053,
-          930 => 0.3056786,
-          940 => 0.27795001,
-          950 => 0.28376523,
-          960 => 0.32147015,
-          970 => 0.33096696,
-          980 => 0.3510755,
-          990 => 0.32194983,
-          1000 => 0.27795001,
-          1010 => 0.27264332,
-          1020 => 0.28485569,
-          1030 => 0.29293218,
-          1040 => 0.33283053,
-          1050 => 0.3056786,
-          1060 => 0.27795001,
-          1070 => 0.28376523,
-          1080 => 0.32147015,
-          1090 => 0.33096696,
-          1100 => 0.3510755,
-          1110 => 0.32194983,
-          1120 => 0.27795001,
-          1130 => 0.27264332,
-          1140 => 0.28485569,
-          1150 => 0.29293218,
-          1160 => 0.33283053,
-          1170 => 0.3056786,
-          1180 => 0.27795001,
-          1190 => 0.28376523,
-          1200 => 0.32147015,
-          1210 => 0.33096696,
-          1220 => 0.3510755,
-          1230 => 0.32194983,
-          1240 => 0.27795001,
-          1250 => 0.27264332,
-          1260 => 0.28485569,
-          1270 => 0.29293218,
-          1280 => 0.33283053,
-          1290 => 0.3056786,
-          1300 => 0.27795001,
-          1310 => 0.28376523,
-          1320 => 0.32147015,
-          1330 => 0.33096696,
-          1340 => 0.3510755,
-          1350 => 0.32194983,
-          1360 => 0.27795001,
-          1370 => 0.27264332,
-          1380 => 0.28485569,
-          1390 => 0.29293218,
-          1400 => 0.33283053,
+          0 => 0.014508302446255783,
+          10 => 0.00746096310978106,
+          20 => 0.009491636597840802,
+          30 => 0.00828728065479345,
+          40 => 0.00861501115330976,
+          50 => 0.005816865951125849,
+          60 => 0.0072675388607198466,
+          70 => 0.0038544236433123436,
+          80 => 0.007380140381458844,
+          90 => 0.005780905267255276,
+          100 => 0.00861501115330976,
+          110 => 0.005871420285528117,
+          120 => 0.014508302446255783,
+          130 => 0.00746096310978106,
+          140 => 0.009491636597840802,
+          150 => 0.00828728065479345,
+          160 => 0.00861501115330976,
+          170 => 0.005816865951125849,
+          180 => 0.0072675388607198466,
+          190 => 0.0038544236433123436,
+          200 => 0.007380140381458844,
+          210 => 0.005780905267255276,
+          220 => 0.00861501115330976,
+          230 => 0.005871420285528117,
+          240 => 0.014508302446255783,
+          250 => 0.00746096310978106,
+          260 => 0.009491636597840802,
+          270 => 0.00828728065479345,
+          280 => 0.00861501115330976,
+          290 => 0.005816865951125849,
+          300 => 0.0072675388607198466,
+          310 => 0.0038544236433123436,
+          320 => 0.007380140381458844,
+          330 => 0.005780905267255276,
+          340 => 0.00861501115330976,
+          350 => 0.005871420285528117,
+          360 => 0.014508302446255783,
+          370 => 0.00746096310978106,
+          380 => 0.009491636597840802,
+          390 => 0.00828728065479345,
+          400 => 0.00861501115330976,
+          410 => 0.005816865951125849,
+          420 => 0.0072675388607198466,
+          430 => 0.0038544236433123436,
+          440 => 0.007380140381458844,
+          450 => 0.005780905267255276,
+          460 => 0.00861501115330976,
+          470 => 0.005871420285528117,
+          480 => 0.014508302446255783,
+          490 => 0.00746096310978106,
+          500 => 0.009491636597840802,
+          510 => 0.00828728065479345,
+          520 => 0.00861501115330976,
+          530 => 0.005816865951125849,
+          540 => 0.0072675388607198466,
+          550 => 0.0038544236433123436,
+          560 => 0.007380140381458844,
+          570 => 0.005780905267255276,
+          580 => 0.00861501115330976,
+          590 => 0.005871420285528117,
+          600 => 0.014508302446255783,
+          610 => 0.00746096310978106,
+          620 => 0.009491636597840802,
+          630 => 0.00828728065479345,
+          640 => 0.00861501115330976,
+          650 => 0.005816865951125849,
+          660 => 0.0072675388607198466,
+          670 => 0.0038544236433123436,
+          680 => 0.007380140381458844,
+          690 => 0.005780905267255276,
+          700 => 0.00861501115330976,
+          710 => 0.005871420285528117,
+          720 => 0.014508302446255783,
+          730 => 0.00746096310978106,
+          740 => 0.009491636597840802,
+          750 => 0.00828728065479345,
+          760 => 0.00861501115330976,
+          770 => 0.005816865951125849,
+          780 => 0.0072675388607198466,
+          790 => 0.0038544236433123436,
+          800 => 0.007380140381458844,
+          810 => 0.005780905267255276,
+          820 => 0.00861501115330976,
+          830 => 0.005871420285528117,
+          840 => 0.014508302446255783,
+          850 => 0.00746096310978106,
+          860 => 0.009491636597840802,
+          870 => 0.00828728065479345,
+          880 => 0.00861501115330976,
+          890 => 0.005816865951125849,
+          900 => 0.0072675388607198466,
+          910 => 0.0038544236433123436,
+          920 => 0.007380140381458844,
+          930 => 0.005780905267255276,
+          940 => 0.00861501115330976,
+          950 => 0.005871420285528117,
+          960 => 0.014508302446255783,
+          970 => 0.00746096310978106,
+          980 => 0.009491636597840802,
+          990 => 0.00828728065479345,
+          1000 => 0.00861501115330976,
+          1010 => 0.005816865951125849,
+          1020 => 0.0072675388607198466,
+          1030 => 0.0038544236433123436,
+          1040 => 0.007380140381458844,
+          1050 => 0.005780905267255276,
+          1060 => 0.00861501115330976,
+          1070 => 0.005871420285528117,
+          1080 => 0.014508302446255783,
+          1090 => 0.00746096310978106,
+          1100 => 0.009491636597840802,
+          1110 => 0.00828728065479345,
+          1120 => 0.00861501115330976,
+          1130 => 0.005816865951125849,
+          1140 => 0.0072675388607198466,
+          1150 => 0.0038544236433123436,
+          1160 => 0.007380140381458844,
+          1170 => 0.005780905267255276,
+          1180 => 0.00861501115330976,
+          1190 => 0.005871420285528117,
+          1200 => 0.014508302446255783,
+          1210 => 0.00746096310978106,
+          1220 => 0.009491636597840802,
+          1230 => 0.00828728065479345,
+          1240 => 0.00861501115330976,
+          1250 => 0.005816865951125849,
+          1260 => 0.0072675388607198466,
+          1270 => 0.0038544236433123436,
+          1280 => 0.007380140381458844,
+          1290 => 0.005780905267255276,
+          1300 => 0.00861501115330976,
+          1310 => 0.005871420285528117,
+          1320 => 0.014508302446255783,
+          1330 => 0.00746096310978106,
+          1340 => 0.009491636597840802,
+          1350 => 0.00828728065479345,
+          1360 => 0.00861501115330976,
+          1370 => 0.005816865951125849,
+          1380 => 0.0072675388607198466,
+          1390 => 0.0038544236433123436,
+          1400 => 0.007380140381458844,
         ];
 
         $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
         $testFunction = $service->oligoSkewArrayCalculation($sequence, $window, $oskew, $strands);
 
-        $this->assertEquals($aExpected, $testFunction);
+        $this->assertEqualsWithDelta($aExpected, $testFunction, 1e-9);
     }
 
     public function testDistance()
@@ -1166,6 +1186,59 @@ class SkewsManagerTest extends TestCase
         $this->assertStringContainsString('<svg', file_get_contents($testFunction));
 
         unlink($testFunction);
+    }
+
+    /**
+     * "ACGT" repeated: every skew is 0, so the scale has no maximum to divide by
+     */
+    public function testCreateImageWithAllSkewsNull()
+    {
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $sPath = $service->createImage(str_repeat("ACGT", 2000), 100, true, true, true, true, [], 4, null, null, "flat");
+
+        $this->assertFileExists($sPath);
+        $this->assertStringContainsString('<svg', file_get_contents($sPath));
+
+        unlink($sPath);
+    }
+
+    /**
+     * A 6,000 N gap: the windows inside it hold no oligonucleotide, their distance is undefined
+     * and must be left out (null) instead of crashing; the other windows keep their distance
+     */
+    #[DataProvider('providerStrands')]
+    public function testOligoSkewWindowsWithoutOligosAreNull($iStrands)
+    {
+        $sSequence = str_repeat("ACGTTGCAAG", 1000) . str_repeat("N", 6000) . str_repeat("GATTACACGT", 1000);
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $aDistances = $service->oligoSkewArrayCalculation($sSequence, 5000, 4, $iStrands);
+
+        $this->assertNotEmpty($aDistances);
+        // 26,000 bp: sampled every 19 bp. The window at 10,013 is only N (10,013 to 15,013)
+        $this->assertNull($aDistances[10013]);
+        $this->assertNotNull($aDistances[0]);
+        $this->assertNotNull($aDistances[20995]);
+    }
+
+    public static function providerStrands(): array
+    {
+        return ['one strand' => [1], 'two strands' => [2]];
+    }
+
+    public function testCreateImageSkipsUndefinedOligoSkewPoints()
+    {
+        $aOligoSkew = [];
+        for ($i = 0; $i < 12; $i++) {
+            $aOligoSkew[$i * 10] = $i % 3 === 0 ? null : 0.3;
+        }
+
+        $service = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+        $sPath = $service->createImage(str_repeat("ACGGT", 200), 100, true, false, false, false, $aOligoSkew, 4, null, null, "gaps");
+
+        $this->assertFileExists($sPath);
+
+        unlink($sPath);
     }
 
     /**
