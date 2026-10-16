@@ -28,6 +28,30 @@ class DnaToProteinManager
     use SequenceTrait;
 
     /**
+     * NCBI genetic code table ids, by the label of the genetic codes of the form
+     * (lower case, words separated by a space)
+     */
+    public const NCBI_GENETIC_CODES = [
+        "standard"                                  => 1,
+        "vertebrate mitochondrial"                  => 2,
+        "yeast mitochondrial"                       => 3,
+        "mold protozoan coelenterate mitochondrial" => 4,
+        "invertebrate mitochondrial"                => 5,
+        "ciliate dasycladacean hexamita nuclear"    => 6,
+        "echinoderm mitochondrial"                  => 9,
+        "euplotid nuclear"                          => 10,
+        "bacterial plant plastid"                   => 11,
+        "alternative yeast nuclear"                 => 12,
+        "ascidian mitochondria"                     => 13,
+        "flatworm mitochondrial"                    => 14,
+        "blepharisma macronuclear"                  => 15,
+        "chlorophycean mitochondrial"               => 16,
+        "trematode mitochondrial"                   => 21,
+        "scenedesmus obliquus mitochondrial"        => 22,
+        "thraustochytrium mitochondrial code"       => 23,
+    ];
+
+    /**
      * @var array
      */
     private $aAminos;
@@ -172,12 +196,15 @@ class DnaToProteinManager
                 $sPeptideSequence = strtolower($sPeptideSequence);
                 $aOligo = preg_split('/\*/',$sPeptideSequence);
                 foreach ($aOligo as $iM => $sVal) {
-                    if (strlen($sVal) >= $iProtsize) {
-                        if ($bTrimmed) {
-                            $aOligo[$iM] = substr($sVal,0,strpos($sVal,"m")).strtoupper(substr($sVal,strpos($sVal,"m")));
-                        } else {
-                            $aOligo[$iM] = strtoupper($sVal);
+                    if ($bTrimmed) {
+                        // an ORF starts at its first Met: a segment without Met is no ORF, and
+                        // the size is measured from that Met to the stop
+                        $iMet = strpos($sVal, "m");
+                        if ($iMet !== false && strlen($sVal) - $iMet >= $iProtsize) {
+                            $aOligo[$iM] = substr($sVal, 0, $iMet).strtoupper(substr($sVal, $iMet));
                         }
+                    } elseif (strlen($sVal) >= $iProtsize) {
+                        $aOligo[$iM] = strtoupper($sVal);
                     }
                 }
                 $sNewPeptideSequence = "";
@@ -204,19 +231,44 @@ class DnaToProteinManager
      * Finds the ORFs of a DNA sequence with their coordinates, on both strands, with BioPHP's OrfFinder.
      * Unlike findORF(), which only formats already translated frames for display, this returns
      * the regions themselves (frame, 1-based start/end on the original sequence, peptide).
-     * It uses the standard genetic code only.
-     * @param   string  $sDna                   DNA sequence
-     * @param   int     $iMinimumProteinLength  Minimum length of the peptide, in amino acids
+     * @param   string      $sDna                   DNA sequence
+     * @param   int         $iMinimumProteinLength  Minimum length of the peptide, in amino acids
+     * @param   int|string  $mGeneticCode           An NCBI table id, or a genetic code label of the form
+     *                                              (standard by default): TGA is not a stop under every code
      * @return  OpenReadingFrame[]
-     * @throws  \LogicException                 When no OrfFinder was injected
+     * @throws  \LogicException                     When no OrfFinder was injected
+     * @throws  \InvalidArgumentException           When the genetic code label is unknown
      */
-    public function findOrfRegions(string $sDna, int $iMinimumProteinLength = 1): array
+    public function findOrfRegions(string $sDna, int $iMinimumProteinLength = 1, $mGeneticCode = 1): array
     {
         if ($this->orfFinder === null) {
             throw new \LogicException('No OrfFinderInterface was injected into DnaToProteinManager.');
         }
 
-        return $this->orfFinder->findOrfs(new DnaSequence(strtoupper($sDna)), $iMinimumProteinLength);
+        return $this->orfFinder->findOrfs(
+            new DnaSequence(strtoupper($sDna)),
+            $iMinimumProteinLength,
+            $this->ncbiGeneticCode($mGeneticCode)
+        );
+    }
+
+    /**
+     * @param   int|string  $mGeneticCode   An NCBI table id, or a genetic code label of the form
+     * @return  int
+     * @throws  \InvalidArgumentException
+     */
+    private function ncbiGeneticCode($mGeneticCode) : int
+    {
+        if (is_int($mGeneticCode) || (is_string($mGeneticCode) && ctype_digit($mGeneticCode))) {
+            return (int) $mGeneticCode;
+        }
+
+        $sLabel = strtolower(trim(str_replace("_", " ", (string) $mGeneticCode)));
+        if (!isset(self::NCBI_GENETIC_CODES[$sLabel])) {
+            throw new \InvalidArgumentException(sprintf('Unknown genetic code "%s".', $mGeneticCode));
+        }
+
+        return self::NCBI_GENETIC_CODES[$sLabel];
     }
 
     /**

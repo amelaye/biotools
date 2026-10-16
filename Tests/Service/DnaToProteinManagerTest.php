@@ -260,7 +260,7 @@ class DnaToProteinManagerTest extends TestCase
 
         $aExpected = [
           1 => "_____________________*__________________________MAAAEGPVXDXGVRGAVGPRWRPPRDRWATGSEGSSWAKMAAAEGPVXDAGV",
-          2 => "_*__________________________MAAAEGPVXDGGVRGAVGPRWRPPRDRWATAE*______________________________________",
+          2 => "_*__________________________________________________________*______________________________________",
           3 => "________________________________________*______________________________________*___________________",
         ];
 
@@ -268,6 +268,38 @@ class DnaToProteinManagerTest extends TestCase
         $testFunction = $service->findORF($aFrames, $iProtsize, $bOnlyCoding, $bTrimmed);
 
         $this->assertEquals($aExpected, $testFunction);
+    }
+
+    /**
+     * In trimmed mode an ORF starts at its first Met and its size is counted from there to the
+     * stop; a segment with no Met is no ORF, whatever its length
+     */
+    public function testFindORFTrimmedIgnoresSegmentsWithoutMet()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        // 10 K and a stop: long enough, but no Met
+        $this->assertEquals([1 => "kkkkkkkkkk*"], $service->findORF([1 => "KKKKKKKKKK*"], 10, false, true));
+        $this->assertEquals([1 => "__________*"], $service->findORF([1 => "KKKKKKKKKK*"], 10, true, true));
+    }
+
+    public function testFindORFTrimmedCountsTheSizeFromTheMet()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        // "kkkkMKKK" is 8 long but only 4 from the Met to the stop
+        $this->assertEquals([1 => "kkkkmkkk*"], $service->findORF([1 => "KKKKMKKK*"], 5, false, true));
+        $this->assertEquals([1 => "kkkkMKKK*"], $service->findORF([1 => "KKKKMKKK*"], 4, false, true));
+    }
+
+    /**
+     * Untrimmed mode is unchanged: the whole segment is shown when it is long enough
+     */
+    public function testFindORFUntrimmedKeepsTheWholeSegment()
+    {
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock);
+
+        $this->assertEquals([1 => "KKKKKKKKKK*"], $service->findORF([1 => "KKKKKKKKKK*"], 10, false, false));
     }
 
     public function testFindORFException()
@@ -400,12 +432,45 @@ class DnaToProteinManagerTest extends TestCase
         $oFinder = $this->createMock(\Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface::class);
         $oFinder->expects($this->once())
             ->method('findOrfs')
-            ->with($this->callback(fn($oDna) => $oDna->getValue() === 'ATGAAAGCCTAA'), 3)
+            ->with($this->callback(fn($oDna) => $oDna->getValue() === 'ATGAAAGCCTAA'), 3, 1)
             ->willReturn([$oOrf]);
 
         $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock, $oFinder);
 
         $this->assertSame([$oOrf], $service->findOrfRegions('atgaaagcctaa', 3));
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('provideGeneticCodes')]
+    public function testFindOrfRegionsPassesTheGeneticCodeToTheFinder($mCode, $iExpectedId)
+    {
+        $oFinder = $this->createMock(\Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface::class);
+        $oFinder->expects($this->once())
+            ->method('findOrfs')
+            ->with($this->anything(), 1, $iExpectedId)
+            ->willReturn([]);
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock, $oFinder);
+        $service->findOrfRegions('ATGAAATAG', 1, $mCode);
+    }
+
+    public static function provideGeneticCodes(): array
+    {
+        return [
+            'NCBI id'                     => [2, 2],
+            'label of the form'           => ["vertebrate mitochondrial", 2],
+            'label with underscores'      => ["mold_protozoan_coelenterate_mitochondrial", 4],
+            'standard'                    => ["standard", 1],
+            'trematode'                   => ["trematode mitochondrial", 21],
+        ];
+    }
+
+    public function testFindOrfRegionsRefusesAnUnknownGeneticCode()
+    {
+        $oFinder = $this->createMock(\Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface::class);
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock, $oFinder);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->findOrfRegions('ATGAAATAG', 1, "martian");
     }
 
     public function testFindOrfRegionsRequiresAnOrfFinder()
