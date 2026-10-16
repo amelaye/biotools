@@ -50,22 +50,23 @@ class SequenceManipulationAndDataManager
     /**
      * Displays the content of G and C, as a percentage of the bases that tell G/C from A/T/U
      * (BioPHP's AbstractNucleicSequence::gcFraction): an N or any ambiguity code mixing both
-     * says nothing about it and is left out, so "ACGTNNNNNN" is 50 %, not 20 %. The Tm and the
-     * skews of biotools use the same definition.
-     * An empty sequence has no G+C at all, so it scores 0. Legacy divided by
-     * strlen() unguarded: under PHP 5 that warned and yielded INF, but since PHP 8
-     * it is a fatal DivisionByZeroError, and the sequence field is emptied by the
-     * form whenever the input holds no codable character at all (e.g. "ZZZZ").
+     * says nothing about it and is left out, so "ACGTNNNNNN" is 50 %, not 20 %. A gap, a digit
+     * or any other symbol that is no base is left out the same way: "AC-GT" is 2 out of 4 = 50 %,
+     * where the whole length (5) would give 40 %. The Tm uses the same definition. The skews do
+     * not: they are (G - C) / (G + C), not a G+C fraction.
+     * When no base tells G/C from A/T/U (empty sequence, only N...) the G+C is undefined, not 0 %:
+     * null is returned. Legacy divided by strlen() unguarded: under PHP 5 that warned and yielded
+     * INF, but since PHP 8 it is a fatal DivisionByZeroError, and the sequence field is emptied by
+     * the form whenever the input holds no codable character at all (e.g. "ZZZZ").
      * @param   string      $sSeq
-     * @return  float|int
+     * @return  float|null
      * @throws  \Exception
      */
     public function gcContent($sSeq)
     {
         try {
-            $iLenSeq = strlen((string) $sSeq);
-            if ($iLenSeq === 0) {
-                return 0;
+            if (preg_match('/[GCSATUW]/i', (string) $sSeq) !== 1) {
+                return null;
             }
             $fGcPercent = round(100 * AbstractNucleicSequence::gcFraction((string) $sSeq), 2);
             return $fGcPercent;

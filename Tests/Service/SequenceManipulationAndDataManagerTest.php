@@ -99,7 +99,18 @@ class SequenceManipulationAndDataManagerTest extends TestCase
     {
         $this->assertEquals(50, $this->service->gcContent("ACGTNNNNNN"));
         $this->assertEquals(40, $this->service->gcContent("SSSSAAAAAA"));
-        $this->assertEquals(0, $this->service->gcContent("NNNN"));
+        $this->assertNull($this->service->gcContent("NNNN"));
+    }
+
+    /**
+     * A symbol that is no base (gap, digit) is left out of the denominator like an N:
+     * "AC-GT" is 2 G/C out of 4 bases = 50 %, not 2 out of the 5 characters
+     */
+    public function testGcContentLeavesGapsAndDigitsOut()
+    {
+        $this->assertEquals(50, $this->service->gcContent("AC-GT"));
+        $this->assertEquals(50, $this->service->gcContent("AC12GT"));
+        $this->assertEquals(50, $this->service->gcContent("acgu"));
     }
 
     public function testGcContentOfAFullyGcSequence()
@@ -125,11 +136,12 @@ class SequenceManipulationAndDataManagerTest extends TestCase
      * fatal DivisionByZeroError (an Error, so not even caught by the service's
      * catch(\Exception)). It is reachable: SequenceManipulationType strips every
      * non-codable character in PRE_SUBMIT and carries no NotBlank, so an input like
-     * "ZZZZ" reaches the manager as an empty sequence. No base means no G+C, so 0.
+     * "ZZZZ" reaches the manager as an empty sequence. No base means the G+C is undefined: null,
+     * not a 0 % that would read as "no G or C".
      */
     public function testGcContentOfAnEmptySequence()
     {
-        $this->assertEquals(0, $this->service->gcContent(""));
+        $this->assertNull($this->service->gcContent(""));
     }
 
     /**
