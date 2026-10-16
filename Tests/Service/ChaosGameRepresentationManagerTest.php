@@ -706,14 +706,43 @@ class ChaosGameRepresentationManagerTest extends TestCase
         $this->assertCount(16, $aOne);
         $this->assertSame(1, $aOne["AC"]);
         $this->assertSame(1, $aOne["CG"]);
-        $this->assertSame(1, $aOne["GT"]);   // "N" is dropped, so G and T are neighbours
+        $this->assertSame(0, $aOne["GT"]);   // an N separates G and T: no word across it
         $this->assertSame(1, $aOne["TT"]);
+        $this->assertSame(3, array_sum($aOne));
 
         // both strands: the reverse complement of ACGTT is AACGT, adding AA, AC, CG, GT
         $aTwo = $service->oligoCounts("ACGTT", 2, 2);
         $this->assertSame(2, $aTwo["AC"]);
         $this->assertSame(1, $aTwo["AA"]);
         $this->assertSame(2, $aTwo["GT"]);
+    }
+
+    /**
+     * Two strands, by hand: "ACGNTT" is the stretches ACG and TT. ACG: AC, CG; its reverse
+     * complement CGT: CG, GT. TT: TT; its reverse complement AA: AA.
+     * Totals AC 1, CG 2, GT 1, TT 1, AA 1 - and no word is made across the N.
+     */
+    public function testOligoCountsOnTwoStrandsKeepsEachStretchApart()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+
+        $aTwo = $service->oligoCounts("ACGNTT", 2, 2);
+
+        $this->assertCount(16, $aTwo);
+        $this->assertSame(["AA" => 1, "AC" => 1, "CG" => 2, "GT" => 1, "TT" => 1], array_filter($aTwo));
+        // a gap or a space breaks the sequence like an N does
+        $this->assertSame($aTwo, $service->oligoCounts("ACG-TT", 2, 2));
+        $this->assertSame($aTwo, $service->oligoCounts("acg tt", 2, 2));
+    }
+
+    public function testOligoCountsWithoutAnyBaseCountsZero()
+    {
+        $service = new ChaosGameRepresentationManager($this->aNucleotidGraph, $this->apiNucleoMock);
+
+        $aCounts = $service->oligoCounts("NNN", 3, 1);
+
+        $this->assertCount(64, $aCounts);
+        $this->assertSame(0, array_sum($aCounts));
     }
 
     public function testOligoCountsRefusesALengthBioPhpDoesNotHandle()

@@ -68,7 +68,9 @@ class ChaosGameRepresentationManager
 
     /**
      * Counts of every oligonucleotide of a given length, 0 included, on one or both strands
-     * (BioPHP's chaos game calculator). Any character other than A, C, G, T is ignored.
+     * (BioPHP's chaos game calculator). A character other than A, C, G, T (an N, a gap, a space)
+     * is not a base: it breaks the sequence, and no word is counted across it. "ACGNTT" holds AC, CG
+     * and TT, not GT. On two strands each stretch is paired with its own reverse complement.
      * @param   string  $sSequence
      * @param   int     $iOligoLen      1 to 8 (the drawings handle 2 to 7)
      * @param   int     $iStrand        1 or 2
@@ -76,7 +78,27 @@ class ChaosGameRepresentationManager
      */
     public function oligoCounts($sSequence, $iOligoLen, $iStrand = 1) : array
     {
-        return $this->chaosGame->oligoCounts($this->toDnaSequence((string) $sSequence), (int) $iOligoLen, $iStrand == 2);
+        $aStretches = preg_split('/[^ACGT]+/', strtoupper((string) $sSequence), -1, PREG_SPLIT_NO_EMPTY);
+
+        $aCounts = null;
+        foreach ($aStretches as $sStretch) {
+            $aStretchCounts = $this->chaosGame->oligoCounts(new DnaSequence($sStretch), (int) $iOligoLen, $iStrand == 2);
+            if ($aCounts === null) {
+                $aCounts = $aStretchCounts;
+                continue;
+            }
+            foreach ($aStretchCounts as $sOligo => $iCount) {
+                $aCounts[$sOligo] += $iCount;
+            }
+        }
+        if ($aCounts === null) {
+            // no base at all: every word counts 0 (and the length is checked all the same)
+            $aCounts = array_map(function () {
+                return 0;
+            }, $this->chaosGame->oligoCounts(new DnaSequence("A"), (int) $iOligoLen));
+        }
+
+        return $aCounts;
     }
 
     /**
