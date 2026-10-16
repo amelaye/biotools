@@ -3,7 +3,7 @@
  * Form to calculate Oligonucleotide Frequency
  * Freely inspired by BioPHP's project biophp.org
  * Created 31 march 2019
- * Last modified 24 august 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
@@ -72,7 +72,7 @@ class PcrAmplificationType extends AbstractType
                     'class' => "form-control"
                 ],
                 'data' => 'GCCGCTGGGG',
-                'label' => "Primer 1 (5' -> 3') : ",
+                'label' => "Primer 2 (5' -> 3') : ",
             ]
         );
         $builder->add(

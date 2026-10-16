@@ -134,9 +134,20 @@ class DistanceAmongSequencesManager
                     $iLen
                 );
 
+                // a sequence shorter than the words, or made of N only, holds no word: its
+                // frequencies cannot be standardised (the sum is 0)
+                if (array_sum($aOligos) == 0) {
+                    throw new \DomainException(sprintf(
+                        'The sequence %s holds no word of %d bases (A, C, G, T): its frequencies are undefined.',
+                        $iKey,
+                        $iLen
+                    ));
+                }
                 $aOligoArray[$iKey] = $this->standardFrecuencies($aOligos, $iLen);
             }
             return $aOligoArray;
+        } catch (\DomainException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
@@ -627,11 +638,11 @@ class DistanceAmongSequencesManager
         if (!is_array($aArray) || [] === $aArray) {
             throw new \Exception('The frequencies array must not be empty.');
         }
+        $fSum = array_sum($aArray);
+        if ($fSum == 0) {
+            throw new \DomainException('The frequencies are all 0: they cannot be standardised.');
+        }
         try {
-            $fSum = 0;
-            foreach($aArray as $sK => $fV) {
-                $fSum += $fV;
-            }
             $fC = pow(4, $iLen) / $fSum;
             foreach($aArray as $sK => $fV) {
                 $aArray[$sK] = $fC * $fV;

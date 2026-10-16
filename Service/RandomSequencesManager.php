@@ -3,7 +3,7 @@
  * Formulas Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -86,8 +86,9 @@ class RandomSequencesManager
 
                     // Get number of ocurrences per each nucleotide for a seq with length=$length1
                     foreach($this->aAminos as $sAmino) {
-                        $aDNA[$sAmino] = round($$sAmino * $iLength / $iAcgt);
+                        $aDNA[$sAmino] = $$sAmino;
                     }
+                    $aDNA = $this->countsForLength($aDNA, $iLength);
 
                     // get randomized sequence
                     $sResult = $this->randomize($aDNA);
@@ -105,8 +106,9 @@ class RandomSequencesManager
 
                     // Get number of ocurrences per each nucleotide for a seq with length=$length1
                     foreach($aListProteins as $sProtein) {
-                        $aProteins[$sProtein] = round($$sProtein * $iLength / $iAcdefghiklmnpgrstvwy);
+                        $aProteins[$sProtein] = $$sProtein;
                     }
+                    $aProteins = $this->countsForLength($aProteins, $iLength);
 
                     $sResult = $this->randomize($aProteins);
                 }
@@ -131,15 +133,9 @@ class RandomSequencesManager
     {
         try {
             $aDNA = [];
-            $iAcgt = 0;
             if ($iLength != null) {
                 // in case length is specified
-                foreach($aAminoAcids as $iAmino) {
-                    $iAcgt += $iAmino;
-                }
-                foreach($aAminoAcids as $sKey => $iData) {
-                    $aDNA[$sKey] = round($iData * $iLength / $iAcgt);
-                }
+                $aDNA = $this->countsForLength($aAminoAcids, $iLength);
             } else {
                 // in case length is not specified
                 foreach($aAminoAcids as $sKey => $iData) {
@@ -165,18 +161,11 @@ class RandomSequencesManager
     {
         try {
             $aProteins = [];
-            $iAcdefghiklmnpgrstvwy = 0;
 
             // Get number of ocurrences per each aminoacid
             if ($iLength != null) {
                 // in case length is specified
-                foreach($aAminoAcids as $iAmino) {
-                    $iAcdefghiklmnpgrstvwy += $iAmino;
-                }
-
-                foreach($aAminoAcids as $sKey => $iData) {
-                    $aProteins[$sKey] = round($iData * $iLength / $iAcdefghiklmnpgrstvwy);
-                }
+                $aProteins = $this->countsForLength($aAminoAcids, $iLength);
 
             } else {
                 // in case length is not specified
@@ -190,5 +179,37 @@ class RandomSequencesManager
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Number of each symbol in a sequence of $iLength, proportional to $aWeights, adding up to
+     * $iLength exactly: each share is rounded down, then the bases left go to the largest remainders
+     * (the first symbol on a tie). Rounding each share on its own, as legacy did, gave 4 bases for a
+     * length of 3 with 29.5/29.5/20.5/20.5 %, and 12 for a length of 10 with four equal shares.
+     * @param       array       $aWeights       Symbol => weight (a count or a percentage)
+     * @param       int         $iLength
+     * @return      array       Symbol => count
+     */
+    private function countsForLength(array $aWeights, int $iLength) : array
+    {
+        $fTotal = array_sum($aWeights);
+        $aCounts = [];
+        $aRemainders = [];
+        foreach ($aWeights as $sKey => $fWeight) {
+            $fShare = $fTotal > 0 ? $fWeight * $iLength / $fTotal : 0;
+            $aCounts[$sKey] = (int) floor($fShare);
+            $aRemainders[$sKey] = $fShare - $aCounts[$sKey];
+        }
+        $iLeft = $fTotal > 0 ? $iLength - array_sum($aCounts) : 0;
+        // stable sort: on a tie, the first symbol keeps its place
+        $aOrder = array_keys($aRemainders);
+        usort($aOrder, function ($sA, $sB) use ($aRemainders, $aOrder) {
+            return [$aRemainders[$sB], array_search($sA, $aOrder)] <=> [$aRemainders[$sA], array_search($sB, $aOrder)];
+        });
+        foreach (array_slice($aOrder, 0, $iLeft) as $sKey) {
+            $aCounts[$sKey]++;
+        }
+
+        return $aCounts;
     }
 }

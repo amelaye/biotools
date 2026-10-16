@@ -4,7 +4,7 @@
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
  * Modified 27 february 2019 - RIP Pasha =^._.^= ∫
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -151,14 +151,24 @@ class RestrictionDigestManager
     {
         try {
             $aNewEnzymes = [];
-            // if $wre not null => all endonucleases but the selected one must be removed
+            // if $wre not null => all endonucleases but the selected one must be removed.
+            // The name must be one of the entry's isoschizomers, not a part of one: "EcoRI" is in
+            // "AjnI,EcoRII,..." as a substring, and the legacy test returned that CCWGG entry for it.
+            // A Type IIs enzyme also has a reverse-orientation entry "X@" (its list is empty): it is
+            // kept with the enzyme, so that the sites on the other strand are found too.
+            // An entry whose list is empty is found by its key. An enzyme found nowhere gives no enzyme
+            // at all: the whole pool used to be returned under the requested name.
             if($sWre != null) {
                 foreach($aEnzymes as $sKey => $aVal) {
-                    if (strpos(" ,".$aEnzymes[$sKey][0].",",$sWre) > 0) {
+                    if (in_array($sWre, explode(",", $aEnzymes[$sKey][0]), true) || $sKey === $sWre) {
                         $aNewEnzymes[$sWre] = $aEnzymes[$sKey];
+                        if (isset($aEnzymes[$sKey."@"])) {
+                            $aNewEnzymes[$sWre."@"] = $aEnzymes[$sKey."@"];
+                        }
                         return $aNewEnzymes;
                     }
                 }
+                return [];
             }
             // remove endonucleases which do not match requeriments
             foreach($aEnzymes as $sEnzyme => $aVal) {
@@ -292,7 +302,6 @@ class RestrictionDigestManager
     {
         try {
             $aDigestionMulti = [];
-            $iTempData = 0;
 
             // Two or more sequence available
             foreach($aEnzymes as $sEnzyme => $aVal) {
@@ -305,32 +314,17 @@ class RestrictionDigestManager
                         }
                     }
                 } else {
-                    $aTemp = [];
-                    if(isset($aDigestion[0][$sEnzyme])) {
-                        // Show restriction results when they are different
-                        $iTempData = sizeof($aDigestion[0][$sEnzyme]["cuts"]);
-                        if ($iTempData > 0){
-                            $aTemp = $aDigestion[0][$sEnzyme]["cuts"];
-                        }
-                    }
-
+                    // Show restriction results when they are different: the cut positions (the keys of
+                    // "cuts") of every sequence are compared with those of the first one, a sequence the
+                    // enzyme does not cut having none. The same number of cuts at other places differs.
+                    $aFirstCuts = $this->cutPositions($aDigestion, 0, $sEnzyme);
                     foreach($aSequence as $iNumber => $aVal2) {
                         if ($iNumber == 0) {
                             continue;
                         }
-                        if(isset($aDigestion[$iNumber][$sEnzyme])) {
-                            $iTempData2 = sizeof($aDigestion[$iNumber][$sEnzyme]["cuts"]);
-                            if ($iTempData != $iTempData2) {
-                                $bChecker = true;
-                                break;
-                            }
-                            if ($iTempData2>0){
-                                $aTemp = array_diff($aTemp, $aDigestion[$iNumber][$sEnzyme]["cuts"]);
-                                if (sizeof($aTemp) > 0) {
-                                    $bChecker = true;
-                                    break;
-                                }
-                            }
+                        if ($this->cutPositions($aDigestion, $iNumber, $sEnzyme) !== $aFirstCuts) {
+                            $bChecker = true;
+                            break;
                         }
                     }
                 }
@@ -343,6 +337,21 @@ class RestrictionDigestManager
         } catch (\Exception $e) {
             throw new \Exception($e);
         }
+    }
+
+    /**
+     * Sorted cut positions of an enzyme in one sequence, none when it does not cut it
+     * @param       array       $aDigestion
+     * @param       int         $iNumber
+     * @param       string      $sEnzyme
+     * @return      array
+     */
+    private function cutPositions($aDigestion, $iNumber, $sEnzyme) : array
+    {
+        $aPositions = isset($aDigestion[$iNumber][$sEnzyme]["cuts"]) ? array_keys($aDigestion[$iNumber][$sEnzyme]["cuts"]) : [];
+        sort($aPositions);
+
+        return $aPositions;
     }
 
     /**

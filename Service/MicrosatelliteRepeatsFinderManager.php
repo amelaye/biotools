@@ -3,7 +3,7 @@
  * Microsatellite Repeats Finder Fonctions
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -72,7 +72,11 @@ class MicrosatelliteRepeatsFinderManager
                         $aResults[$iCounter]["repeats"] = $iMatches;
                         $aResults[$iCounter]["sequence"] = substr($sSequence, $i,$j * $iMatches);
                         $iCounter ++;
-                        $i += $j * $iMatches;
+                        // the scan resumes right after the repeat: the outer $i++ adds the last base,
+                        // and no longer oligo is tried inside it (legacy skipped one more base, and
+                        // missed a repeat that starts right where the previous one ends)
+                        $i += $j * $iMatches - 1;
+                        break;
                     }
                 }
             }

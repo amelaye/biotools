@@ -4,6 +4,7 @@
  * Twig filters/functions, so consuming applications can build alignment and
  * translation views without duplicating this presentation logic.
  * Created 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Twig;
 
@@ -65,14 +66,15 @@ class BioToolsExtension extends AbstractExtension
     }
 
     /**
-     * Twig filter: {{ sSeqa|compare_alignment(sSeqb) }}
-     * @param   string  $sSeqa
-     * @param   string  $sSeqb
+     * Twig filter: {{ sSeqa|compare_alignment(sSeqb, moltype) }}, moltype ("DNA" or "PROTEIN") optional
+     * @param   string      $sSeqa
+     * @param   string      $sSeqb
+     * @param   string|null $sMolType
      * @return  string
      */
-    public function compareAlignment(string $sSeqa, string $sSeqb): string
+    public function compareAlignment(string $sSeqa, string $sSeqb, ?string $sMolType = null): string
     {
-        return $this->oSequenceAlignmentManager->compareAlignment($sSeqa, $sSeqb);
+        return $this->oSequenceAlignmentManager->compareAlignment($sSeqa, $sSeqb, $sMolType);
     }
 
     /**

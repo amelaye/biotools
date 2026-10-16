@@ -228,8 +228,10 @@ class SkewsManager
     public function computeImage($sSequence, &$iPos, $iWindow, $bAT, $bKETO, $bGmC, $iSeqLength, $iPeriod, &$aAT, &$aGC, &$aGmC, &$aKETO)
     {
         try {
-            // computes data for GC, AT, KETO and G+C skews (if requested)
-            while($iPos < $iSeqLength - $iWindow) {
+            // computes data for GC, AT, KETO and G+C skews (if requested); the last full window, which
+            // ends on the last base, is computed too (legacy's "<" left it out, and a window as long
+            // as the sequence gave no value at all)
+            while($iPos <= $iSeqLength - $iWindow) {
                 $sSubSequence = substr($sSequence, $iPos, $iWindow);
                 $oSkew = $this->skewCalculator->calculate($sSubSequence);
                 $aGC[$iPos] = $oSkew->getGcSkew();

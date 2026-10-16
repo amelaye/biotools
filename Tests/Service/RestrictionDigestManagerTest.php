@@ -3768,7 +3768,9 @@ class RestrictionDigestManagerTest extends TestCase
         $iMinimum = 3;
         $iRetype = 1;
         $bDefinedSq = false;
-        $sWre = "AarI";
+        // the filters alone: "AarI", absent from this pool, used to fall through to them, and now
+        // gives no enzyme (testReduceEnzymesArrayByIsoschizomerAndUnknownName)
+        $sWre = "";
         $aExpected = [
           "AatI" =>  [
             0 => "AatI,Eco147I,PceI,SseBI,StuI",
@@ -4715,8 +4717,12 @@ class RestrictionDigestManagerTest extends TestCase
         $bIsOnlyDiff = true;
         $sWre = "";
 
+        // AfaI cuts both sequences twice but at other places ({4, 8} against {2, 13}), and BstSNI cuts
+        // the first one only: their patterns differ as well as AluI's
         $aExpected = [
-          0 => "AluI"
+          0 => "AfaI",
+          1 => "AluI",
+          2 => "BstSNI",
         ];
 
         $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
@@ -5773,6 +5779,99 @@ class RestrictionDigestManagerTest extends TestCase
             $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
         $testFunction = $service->enzymesForMultiSeq($aSequence, $aDigestion, $aEnzymes, $bIsOnlyDiff, $sWre);
         $this->assertEquals($aExpected, $testFunction);
+    }
+
+    /**
+     * The enzyme asked for is matched by its name, not as a part of another one: "EcoRI" is in
+     * "AjnI,EcoRII,Psp6I,PspGI". On AAGAATTCAACCAGGAA, EcoRI (G'AATTC) cuts at 3; the AjnI entry
+     * ('CCWGG) would cut at 10.
+     */
+    public function testReduceEnzymesArrayMatchesTheExactEnzymeName()
+    {
+        $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
+            $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
+        $aPool = $service->getNucleolasesInfos(false, false, false, "EcoRI");
+
+        $aEnzymes = $service->reduceEnzymesArray($aPool, 0, 0, false, "EcoRI");
+
+        $this->assertSame(["EcoRI"], array_keys($aEnzymes));
+        $this->assertSame("(GAATTC)", $aEnzymes["EcoRI"][2]);
+        $this->assertSame(["EcoRI" => ["cuts" => [3 => ""]]], $service->restrictionDigest($aEnzymes, "AAGAATTCAACCAGGAA"));
+    }
+
+    /**
+     * A Type IIs enzyme asked for alone keeps its reverse-orientation entry: GAGACC is BsaI's site on
+     * the other strand, (.....GAGACC) matches from position 5 and cuts there (offset 0)
+     */
+    public function testReduceEnzymesArrayKeepsTheReverseOrientationOfATypeIIsEnzyme()
+    {
+        $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
+            $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
+        $aPool = $service->getNucleolasesInfos(false, false, false, "BsaI");
+
+        $aEnzymes = $service->reduceEnzymesArray($aPool, 0, 0, false, "BsaI");
+
+        $this->assertSame(["BsaI", "BsaI@"], array_keys($aEnzymes));
+        $this->assertSame(["BsaI" => ["cuts" => [5 => ""]]], $service->restrictionDigest($aEnzymes, "AAAAAAAAAAGAGACCAAAA"));
+    }
+
+    /**
+     * An isoschizomer that is not the key of its entry (Eco31I, in BsaI's list) brings the reverse
+     * orientation too, under its own name; an enzyme found nowhere gives no enzyme, not the whole pool;
+     * an entry with an empty list (PleI) is found by its key
+     */
+    public function testReduceEnzymesArrayByIsoschizomerAndUnknownName()
+    {
+        $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
+            $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
+        $aPool = $service->getNucleolasesInfos(false, false, false, "Eco31I");
+
+        $aEnzymes = $service->reduceEnzymesArray($aPool, 0, 0, false, "Eco31I");
+        $this->assertSame(["Eco31I", "Eco31I@"], array_keys($aEnzymes));
+        $this->assertSame(["Eco31I" => ["cuts" => [5 => ""]]], $service->restrictionDigest($aEnzymes, "AAAAAAAAAAGAGACCAAAA"));
+
+        $this->assertSame([], $service->reduceEnzymesArray($aPool, 0, 0, false, "NoSuchI"));
+        $this->assertSame(["PleI"], array_keys($service->reduceEnzymesArray($aPool, 0, 0, false, "PleI")));
+    }
+
+    /**
+     * Only the differences: an enzyme that cuts one sequence and not the other differs, whichever is
+     * first, and so does one that cuts both once at other places
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('onlyDifferencesProvider')]
+    public function testEnzymesForMultiSeqComparesTheCutPositions(array $aDigestion, array $aExpected)
+    {
+        $service = new RestrictionDigestManager($this->apiVendorLinksMock, $this->apiTypeIIMock,
+            $this->apiTypeIIbMock, $this->apiTypeIIsMock, $this->apiVendorMock);
+        $aSequence = [0 => ["seq" => "", "name" => ""], 1 => ["seq" => "", "name" => ""]];
+        $aEnzymes = ["AluI" => [], "EcoRI" => []];
+
+        $this->assertSame($aExpected, $service->enzymesForMultiSeq($aSequence, $aDigestion, $aEnzymes, true, ""));
+    }
+
+    public static function onlyDifferencesProvider()
+    {
+        return [
+            // AGCTAAAAAA / AGCTGAATTC: AluI cuts both at 2, EcoRI only the second at 5
+            'cut in the second only' => [
+                [0 => ["AluI" => ["cuts" => [2 => ""]]], 1 => ["AluI" => ["cuts" => [2 => ""]], "EcoRI" => ["cuts" => [5 => ""]]]],
+                ["EcoRI"],
+            ],
+            // GAATTCAAAA / AAAAAAAAAA
+            'cut in the first only' => [
+                [0 => ["EcoRI" => ["cuts" => [1 => ""]]], 1 => []],
+                ["EcoRI"],
+            ],
+            // GAATTCAAAA / AAAAGAATTC: one cut each, at 1 and at 5
+            'same count, other place' => [
+                [0 => ["EcoRI" => ["cuts" => [1 => ""]]], 1 => ["EcoRI" => ["cuts" => [5 => ""]]]],
+                ["EcoRI"],
+            ],
+            'same cuts' => [
+                [0 => ["AluI" => ["cuts" => [2 => ""]]], 1 => ["AluI" => ["cuts" => [2 => ""]]]],
+                [],
+            ],
+        ];
     }
 
     public function testShowVendors()

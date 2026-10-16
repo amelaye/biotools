@@ -31,6 +31,19 @@ class FindPalindromeManagerTest extends TestCase
         $this->assertEquals($aExpected, $testFunction);
     }
 
+    /**
+     * Lower case and white space are no longer a reason to miss a site: "gaattc" holds EcoRI's
+     * GAATTC at 0 and AATT at 1, and the line break inside "GAA\nTTC" no longer counts as a base
+     */
+    public function testFindPalindromicSeqsReadsACleanedUpperCaseSequence()
+    {
+        $service = new FindPalindromeManager();
+
+        $this->assertSame([0 => "GAATTC", 1 => "AATT"], $service->findPalindromicSeqs("gaattc", 4, 10));
+        $this->assertSame([0 => "GAATTC"], $service->findPalindromicSeqs("GAA\nTTC", 6, 7));
+        $this->assertTrue($service->dnaIsPalindrome("gaattc"));
+    }
+
     public function testFindPalindromicSeqsException()
     {
         $this->expectException(\Exception::class);

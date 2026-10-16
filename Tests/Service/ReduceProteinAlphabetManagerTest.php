@@ -285,6 +285,16 @@ class ReduceProteinAlphabetManagerTest extends TestCase
         $this->assertEquals("X*X*", $service->reduceAlphabet("X*X*", "Murphy2"));
     }
 
+    /**
+     * Alphabet 20, the complete one, leaves the sequence as it is
+     */
+    public function testReduceAlphabetWithTheCompleteAlphabetChangesNothing()
+    {
+        $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);
+
+        $this->assertEquals("ARNDCEQGHILKMFPSTWYVX*", $service->reduceAlphabet("ARNDCEQGHILKMFPSTWYVX*", "20"));
+    }
+
     public function testReduceAlphabetOfAnEmptySequence()
     {
         $service = new ReduceProteinAlphabetManager($this->proteinColors, $this->tripletSpeciesMock);

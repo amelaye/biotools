@@ -35,11 +35,28 @@ class ProteinToDnaTypeTest extends AbstractFormTypeTestCase
         $form = $this->factory->create(ProteinToDnaType::class);
 
         $form->submit([
-            'sequence' => 'flim 123 vsp-tay*z',
+            'sequence' => 'flim 123 vsp-tay*',
             'genetic_code' => 'standard',
         ]);
 
-        // "z" is not one of the 20 amino acid letters + X + *, stripped just like digits/dashes
         $this->assertEquals('FLIMVSPTAY*', $form->getData()['sequence']);
+        $this->assertTrue($form->isValid());
+    }
+
+    /**
+     * A residue with no codon (here Z) is refused, not silently removed
+     */
+    public function testAResidueWithoutCodonIsRefused()
+    {
+        $form = $this->factory->create(ProteinToDnaType::class);
+
+        $form->submit([
+            'sequence' => 'flim z',
+            'genetic_code' => 'standard',
+        ]);
+
+        $this->assertEquals('FLIMZ', $form->getData()['sequence']);
+        $this->assertFalse($form->isValid());
+        $this->assertStringContainsString('have no codon', (string) $form->getErrors(true));
     }
 }

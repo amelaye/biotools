@@ -275,7 +275,7 @@ class DnaToProteinManager
         }
 
         return $this->orfFinder->findOrfs(
-            new DnaSequence(strtoupper($sDna)),
+            new DnaSequence(strtoupper($this->rnaToDna($sDna))), // an RNA reads as its DNA, as in the frames
             $iMinimumProteinLength,
             $this->ncbiGeneticCode($mGeneticCode)
         );

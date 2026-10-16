@@ -42,6 +42,25 @@ class MicrosatelliteRepeatsFinderManagerTest extends TestCase
         $this->assertEquals($testFunction, $aExpected);
     }
 
+    /**
+     * A repeat that starts right where the previous one ends is found: the scan resumes on the base
+     * after the repeat, not one further (CA x3 ends at 5, GT x3 starts at 6)
+     */
+    public function testFindMicrosatelliteRepeatsFindsTwoRepeatsSideBySide()
+    {
+        $service = new MicrosatelliteRepeatsFinderManager();
+
+        $this->assertEquals([
+            ["start_position" => 0, "length" => 2, "repeats" => 3, "sequence" => "CACACA"],
+            ["start_position" => 6, "length" => 2, "repeats" => 3, "sequence" => "GTGTGT"],
+        ], $service->findMicrosatelliteRepeats("CACACAGTGTGT", 2, 3, 3, 6, 0));
+
+        $this->assertEquals([
+            ["start_position" => 0, "length" => 2, "repeats" => 4, "sequence" => "ACACACAC"],
+            ["start_position" => 8, "length" => 2, "repeats" => 4, "sequence" => "GTGTGTGT"],
+        ], $service->findMicrosatelliteRepeats("ACACACACGTGTGTGT", 2, 2, 4, 6, 0));
+    }
+
     public function testFindMicrosatelliteRepeatsException()
     {
         $this->expectException(\Exception::class);

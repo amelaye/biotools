@@ -1408,12 +1408,13 @@ class SkewsManagerTest extends TestCase
     }
 
     /**
-     * The per-window maths is delegated to the injected BioPHP SkewCalculator
+     * The per-window maths is delegated to the injected BioPHP SkewCalculator, for the three windows
+     * of 4 bases of a 12-base sequence: 0, 4 and 8 (the last one, GGGG, was left out)
      */
     public function testComputeImageDelegatesToSkewCalculator()
     {
         $oCalculator = $this->createMock(SkewCalculatorInterface::class);
-        $oCalculator->expects($this->exactly(2))
+        $oCalculator->expects($this->exactly(3))
             ->method('calculate')
             ->willReturn(new SkewResult(0.5, -0.25, 0.123456, 0.75));
 
@@ -1427,7 +1428,24 @@ class SkewsManagerTest extends TestCase
         $this->assertSame(-0.25, $aAT[4]);
         $this->assertSame(0.1235, $aKETO[0]);
         $this->assertSame(0.75, $aGmC[4]);
+        $this->assertSame([0, 4, 8], array_keys($aGC));
         $this->assertSame(0.5, $fNmax);
+    }
+
+    /**
+     * A window as long as the sequence gives one point, at 0 (there was none)
+     */
+    public function testComputeImageWithAWindowAsLongAsTheSequence()
+    {
+        $oService = new SkewsManager($this->aNucleotidGraph, $this->oligosManager);
+
+        $iPos = 0;
+        $aAT = $aGC = $aGmC = $aKETO = [null];
+        $oService->computeImage("GGGC", $iPos, 4, 1, 1, 1, 4, 1, $aAT, $aGC, $aGmC, $aKETO);
+
+        // (G - C) / (G + C) = (3 - 1) / 4
+        $this->assertSame([0], array_keys($aGC));
+        $this->assertEqualsWithDelta(0.5, $aGC[0], 1e-9);
     }
 
     /**

@@ -445,6 +445,33 @@ class ProteinPropertiesManagerTest extends TestCase
     }
 
     /**
+     * A lower case or line-broken sequence is counted like its upper case letters: "mw\nkw" has
+     * two W, so epsilon is 2 x 5500 = 11000 (it was 0, the W key staying empty)
+     */
+    public function testAminoacidContentReadsUpperCaseWithoutWhiteSpace()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+        $aContent = $service->aminoacidContent("mw\nkw");
+
+        $this->assertSame(2, $aContent["W"]);
+        $this->assertSame(1, $aContent["M"]);
+        $this->assertSame(1, $aContent["K"]);
+        $this->assertArrayNotHasKey("w", $aContent);
+        $this->assertArrayNotHasKey("\n", $aContent);
+        $this->assertEqualsWithDelta(11000, $service->molarAbsorptionCoefficientOfProt($aContent), 0.0001);
+    }
+
+    /**
+     * A symbol the amino acid table does not hold is written "???" in the 3-letter sequence
+     */
+    public function testConvertInto3lettersCodeOfAnUnknownSymbol()
+    {
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertStringEndsWith("???", $service->convertInto3lettersCode("AJ"));
+    }
+
+    /**
      * Reduced Cys: W*5500 + Y*1490, whatever the Cys count (hand computed: 5500 + 1490 = 6990)
      */
     public function testMolarAbsorptionCoefficientOfReducedProtIgnoresCysteines()

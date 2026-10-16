@@ -3,7 +3,7 @@
  * MicroarrayAnalysisAdaptive
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -17,14 +17,6 @@ use Exception;
  */
 class MicroarrayAnalysisAdaptiveManager
 {
-    /**
-     * A weak or failed spot can legitimately have a background reading greater than or equal
-     * to its raw signal, making (signal - background) zero or negative. Such a value is not an
-     * error to reject, but it must not reach a division or a log10() unguarded, where it would
-     * silently turn into NAN/INF/-INF. It is floored to this small positive epsilon instead.
-     */
-    private const MIN_BACKGROUND_CORRECTED_INTENSITY = 0.0001;
-
     /**
      * Processes the Microarray data
      * @param       string      $sFile
@@ -52,6 +44,11 @@ class MicroarrayAnalysisAdaptiveManager
             if(!empty($aData4)) {
                 foreach($aData4 as $sKey => $aVal) {
                     $aResults[$sKey]["n_data"] = count($aData4[$sKey][1]);
+                    if ($aResults[$sKey]["n_data"] === 0) {
+                        // no valid spot: the ratio of this gene is not measured
+                        $aResults[$sKey] += ["median1" => null, "medlog1" => null, "median2" => null, "medlog2" => null];
+                        continue;
+                    }
                     $aResults[$sKey]["median1"] = MathematicsFunctions::Median($aData4[$sKey][1]);
                     $aResults[$sKey]["medlog1"] = round(log10($aResults[$sKey]["median1"]),3);
                     $aResults[$sKey]["median2"] = MathematicsFunctions::Median($aData4[$sKey][2]);
@@ -97,6 +94,11 @@ class MicroarrayAnalysisAdaptiveManager
      *              G16 is name of gene/experiment
      *              1136 is reading of chanel 1, and 159 is the background
      *              538 is reading of chanel 2, and 159 is the background
+     * A weak or failed spot can have a background reading greater than or equal to its raw signal on
+     * one channel. Its (signal - background) is no intensity: no ratio can be computed from it, and a
+     * floor (formerly 1e-4) turned it into a fabricated ratio of a million-fold. Such a spot is left
+     * out, from the sums used to normalise as well; its gene is kept, with the valid spots only (none
+     * at all gives n_data = 0 and null medians).
      * @param       array   $aData
      * @param       int     $iSumCh1
      * @param       int     $iSumCh2
@@ -114,17 +116,21 @@ class MicroarrayAnalysisAdaptiveManager
                         continue;
                     }
                     $sName = $aLineElement[2]; // This is the name of the gene studied
+                    $aData2[$sName] = $aData2[$sName] ?? [1 => [], 2 => []];
+
+                    $iCh1Bg = $aLineElement[3] - $aLineElement[4];
+                    $iCh2Bg = $aLineElement[5] - $aLineElement[6];
+                    if ($iCh1Bg <= 0 || $iCh2Bg <= 0) {
+                        continue; // failed spot, see above
+                    }
 
                     // For chanel 1
                     // calculate data obtained in chanel 1 minus background
-                    $iCh1Bg = max($aLineElement[3] - $aLineElement[4], self::MIN_BACKGROUND_CORRECTED_INTENSITY);
                     // save data to a element in $aData2 (separate different calculations from the same gene with commas)
                     $aData2[$sName][1][] = $iCh1Bg;
                     $iSumCh1 += $iCh1Bg; // $sum_ch1 will record the sum of all (chanel 1 - background) values
 
                     // For chanel 2
-                    // calculate data obtained in chanel 2 minus background
-                    $iCh2Bg = max($aLineElement[5] - $aLineElement[6], self::MIN_BACKGROUND_CORRECTED_INTENSITY);
                     // save data to a element in $data_array2 (separate different calculations from the same gene with commas)
                     $aData2[$sName][2][] = $iCh2Bg;
                     $iSumCh2 += $iCh2Bg; // $sum_ch1 will record the sum of all (chanel 2 - background) values
@@ -152,6 +158,7 @@ class MicroarrayAnalysisAdaptiveManager
             $aData3 = [];
             if(!empty($aData2)) {
                 foreach($aData2 as $sKey => $aVal) {
+                    $aData3[$sKey] = [1 => [], 2 => []];
                     // split data separated by comma (chanel 1)
                     foreach($aData2[$sKey][1] as $sKey2 => $fValue) {
                         $fRatio = $fValue * 100 / $iSumCh1; // compute ratios
@@ -184,6 +191,7 @@ class MicroarrayAnalysisAdaptiveManager
         try {
             $aData4 = [];
             foreach($aData3 as $sKey => $aVal) {
+                $aData4[$sKey] = [1 => [], 2 => []];
                 foreach ($aData3[$sKey][1] as $sKey2 => $fValue) {
                     $fRatio = $aData3[$sKey][1][$sKey2] / $aData3[$sKey][2][$sKey2]; //compute ch1 / ch2
                     $aData4[$sKey][1][] = $fRatio; // and save

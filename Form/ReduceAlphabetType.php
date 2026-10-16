@@ -3,7 +3,7 @@
  * Class ReduceAlphabetType
  * Freely inspired by BioPHP's project biophp.org
  * Created 7 april 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
@@ -35,7 +35,9 @@ class ReduceAlphabetType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $aTypes = [
-            "Do not reduce" => 2,
+            // alphabet 20 is the complete one (its pattern changes nothing); legacy's option said
+            // value=2 by mistake, the Hydrophilic/Hydrophobic reduction, while its code tested 20
+            "Do not reduce" => 20,
             "Hydrophilic/Hydrophobic" => 2,
             "Chemical / structural properties" => 5,
             "Chemical / structural properties #2" => 6,

@@ -3,7 +3,7 @@
  * Protein To DNA Functions
  * Inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -32,6 +32,12 @@ class ProteinToDnaManager
     }
 
     /**
+     * Back-translates a protein into one degenerate codon per residue, from the genetic code's table.
+     * A single IUPAC codon is a union: it can cover codons of other amino acids, or a stop. WSN for Ser
+     * covers TCN and AGY, but also AGR (Arg), TGN (Cys, Trp, a stop) and ACN (Thr); for Blepharisma, YAR for Gln
+     * covers TAA, a stop in table 15. Read it as "every codon of this residue is in here", not the
+     * reverse.
+     * B, Z, J, U and O have no codon here: the form refuses them.
      * @param   string $sSequence
      * @param   string $sGeneticCode
      * @return  string

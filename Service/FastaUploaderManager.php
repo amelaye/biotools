@@ -54,10 +54,13 @@ class FastaUploaderManager
             throw new FileException($e);
         }
 
+        // the whole file is read: legacy's fread() of 1,000,000 bytes silently cut a larger genome,
+        // while the form accepts files up to 100 MB
         $sMyFile = $sBrochuresDirectory.'/'.$sFileName;
-        $rFh = fopen($sMyFile, 'r');
-        $sVar = fread($rFh, 1000000);
-        fclose($rFh);
+        $sVar = file_get_contents($sMyFile);
+        if ($sVar === false) {
+            throw new FileException(sprintf('The file %s could not be read.', $sMyFile));
+        }
 
         return $sVar;
     }

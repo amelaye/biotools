@@ -23,6 +23,18 @@ class ReduceAlphabetTypeTest extends AbstractFormTypeTestCase
         $this->assertEquals('ARNDC*', $form->getData()['seq']);
     }
 
+    /**
+     * "Do not reduce" is the complete alphabet 20, not the two-letter one it shared value 2 with
+     */
+    public function testDoNotReduceIsTheCompleteAlphabet()
+    {
+        $form = $this->factory->create(ReduceAlphabetType::class);
+        $aChoices = $form->get('type')->getConfig()->getOption('choices');
+
+        $this->assertSame(20, $aChoices["Do not reduce"]);
+        $this->assertSame(2, $aChoices["Hydrophilic/Hydrophobic"]);
+    }
+
     public function testCustomAlphabetOfWrongLengthIsInvalidWhenModeIsCustom()
     {
         $form = $this->factory->create(ReduceAlphabetType::class);

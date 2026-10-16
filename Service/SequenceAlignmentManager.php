@@ -181,17 +181,31 @@ class SequenceAlignmentManager
      * Meant for the seqa / seqb of alignDNA() and alignProteins(): there the aligned region is in upper
      * case and the unaligned flanks in lower case, so a lower case residue gets no bar. Any other lower
      * case text would get none either.
-     * @param   string  $sSeqa
-     * @param   string  $sSeqb
+     * An ambiguity code facing itself is no identity (N against N scores 0 in alignDNA()), so it gets no
+     * bar either: X always; with $sMolType "DNA" every symbol but A, C, G, T and U; with "PROTEIN" B, Z,
+     * J and X. Without $sMolType only X is treated so, since N or R are amino acids in a protein.
+     * @param   string      $sSeqa
+     * @param   string      $sSeqb
+     * @param   string|null $sMolType   "DNA" or "PROTEIN", whatever the case
      * @return  string
      */
-    public function compareAlignment($sSeqa,$sSeqb)
+    public function compareAlignment($sSeqa, $sSeqb, $sMolType = null)
     {
+        switch (strtoupper((string) $sMolType)) {
+            case "DNA":
+                $sAmbiguous = "/[^ACGTU]/";
+                break;
+            case "PROTEIN":
+                $sAmbiguous = "/[BZJX]/";
+                break;
+            default:
+                $sAmbiguous = "/X/";
+        }
         $sCompare = "";
         for($i = 0; $i < strlen($sSeqa); $i++) {
             $sBaseA = substr($sSeqa, $i, 1);
             // the lower case flanks of a local alignment are not aligned: no bar under them
-            if($sBaseA == substr($sSeqb,$i,1) && !ctype_lower($sBaseA)) {
+            if($sBaseA == substr($sSeqb,$i,1) && !ctype_lower($sBaseA) && !preg_match($sAmbiguous, $sBaseA)) {
                 $sCompare .= "|";
             } else {
                 $sCompare.=" ";

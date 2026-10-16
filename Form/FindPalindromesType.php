@@ -3,7 +3,7 @@
  * Form FindPalindromesType
  * Freely inspired by BioPHP's project biophp.org
  * Created 18 march 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Amelaye\BioTools\Validator\SequenceRecognition;
 
 /**
@@ -119,5 +121,15 @@ class FindPalindromesType extends AbstractType
                 ]
             ]
         );
+
+        // The sequence is searched in upper case without white space or digits (legacy's
+        // remove_useless_from_DNA()), so the positions shown are those of the cleaned sequence
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
+            $aData = $event->getData();
+            if (isset($aData['seq']) && is_string($aData['seq'])) {
+                $aData['seq'] = preg_replace("/\W|\d/", "", strtoupper($aData['seq']));
+                $event->setData($aData);
+            }
+        });
     }
 }

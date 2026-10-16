@@ -6,7 +6,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Les corrections scientifiques de la version non publiée sont décrites point par point dans
 `docs/plan_corrections_bio_2026-10-16.md` (les numéros entre parenthèses y renvoient).
 
-## [Non publié] — depuis v1.1.2
+## [2.0.0] — 2026-10-16 (depuis v1.1.2)
 
 ### Modifié
 
@@ -47,6 +47,32 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   taille minimale se mesure de la Met au stop.
 - **Formulaire d'alignement (3.1).** U→T et X→N ne s'appliquent plus aux protéines
   (sélénocystéine, résidu inconnu).
+- **Digestion par une seule enzyme (passe finale F1).** L'enzyme choisie est cherchée par son nom
+  exact parmi les isoschizomères, et non plus comme sous-chaîne : « EcoRI » renvoyait l'entrée
+  `AjnI,EcoRII,…` (site CCWGG) sous le nom EcoRI ; de même HpaI→HpaII, XhoI→XhoII, SacI→SacII.
+  Une enzyme introuvable ne donne plus aucun résultat, au lieu de tout le pool d'enzymes.
+- **Enzyme de type IIs choisie seule (F3).** Son entrée d'orientation inverse (`BsaI@`) est gardée :
+  les sites sur l'autre brin sont trouvés.
+- **Digestion multi-séquences, « seulement les différences » (F4).** Les positions de coupure sont
+  comparées, une séquence non coupée comptant pour aucune coupure : une enzyme qui ne coupe qu'une
+  séquence, ou le même nombre de fois à d'autres positions, est signalée.
+- **Microarray adaptatif (F2).** Un spot dont le signal ne dépasse pas le bruit de fond sur un canal
+  est écarté (des sommes de normalisation aussi) au lieu d'être planché à 1e-4, qui fabriquait un log
+  ratio de ±6 ; un gène sans spot valide a `n_data = 0` et des médianes `null`.
+- **Microsatellites (F5).** Après une répétition, la recherche reprend à la base suivante : une
+  répétition accolée à la précédente (`CACACAGTGTGT`) n'est plus manquée.
+- **Palindromes (F6) et propriétés des protéines (F7).** La séquence est lue en majuscules, sans
+  espaces ni retours à la ligne (formulaire et service) : `gaattc` contient EcoRI, et ε de `mwkw`
+  vaut 11000 au lieu de 0.
+- **PCR in silico (F8, F12, F14).** Avec un mésappariement permis, un N d'amorce reste une base
+  quelconque ; les autres codes IUPAC (R, Y, M…) deviennent les bases qu'ils représentent ; un
+  produit ne dépasse plus la longueur maximale de la longueur de l'amorce.
+- **Réduction d'alphabet (F9).** « Do not reduce » est l'alphabet complet 20, et non plus la
+  réduction à 2 lettres.
+- **Séquences aléatoires (F15).** La séquence a exactement la longueur demandée (arrondi au plus
+  fort reste ; 100 donnait 99, 3 donnait 4).
+- **°F → °C (F16).** `(F − 32) × 5/9` au lieu de `× 0,555` : 212 °F donne 100 °C.
+- **Skews.** La dernière fenêtre complète est calculée.
 
 ### Corrigé — affichage, libellés et conventions
 
@@ -123,6 +149,14 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
 - **Score des codes ambigus en alignement d'ADN.** Un N (ou R, Y, S...) en face d'une base qu'il peut
   représenter vaut 0 au lieu d'une correspondance pleine (+2), grâce à `NucleotideAmbiguityScoring` de
   BioPHP : deux plages de 50 N ne valent plus 50 vrais appariements, et ne s'alignent plus.
+- **Barre d'identité sous un code ambigu.** `compareAlignment()` prend un troisième argument
+  facultatif, `"DNA"` ou `"PROTEIN"` (aussi pour le filtre Twig `compare_alignment`) : pas de barre
+  sous N face à N en ADN, ni sous B, Z, J, X en protéine ; sans lui, seul X en est privé.
+- **Formulaire PCR.** La seconde amorce est libellée « Primer 2 ».
+- **Code à 3 lettres.** Un symbole absent de la table des acides aminés (J…) s'écrit `???` au lieu de
+  lever un avertissement « Undefined array key ».
+- **Rétrotraduction.** B, Z, J, U et O sont refusés par le formulaire avec un message, au lieu
+  d'être supprimés sans avertissement.
 
 ### Corrigé — plantages (erreur 500)
 
@@ -135,6 +169,11 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   (`B`, `Z`, `J`, `O`, `*`) : résultat vide accompagné d'un message (2.3).
 - Formulaire Tm : concentrations vides, nulles ou négatives refusées par la validation, et sel ou
   Mg²⁺ obligatoire pour le Tm nearest-neighbor (2.4).
+- Distance euclidienne d'une séquence sans mot de longueur k (plus courte que k, ou que des N) :
+  `DivisionByZeroError` ; une `DomainException` nomme désormais la séquence (F10).
+- `findOrfRegions()` sur un ARN : exception, l'ARN est maintenant lu comme son ADN (F13).
+- Upload FASTA : le fichier est lu en entier, et non plus tronqué sans avertissement à 1 000 000
+  d'octets (F11).
 
 ### Ajouté
 
@@ -162,6 +201,9 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   pour les flancs. Le code qui affiche l'alignement doit s'adapter.
 - `SkewsManager::oligoSkewArrayCalculation()` peut renvoyer `null` pour une fenêtre dont la
   distance est indéfinie.
+- Microarray adaptatif : un gène dont aucun spot n'est valide a des médianes `null`.
+- `DistanceAmongSequencesManager::standardFrecuencies()` lève une `DomainException` sur des
+  fréquences toutes nulles.
 
 ### Documentation
 

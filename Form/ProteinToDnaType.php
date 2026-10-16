@@ -3,13 +3,14 @@
  * Form ProteinToDnaType
  * Freely inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 24 august 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
 use Amelaye\BioPHP\Api\Interfaces\TripletSpecieApiAdapter;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -55,7 +56,16 @@ class ProteinToDnaType extends AbstractType
                     'class' => "form-control"
                 ],
                 'label' => "Protein sequence : ",
-                'data' => "FLIMVSPTAYHQNKDECWRGX*"
+                'data' => "FLIMVSPTAYHQNKDECWRGX*",
+                // B, Z, J, U, O have no codon in the back-translation: they are refused by name
+                // rather than silently removed, which shortened the DNA without a word
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^[FLIMVSPTAYHQNKDECWRGX*]*$/',
+                        'message' => "Only the 20 amino acids, X and * can be back-translated: "
+                            . "B, Z, J, U (selenocysteine) and O (pyrrolysine) have no codon here.",
+                    ]),
+                ],
             ]
         );
 
@@ -89,8 +99,9 @@ class ProteinToDnaType extends AbstractType
             $aData = $event->getData();
 
             if (isset($aData['sequence'])) {
+                // white space, digits and punctuation go; letters stay, for the constraint to name them
                 $sSequence = strtoupper($aData['sequence']);
-                $sSequence = preg_replace("([^FLIMVSPTAY*HQNKDECWRGX\*])", "", $sSequence);
+                $sSequence = preg_replace("/[^A-Z*]/", "", $sSequence);
                 $aData['sequence'] = $sSequence;
             }
 

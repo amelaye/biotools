@@ -3,7 +3,7 @@
  * Formulas Functions
  * Inspired by BioPHP's project biophp.org
  * Created 3 march  2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  * RIP Pasha, gone 27 february 2019 =^._.^= ∫
  */
 namespace Amelaye\BioTools\Service;
@@ -274,7 +274,8 @@ class FormulasManager
     public function farhenToCenti($fFahren)
     {
         try {
-            $fResult = 0.555 * ($fFahren - 32);
+            // 5/9 exactly: 0.555 gave 99.9 °C for 212 °F, and did not invert centiToFarhen()'s 1.8
+            $fResult = ($fFahren - 32) * 5 / 9;
             return $fResult;
         } catch (\Exception $e) {
             throw new \Exception($e);

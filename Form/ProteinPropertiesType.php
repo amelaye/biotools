@@ -3,7 +3,7 @@
  * Form ProteinPropertiesType
  * Freely inspired by BioPHP's project biophp.org
  * Created 26 february 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Form;
 
@@ -14,6 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 /**
  * Class ProteinPropertiesType
@@ -181,5 +183,17 @@ class ProteinPropertiesType extends AbstractType
                 ]
             ]
         );
+
+        // The sequence is read in upper case, without white space, digits or punctuation (the stop "*"
+        // is kept), as legacy's protein_properties.php did: the start and end positions are those of
+        // the cleaned sequence. Letters are kept, B, Z, U and O included, so that the molecular
+        // weight can name a symbol it has no weight for instead of losing it silently.
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function(FormEvent $event) {
+            $aData = $event->getData();
+            if (isset($aData['seq']) && is_string($aData['seq'])) {
+                $aData['seq'] = preg_replace("/[^A-Z*]/", "", strtoupper($aData['seq']));
+                $event->setData($aData);
+            }
+        });
     }
 }

@@ -64,4 +64,21 @@ class NucleotidBasedManagersIntegrationTest extends TestCase
         $this->assertEqualsWithDelta(5.3333333333333, $aResult["s1"]["TA"], 1e-9);
         $this->assertEquals(0, $aResult["s1"]["GC"]);
     }
+
+    /**
+     * A sequence shorter than the words (AC has no 3-mer, on either strand) has only zero counts:
+     * a DomainException names it, instead of a DivisionByZeroError
+     */
+    public function testEuclideanFrequenciesOfASequenceWithoutWordNameTheSequence()
+    {
+        $nucleoData = $this->loadBioPhpSample('Nucleotids.php', 'aNucleoObjects');
+        $oManager = new DistanceAmongSequencesManager(
+            new OligosManager($this->buildRealListApi(NucleotidApi::class, $nucleoData)),
+            $this->buildRealListApi(NucleotidApi::class, $nucleoData)
+        );
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('The sequence s2 holds no word of 3 bases');
+        $oManager->computeOligonucleotidsFrequenciesEuclidean(["s1" => "ACGTAC", "s2" => "AC"], 3);
+    }
 }

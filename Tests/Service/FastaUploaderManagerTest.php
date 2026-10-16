@@ -68,6 +68,21 @@ class FastaUploaderManagerTest extends TestCase
         $this->assertEquals(">seq1\nATGCATGC\n", $testFunction);
     }
 
+    /**
+     * A file larger than 1,000,000 bytes is read whole (it was cut there, without warning)
+     */
+    public function testCreateFilesReadsTheWholeFile()
+    {
+        $sContent = ">big\n" . str_repeat("ACGT", 300000) . "\n";
+        $sSourceFile = tempnam(sys_get_temp_dir(), 'fasta');
+        file_put_contents($sSourceFile, $sContent);
+        $file = new UploadedFile($sSourceFile, 'big.fasta', 'text/plain', null, true);
+
+        $service = new FastaUploaderManager();
+
+        $this->assertSame(1200006, strlen($service->createFiles($file, $this->sBrochuresDirectory)));
+    }
+
     public function testCheckNucleotidSequence()
     {
         $var = "ATGCatgc";

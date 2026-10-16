@@ -467,6 +467,22 @@ class DnaToProteinManagerTest extends TestCase
         $this->assertSame([$oOrf], $service->findOrfRegions('atgaaagcctaa', 3));
     }
 
+    /**
+     * An RNA is read as its DNA, as the six frames already do (DnaSequence has no U)
+     */
+    public function testFindOrfRegionsReadsAnRnaAsItsDna()
+    {
+        $oFinder = $this->createMock(\Amelaye\BioPHP\Domain\Tools\Interfaces\OrfFinderInterface::class);
+        $oFinder->expects($this->once())
+            ->method('findOrfs')
+            ->with($this->callback(fn($oDna) => $oDna->getValue() === 'ATGAAATAG'), 1, 1)
+            ->willReturn([]);
+
+        $service = new DnaToProteinManager($this->apiAminoMock, $this->tripletsMock, $this->tripletSpeciesMock, $oFinder);
+
+        $this->assertSame([], $service->findOrfRegions('augaaauag'));
+    }
+
     #[\PHPUnit\Framework\Attributes\DataProvider('provideGeneticCodes')]
     public function testFindOrfRegionsPassesTheGeneticCodeToTheFinder($mCode, $iExpectedId)
     {

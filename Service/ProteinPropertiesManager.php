@@ -86,7 +86,7 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Converts a subsequence into 3 letters code
+     * Converts a subsequence into 3 letters code; a symbol the amino acid table does not hold gives "???"
      * @param   string      $sSubsequence
      * @return  string
      * @throws  \Exception
@@ -96,7 +96,7 @@ class ProteinPropertiesManager
         try {
             $s3LetterCode = "";
             foreach(str_split($sSubsequence) as $sLetter) {
-                $s3LetterCode .= $this->aAminos[$sLetter];
+                $s3LetterCode .= $this->aAminos[$sLetter] ?? "???";
             }
             return $s3LetterCode;
         } catch (\Exception $e) {
@@ -194,6 +194,7 @@ class ProteinPropertiesManager
 
 
     /**
+     * A symbol the amino acid table does not hold (J, a digit...) is listed with "N/A" as its name
      * @param   array $aAminoacidContent
      * @return  array
      * @throws  \Exception
@@ -203,7 +204,7 @@ class ProteinPropertiesManager
         try {
             $aResults = [];
             foreach($aAminoacidContent as $sAa => $iCount) {
-                $aResults[] = ["one_letter" => $sAa, "three_letters" => $this->aAminos[$sAa], "count" => $iCount];
+                $aResults[] = ["one_letter" => $sAa, "three_letters" => $this->aAminos[$sAa] ?? "N/A", "count" => $iCount];
             }
             return $aResults;
         } catch (\Exception $e) {
@@ -214,6 +215,9 @@ class ProteinPropertiesManager
 
     /**
      * Counts number of amino acids in a sequence
+     * The sequence is read in upper case and its white space is not counted: "mwkw" holds two W,
+     * which the absorption coefficient reads from the "W" key. Any other symbol keeps its own key,
+     * so that the molecular weight can name it.
      * @param       string      $sSequence
      * @return      array
      * @throws      \Exception
@@ -228,9 +232,10 @@ class ProteinPropertiesManager
                 }
             }
 
+            $sSequence = preg_replace("/\s/", "", strtoupper($sSequence));
             for($i = 0; $i < strlen($sSequence); $i++){
                 $sSequence2 = substr($sSequence, $i,1);
-                $aNbAminos[$sSequence2]++;
+                $aNbAminos[$sSequence2] = ($aNbAminos[$sSequence2] ?? 0) + 1;
             }
             return $aNbAminos;
         } catch (\Exception $e) {

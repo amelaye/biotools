@@ -263,6 +263,22 @@ class SequenceAlignmentManagerTest extends TestCase
         $this->assertSame("  ||||  ", $service->compareAlignment("ttACGTaa", "ggACGTaa"));
     }
 
+    /**
+     * An ambiguity code facing itself is no identity: no bar under N/N in DNA (it scores 0), nor under
+     * X in any case; in a protein N is asparagine and keeps its bar
+     */
+    public function testCompareAlignmentDrawsNoBarUnderAnAmbiguityCode()
+    {
+        $service = new SequenceAlignmentManager($this->matrixMock);
+
+        $this->assertSame("|  |", $service->compareAlignment("ANNT", "ANNT", "DNA"));
+        $this->assertSame("| ||", $service->compareAlignment("ARGT", "ARGT", "dna"));
+        $this->assertSame("|| |", $service->compareAlignment("ANXT", "ANXT", "PROTEIN"));
+        $this->assertSame("|| |", $service->compareAlignment("ANXT", "ANXT"));
+        $this->assertSame("||||", $service->compareAlignment("ANBT", "ANBT"));
+        $this->assertSame("|| |", $service->compareAlignment("ANBT", "ANBT", "PROTEIN"));
+    }
+
     public function testCompareAlignmentIdentical()
     {
         $seqa = "ACGT";

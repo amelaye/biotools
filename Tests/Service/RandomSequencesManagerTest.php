@@ -128,7 +128,8 @@ class RandomSequencesManagerTest extends TestCase
         $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromSeq($iLength, $sSequence);
 
-        $this->assertEquals(99, strlen($testFunction));
+        // the requested length: rounding each share separately gave 99
+        $this->assertEquals(100, strlen($testFunction));
     }
 
     public function testCreateFromACGT()
@@ -145,6 +146,27 @@ class RandomSequencesManagerTest extends TestCase
         $testFunction = $service->createFromACGT($aAminoAcids, $iLength);
 
         $this->assertEquals(30, strlen($testFunction));
+    }
+
+    /**
+     * The sequence has the requested length: 29.5/20.5/20.5/29.5 % of 3 bases are 0.885, 0.615,
+     * 0.615, 0.885; rounded down to 0 each, the 3 bases go to the largest remainders, A and T, then
+     * C (the first of the two ties). Rounding each share gave 4 bases. Four equal shares of 10 give
+     * 3, 3, 2, 2 (it was 12 bases).
+     */
+    public function testCreateFromACGTHasTheRequestedLength()
+    {
+        $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
+
+        $sResult = $service->createFromACGT(["A" => "29.5", "C" => "20.5", "G" => "20.5", "T" => "29.5"], 3);
+        $this->assertSame(3, strlen($sResult));
+        $this->assertSame([1, 1, 0, 1], [substr_count($sResult, "A"), substr_count($sResult, "C"), substr_count($sResult, "G"), substr_count($sResult, "T")]);
+
+        $sResult = $service->createFromACGT(["A" => 25, "C" => 25, "G" => 25, "T" => 25], 10);
+        $this->assertSame([3, 3, 2, 2], [substr_count($sResult, "A"), substr_count($sResult, "C"), substr_count($sResult, "G"), substr_count($sResult, "T")]);
+        $this->assertSame(10, strlen($service->createFromAA(["A" => 1, "C" => 1, "D" => 1], 10)));
+        // no weight at all: nothing to draw from
+        $this->assertSame("", $service->createFromACGT(["A" => 0, "C" => 0, "G" => 0, "T" => 0], 10));
     }
 
     /**
@@ -198,7 +220,8 @@ class RandomSequencesManagerTest extends TestCase
         $service = new RandomSequencesManager($this->nucleoMock, $this->aminosMock);
         $testFunction = $service->createFromAA($aAminoAcids, $iLength);
 
-        $this->assertEquals(99, strlen($testFunction));
+        // the requested length: rounding each share separately gave 99
+        $this->assertEquals(100, strlen($testFunction));
     }
 
     /**

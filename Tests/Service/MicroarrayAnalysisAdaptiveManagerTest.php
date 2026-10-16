@@ -278,19 +278,13 @@ class MicroarrayAnalysisAdaptiveManagerTest extends TestCase
     }
 
     /**
-     * A weak/failed spot, where the background reading is greater than or equal to the raw
-     * signal, is ordinary (non-adversarial) microarray data - not a contrived edge case. Before
-     * the background-corrected intensity was floored to a small positive epsilon, such a spot
-     * produced a zero/negative value that silently turned into NAN/INF/-INF through the
-     * ratio and log10() computations, poisoning that gene's results with no diagnostic.
+     * A weak or failed spot (background >= raw signal on a channel) measures no ratio: it is left out,
+     * from the normalising sums too, instead of being floored to a tiny intensity that made GeneWeak a
+     * 2,000,000-fold change (medlog -6.309). GeneA alone is then the whole of each channel: 950 and
+     * 440 both normalise to 100, so its ratio is 1 and its log 0. GeneWeak has no valid spot left.
      */
-    public function testProcessMicroarrayDataAdaptiveQuantificationMethodWithWeakSpot()
+    public function testProcessMicroarrayDataAdaptiveQuantificationMethodLeavesOutAFailedSpot()
     {
-        // GeneA is a normal, well-behaved spot. GeneWeak's background (250) exceeds its raw
-        // signal (100) on channel 1 - a real, non-adversarial failure mode for a weak spot,
-        // not a contrived input. Before the background-corrected intensity was floored to a
-        // small positive epsilon, this produced a negative channel-1/channel-2 ratio and
-        // log10() of that ratio silently returned NAN.
         $file = "Column\tRow\tName\tF532 Median\tB532 Median\tF635 Median\tB635 Median\n"
             . "1\t1\tGeneA\t1000\t50\t500\t60\n"
             . "2\t1\tGeneWeak\t100\t250\t200\t80\n";
@@ -298,14 +292,33 @@ class MicroarrayAnalysisAdaptiveManagerTest extends TestCase
         $service = new MicroarrayAnalysisAdaptiveManager($this->mathematicsManager);
         $testFunction = $service->processMicroarrayDataAdaptiveQuantificationMethod($file);
 
-        $this->assertArrayHasKey('GeneWeak', $testFunction);
-        foreach (['median1', 'medlog1', 'median2', 'medlog2'] as $sKey) {
-            $this->assertIsFloat($testFunction['GeneWeak'][$sKey]);
-            $this->assertTrue(
-                is_finite($testFunction['GeneWeak'][$sKey]),
-                "$sKey must be finite, got " . var_export($testFunction['GeneWeak'][$sKey], true)
-            );
-        }
+        $this->assertEquals(
+            ["n_data" => 1, "median1" => 1.0, "medlog1" => 0.0, "median2" => 1.0, "medlog2" => 0.0],
+            $testFunction["GeneA"]
+        );
+        $this->assertSame(
+            ["n_data" => 0, "median1" => null, "medlog1" => null, "median2" => null, "medlog2" => null],
+            $testFunction["GeneWeak"]
+        );
+    }
+
+    /**
+     * Only the failed spot of a gene is left out: Gene 1's two valid spots (900/450 and 300/150, in a
+     * file whose channel sums are 1200 and 600) both give a ratio of 1
+     */
+    public function testProcessMicroarrayDataAdaptiveQuantificationMethodKeepsTheValidSpotsOfAGene()
+    {
+        $file = "Column\tRow\tName\tF532 Median\tB532 Median\tF635 Median\tB635 Median\n"
+            . "1\t1\tGene 1\t1000\t100\t500\t50\n"
+            . "2\t1\tGene 1\t400\t100\t200\t50\n"
+            . "3\t1\tGene 1\t50\t100\t300\t50\n";
+
+        $service = new MicroarrayAnalysisAdaptiveManager($this->mathematicsManager);
+        $testFunction = $service->processMicroarrayDataAdaptiveQuantificationMethod($file);
+
+        $this->assertSame(2, $testFunction["Gene 1"]["n_data"]);
+        $this->assertEqualsWithDelta(0.0, $testFunction["Gene 1"]["medlog1"], 1e-9);
+        $this->assertEqualsWithDelta(0.0, $testFunction["Gene 1"]["medlog2"], 1e-9);
     }
 
     public function testProcessMicroarrayDataAdaptiveQuantificationMethodException()

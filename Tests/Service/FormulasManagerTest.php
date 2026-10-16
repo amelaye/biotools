@@ -150,13 +150,16 @@ class FormulasManagerTest extends TestCase
 
     public function testFarhenToCenti()
     {
+        // (100 - 32) x 5/9 = 37.777...; 0.555 gave 37.74
         $fahren = 100;
-        $fExpected = 37.74;
+        $fExpected = 340 / 9;
 
         $service = new FormulasManager();
         $testFunction = $service->farhenToCenti($fahren);
 
-        $this->assertEquals($fExpected, $testFunction);
+        $this->assertEqualsWithDelta($fExpected, $testFunction, 1e-9);
+        $this->assertEqualsWithDelta(100.0, $service->farhenToCenti(212), 1e-9);
+        $this->assertEqualsWithDelta(-40.0, $service->farhenToCenti(-40), 1e-9);
     }
 
     public function testMbarToMmHg()
