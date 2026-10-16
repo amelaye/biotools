@@ -9,7 +9,10 @@ namespace Amelaye\BioTools\Service;
 
 use Amelaye\BioPHP\Api\Interfaces\AminoApiAdapter;
 use Amelaye\BioPHP\Api\Interfaces\PKApiAdapter;
+use Amelaye\BioPHP\Domain\Sequence\Entity\Protein;
+use Amelaye\BioPHP\Domain\Sequence\Interfaces\ProteinInterface;
 use Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface;
+use Amelaye\BioPHP\Domain\Sequence\Service\ProteinManager;
 use Amelaye\BioPHP\Domain\Sequence\ValueObject\AminoAcidSequence;
 use Amelaye\BioPHP\Domain\Tools\Interfaces\ProteinPropertiesInterface;
 use Amelaye\BioPHP\Domain\Tools\Service\ProteinPropertiesCalculator;
@@ -25,11 +28,6 @@ class ProteinPropertiesManager
      * @var array
      */
     private $aAminos;
-
-    /**
-     * @var array
-     */
-    private $aResidueWeights;
 
     /**
      * @var PKApiAdapter
@@ -52,21 +50,28 @@ class ProteinPropertiesManager
     private $proteinProperties;
 
     /**
+     * @var ProteinInterface
+     */
+    private $proteinManager;
+
+    /**
      * ProteinPropertiesManager constructor.
      * @param   AminoApiAdapter         $aminoApi
      * @param   PKApiAdapter            $pkApi
      * @param   SequenceInterface|null  $sequenceManager    Needed by proteinAminoacidsChemicalGroup() only
      * @param   ProteinPropertiesInterface|null $proteinProperties  Charge and isoelectric point, BioPHP's calculator by default
+     * @param   ProteinInterface|null           $proteinManager     Molecular weight, BioPHP's ProteinManager by default
      */
     public function __construct(
         AminoApiAdapter $aminoApi,
         PKApiAdapter $pkApi,
         ?SequenceInterface $sequenceManager = null,
-        ?ProteinPropertiesInterface $proteinProperties = null
+        ?ProteinPropertiesInterface $proteinProperties = null,
+        ?ProteinInterface $proteinManager = null
     ){
         $this->sequenceManager   = $sequenceManager;
         $this->proteinProperties = $proteinProperties ?? new ProteinPropertiesCalculator();
-        $this->aResidueWeights   = $aminoApi::GetAminoResidueWeights($aminoApi->getAminos());
+        $this->proteinManager    = $proteinManager ?? new ProteinManager($aminoApi);
         $this->aAminos           = $aminoApi::GetAminosOneToThreeLetters($aminoApi->getAminos());
         $this->pkApi             = $pkApi;
     }
@@ -278,33 +283,36 @@ class ProteinPropertiesManager
     }
 
     /**
-     * Molecular weight calculation
-     *
-     * Deliberate deviation from the legacy minitool: legacy's molecular weight loop adds
-     * "$aminoacid_content["Z"]*99.13" for Valine, but the content array it builds only ever
-     * has a "V" key - "Z" is a typo, so legacy's sum for that undefined index is always 0
-     * and Valine's weight is silently dropped from every legacy result. This port sums
-     * every amino acid actually present, Valine included, so the weight it returns is the
-     * scientifically correct one and will differ from legacy's by 99.13 per Valine residue.
-     * @param   array   $aAminoacidContent
+     * Molecular weight calculation, by BioPHP's ProteinManager: the average masses of the free amino
+     * acids less one water (18.0153) per peptide bond - Biopython's molecular_weight. Every residue of
+     * the amino acid table counts, selenocysteine (U) and pyrrolysine (O) included, and Valine too:
+     * legacy's loop added "$aminoacid_content["Z"]*99.13" for it, a typo for the "V" key, so legacy
+     * dropped Valine from every result. The stop "*" is no residue. B, Z and X stand for several amino
+     * acids, so they span a range: the upper limit is returned.
+     * An empty chain weighs 0.
+     * @param   array   $aAminoacidContent      Letter => count
      * @return  float
      * @throws  \Exception
      */
     public function proteinMolecularWeight($aAminoacidContent)
     {
         try {
-            $fMolWeight = 0;
-            $iResidueCount = 0;
-            foreach($aAminoacidContent as $sKey => $sAmino) {
-                $fMolWeight += $sAmino * $this->aResidueWeights[$sKey];
-                $iResidueCount += $sAmino;
+            $sSequence = "";
+            foreach ($aAminoacidContent as $sAminoAcid => $iCount) {
+                if ($sAminoAcid !== "*") {
+                    $sSequence .= str_repeat((string) $sAminoAcid, (int) $iCount);
+                }
             }
-            // An empty chain has zero residues and zero mass: it must not gain a spurious
-            // free water molecule.
-            if ($iResidueCount > 0) {
-                $fMolWeight += 18.02;  // water
+
+            $oProtein = new Protein();
+            $oProtein->setSequence($sSequence);
+            $this->proteinManager->setProtein($oProtein);
+            $aWeights = $this->proteinManager->molwt();
+            if ($aWeights === false) {
+                throw new \InvalidArgumentException("The protein holds a symbol with no molecular weight.");
             }
-            return $fMolWeight;
+
+            return $aWeights[1];
         } catch (\Exception $e) {
             throw new \Exception($e);
         }

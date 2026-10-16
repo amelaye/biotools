@@ -55,6 +55,7 @@
             <argument type="service" id="Amelaye\BioPHP\Api\Interfaces\PKApiAdapter" />
             <argument type="service" id="Amelaye\BioPHP\Domain\Sequence\Interfaces\SequenceInterface" />
             <argument type="service" id="Amelaye\BioPHP\Domain\Tools\Interfaces\ProteinPropertiesInterface" />
+            <argument type="service" id="Amelaye\BioPHP\Domain\Sequence\Interfaces\ProteinInterface" />
         </service>
 
         <service id="Amelaye\BioTools\Service\ProteinToDnaManager">

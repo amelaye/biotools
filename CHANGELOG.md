@@ -72,6 +72,12 @@ Les corrections scientifiques de la version non publiée sont décrites point pa
   BioPHP (même modèle de Henderson-Hasselbalch et mêmes jeux de pK) : la recherche par bissection
   remplace la boucle qui n'avait pas de garde. Une protéine vide est refusée.
 
+- **Masse moléculaire des protéines (délégation 4.4).** Calculée par `ProteinManager::molwt()` de
+  BioPHP (masses moyennes des acides aminés libres moins 18,0153 par liaison peptidique) :
+  la sélénocystéine (U) et la pyrrolysine (O) comptent au lieu de valoir 0, et le stop n'est pas un
+  résidu. Les valeurs changent légèrement (+0,17 Da sur un peptide de 17 résidus). Pour B, Z et X,
+  qui couvrent plusieurs acides aminés, la borne haute est renvoyée.
+
 ### Corrigé — plantages (erreur 500)
 
 - FCGR dont tous les comptes sont égaux : `DivisionByZeroError` dans le calcul du dégradé (max − min

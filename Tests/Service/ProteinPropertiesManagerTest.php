@@ -489,7 +489,9 @@ class ProteinPropertiesManagerTest extends TestCase
             "Y" => 0,
         ];
 
-        $fExpected = 1947.07;
+        // 17 residues, one each of A C D E F G H I K L M N P Q R S T: the sum of the free amino acid
+        // weights of the fixture less 16 waters (18.0153), summed by an independent script
+        $fExpected = 1947.2352;
 
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
         $testFunction = $service->proteinMolecularWeight($aminoacid_content);
@@ -533,13 +535,37 @@ class ProteinPropertiesManagerTest extends TestCase
             "Y" => 0,
         ];
 
-        // 1947.07 (no Valine) + 99.13 (one Valine residue) = 2046.20
-        $fExpected = 2046.20;
+        // 1947.2352 (no Valine) + 117.15 (free Valine) - 18.0153 (one more peptide bond) = 2046.3699
+        $fExpected = 2046.3699;
 
         $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
         $testFunction = $service->proteinMolecularWeight($aminoacid_content);
 
         $this->assertEqualsWithDelta($fExpected, $testFunction, 0.0001);
+    }
+
+    /**
+     * Selenocysteine (U) used to weigh 0 here; BioPHP weighs it: A + U = 89.09 + 168.05 - 18.0153
+     */
+    public function testProteinMolecularWeightCountsSelenocysteine()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWYUO"), 0), ["*" => 0, "A" => 1, "U" => 1]);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEqualsWithDelta(239.1247, $service->proteinMolecularWeight($aContent), 0.0001);
+    }
+
+    /**
+     * The stop codon of a translated ORF is no residue
+     */
+    public function testProteinMolecularWeightIgnoresTheStop()
+    {
+        $aContent = array_merge(array_fill_keys(str_split("ACDEFGHIKLMNPQRSTVWYUO"), 0), ["*" => 1, "W" => 5]);
+
+        $service = new ProteinPropertiesManager($this->apiAminoMock, $this->pkMock);
+
+        $this->assertEqualsWithDelta(949.0388, $service->proteinMolecularWeight($aContent), 0.0001);
     }
 
     /**
