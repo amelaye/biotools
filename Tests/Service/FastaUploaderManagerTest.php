@@ -98,6 +98,56 @@ class FastaUploaderManagerTest extends TestCase
     }
 
     /**
+     * Old Mac files end their lines with a lone \r; ";" lines are comments of the old FASTA
+     */
+    public function testCheckNucleotidSequenceHandlesOldLineEndingsAndComments()
+    {
+        $a = $g = $t = $c = 0;
+
+        $service = new FastaUploaderManager();
+        $service->checkNucleotidSequence(">seq1\rATGC\r;a comment\rATGC\r", $a, $g, $t, $c, 8);
+
+        $this->assertSame([2, 2, 2, 2], [$a, $g, $t, $c]);
+    }
+
+    /**
+     * A file without any base is no sequence: neither silently zero nor valid
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('provideFilesWithoutSequence')]
+    public function testCheckNucleotidSequenceRefusesAFileWithoutSequence($sText)
+    {
+        $a = $g = $t = $c = 0;
+        $service = new FastaUploaderManager();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/No sequence/');
+        $service->checkNucleotidSequence($sText, $a, $g, $t, $c, 10);
+    }
+
+    public static function provideFilesWithoutSequence(): array
+    {
+        return [
+            'header only'            => [">seq1 only a header\n"],
+            'header, \r line ending' => [">seq1\r"],
+            'blank'                  => ["  \n\r\n "],
+            'empty'                  => [""],
+        ];
+    }
+
+    /**
+     * Several records are concatenated: the base counts add up
+     */
+    public function testCheckNucleotidSequenceAddsUpSeveralRecords()
+    {
+        $a = $g = $t = $c = 0;
+
+        $service = new FastaUploaderManager();
+        $service->checkNucleotidSequence(">one\nAAGG\n>two\nTTCC\n", $a, $g, $t, $c, 8);
+
+        $this->assertSame([2, 2, 2, 2], [$a, $g, $t, $c]);
+    }
+
+    /**
      * An unknown base N is accepted and counted as none of A, C, G, T
      */
     public function testCheckNucleotidSequenceAcceptsAnN()

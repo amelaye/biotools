@@ -3,7 +3,7 @@
  * FastaUploadManager
  * Inspired by BioPHP's project biophp.org
  * Created 18 march 2019
- * Last modified 14 september 2026
+ * Last modified 16 october 2026
  */
 namespace Amelaye\BioTools\Service;
 
@@ -63,14 +63,18 @@ class FastaUploaderManager
     }
 
     /**
-     * Keeps the bases of a FASTA text: the header lines (">...") and all the white space,
-     * line breaks included, are removed. Several records are concatenated.
+     * Keeps the bases of a FASTA text: the header lines (">...") and the comment lines (";...", old
+     * FASTA), then all the white space, line breaks included, are removed. The line endings may be
+     * \n, \r\n or \r alone (old Mac files). Several records are concatenated: that is right for
+     * the base composition, which is additive, and wrong for any statistic on words (a dinucleotide
+     * across two records would be counted).
      * @param   string  $sText
      * @return  string
      */
     private function cleanFastaSequence(string $sText) : string
     {
-        $sText = preg_replace('/^>.*$/m', '', $sText);
+        $sText = preg_replace('/\r\n|\r/', "\n", $sText);
+        $sText = preg_replace('/^[>;].*$/m', '', $sText);
 
         return preg_replace('/\s+/', '', $sText);
     }
@@ -91,6 +95,9 @@ class FastaUploaderManager
     {
         if($iLength != '') {
             $sClean = $this->cleanFastaSequence((string) $sVar);
+            if($sClean === '') {
+                throw new \Exception("No sequence was found in the file (only a header, or nothing)");
+            }
             if(preg_match('/^[ACGTN]*$/i', $sClean) === 1) {
                 $sUpper = strtoupper(substr($sClean, 0, (int) $iLength));
                 $iA += substr_count($sUpper, 'A');
