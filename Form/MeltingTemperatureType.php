@@ -14,6 +14,13 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Amelaye\BioTools\Validator\MeltingTemperature;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Positive;
+use Symfony\Component\Validator\Constraints\PositiveOrZero;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Class MeltingTemperatureType
@@ -73,6 +80,7 @@ class MeltingTemperatureType extends AbstractType
                 ],
                 'data' => 200,
                 'label' => "Primer concentration (nM) : ",
+                'constraints' => [new NotBlank(), new Type('numeric'), new Positive()]
             ]
         );
 
@@ -87,6 +95,7 @@ class MeltingTemperatureType extends AbstractType
                 ],
                 'data' => 50,
                 'label' => "Salt concentration (mM) : ",
+                'constraints' => [new NotBlank(), new Type('numeric'), new PositiveOrZero()]
             ]
         );
 
@@ -101,6 +110,7 @@ class MeltingTemperatureType extends AbstractType
                 ],
                 'data' => 0,
                 'label' => "Mg2+ concentration (mM) : ",
+                'constraints' => [new NotBlank(), new Type('numeric'), new PositiveOrZero()]
             ]
         );
 
@@ -115,5 +125,39 @@ class MeltingTemperatureType extends AbstractType
                 ]
             ]
         );
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'constraints' => [
+                new Callback(['callback' => [$this, 'validateSaltOrMagnesium']]),
+            ]
+        ]);
+    }
+
+    /**
+     * The nearest-neighbor Tm needs some monovalent salt or some magnesium: with neither, the
+     * salt correction has nothing to work with
+     * @param   mixed                       $aObject
+     * @param   ExecutionContextInterface   $context
+     */
+    public static function validateSaltOrMagnesium($aObject, ExecutionContextInterface $context)
+    {
+        if (empty($aObject['nearestNeighbor'])) {
+            return;
+        }
+        if (!is_numeric($aObject['cs'] ?? null) || !is_numeric($aObject['cmg'] ?? null)) {
+            return; // already reported by the field constraints
+        }
+        if ((float) $aObject['cs'] <= 0 && (float) $aObject['cmg'] <= 0) {
+            $context
+                ->buildViolation("The nearest-neighbor Tm needs a salt or a Mg2+ concentration above 0.")
+                ->atPath('cs')
+                ->addViolation();
+        }
     }
 }
